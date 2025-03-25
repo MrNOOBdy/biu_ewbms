@@ -135,6 +135,7 @@ function showUserResultModal(success, title, message) {
     const iconDiv = document.getElementById('userResultIcon');
     const titleEl = document.getElementById('userResultTitle');
     const messageEl = document.getElementById('userResultMessage');
+    const okButton = modal.querySelector('.btn_verify');
 
     iconDiv.innerHTML = success ? 
         '<i class="fas fa-check-circle success-icon"></i>' : 
@@ -147,15 +148,31 @@ function showUserResultModal(success, title, message) {
     }
     
     modal.style.display = 'block';
-    setTimeout(() => {
-        modal.classList.add('fade-in');
-    }, 50);
+    setTimeout(() => modal.classList.add('fade-in'), 50);
 
-    modal.addEventListener('click', function(e) {
+    if (okButton) {
+        okButton.onclick = function() {
+            modal.classList.remove('fade-in');
+            setTimeout(() => {
+                modal.style.display = 'none';
+                if (success) {
+                    window.location.reload();
+                }
+            }, 300);
+        };
+    }
+
+    modal.onclick = function(e) {
         if (e.target === modal) {
-            closeModal('reload');
+            modal.classList.remove('fade-in');
+            setTimeout(() => {
+                modal.style.display = 'none';
+                if (success) {
+                    window.location.reload();
+                }
+            }, 300);
         }
-    });
+    };
 }
 
 function clearValidationErrors() {
@@ -322,6 +339,7 @@ function showStatusResultModal(success, title, message) {
     const iconDiv = document.getElementById('statusResultIcon');
     const titleEl = document.getElementById('statusResultTitle');
     const messageEl = document.getElementById('statusResultMessage');
+    const okButton = modal.querySelector('.btn_verify');
 
     iconDiv.innerHTML = success ? 
         '<i class="fas fa-check-circle success-icon"></i>' : 
@@ -332,9 +350,27 @@ function showStatusResultModal(success, title, message) {
     modal.style.display = 'block';
     setTimeout(() => modal.classList.add('fade-in'), 50);
 
-    modal.addEventListener('click', function(e) {
+    if (okButton) {
+        okButton.onclick = function() {
+            modal.classList.remove('fade-in');
+            setTimeout(() => {
+                modal.style.display = 'none';
+                if (success) {
+                    window.location.reload();
+                }
+            }, 300);
+        };
+    }
+
+    modal.onclick = function(e) {
         if (e.target === modal) {
-            closeModal('reload');
+            modal.classList.remove('fade-in');
+            setTimeout(() => {
+                modal.style.display = 'none';
+                if (success) {
+                    window.location.reload();
+                }
+            }, 300);
         }
-    });
+    };
 }

@@ -21,6 +21,7 @@ use App\Http\Controllers\BillPayController;
 use App\Http\Controllers\BillingController;
 use App\Http\Controllers\Bill_NoticeController;
 use App\Http\Controllers\MRController;
+use App\Http\Controllers\MRsBlockCont;
 use Illuminate\Support\Facades\Route;
 
 // Start page
@@ -175,5 +176,10 @@ Route::middleware(['web'])->group(function () {
 
         // Bill Notice routes
        Route::get('/notice-bill', [Bill_NoticeController::class, 'noticeBill'])->name('notice-bill');
+
+        // Meter reader block assignment routes
+        Route::get('/meter-readers/blocks', [MRsBlockCont::class, 'index'])->name('meter-readers.blocks');
+        Route::post('/meter-readers/assign-blocks', [MRsBlockCont::class, 'assignBlocks'])->name('meter-readers.assign-blocks');
+        Route::get('/meter-readers/{id}/blocks', [MRsBlockCont::class, 'getAssignedBlocks'])->name('meter-readers.get-blocks');
     });
 });

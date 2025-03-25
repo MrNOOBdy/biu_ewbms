@@ -47,4 +47,10 @@ class Consumer extends Model
     {
         return $this->belongsTo(Bill_rate::class, 'consumer_type', 'consumer_type');
     }
+
+    public function getFullNameAttribute()
+    {
+        $middleInitial = $this->middlename ? strtoupper($this->middlename[0]) . '.' : '';
+        return trim("{$this->firstname} {$middleInitial} {$this->lastname}");
+    }
 }

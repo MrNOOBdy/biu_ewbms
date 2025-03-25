@@ -37,6 +37,7 @@
                 <tr>
                     <th>Block</th>
                     <th>Consumer ID</th>
+                    <th>Consumer Name</th>
                     <th>Consumer Type</th>
                     <th>Present Reading</th>
                     <th>Consumption</th>
@@ -48,6 +49,7 @@
                     <tr>
                         <td>Block {{ $reading->consumer->block_id }}</td>
                         <td>{{ $reading->customer_id }}</td>
+                        <td>{{ $reading->consumer->full_name }}</td>
                         <td>{{ $reading->consumer->consumer_type }}</td>
                         <td>{{ $reading->present_reading }}</td>
                         <td>{{ $reading->consumption }}</td>
@@ -69,8 +71,32 @@
 
 <script>
 function filterReadings() {
-    // Add your filtering logic here
-    // Similar to the water_consumer.js filtering function
+    var blockFilter = document.getElementById('blockFilter').value;
+    var searchInput = document.getElementById('searchInput').value.toUpperCase();
+    var table = document.querySelector('.uni-table');
+    var rows = table.getElementsByTagName('tr');
+
+    for (var i = 1; i < rows.length; i++) {
+        var block = rows[i].getElementsByTagName('td')[0].innerText;
+        var consumerId = rows[i].getElementsByTagName('td')[1].innerText;
+        var consumerType = rows[i].getElementsByTagName('td')[2].innerText;
+        var presentReading = rows[i].getElementsByTagName('td')[3].innerText;
+        var consumption = rows[i].getElementsByTagName('td')[4].innerText;
+        var meterReader = rows[i].getElementsByTagName('td')[5].innerText;
+
+        if (blockFilter && blockFilter !== block.split(' ')[1]) {
+            rows[i].style.display = 'none';
+        } else if (block.toUpperCase().indexOf(searchInput) > -1 ||
+            consumerId.toUpperCase().indexOf(searchInput) > -1 ||
+            consumerType.toUpperCase().indexOf(searchInput) > -1 ||
+            presentReading.toUpperCase().indexOf(searchInput) > -1 ||
+            consumption.toUpperCase().indexOf(searchInput) > -1 ||
+            meterReader.toUpperCase().indexOf(searchInput) > -1) {
+            rows[i].style.display = '';
+        } else {
+            rows[i].style.display = 'none';
+        }
+    }
 }
 </script>
 @endsection

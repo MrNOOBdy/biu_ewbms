@@ -248,6 +248,7 @@ function showPasswordResetResult(success, title, message) {
     const iconDiv = document.getElementById('pwdResetResultIcon');
     const titleEl = document.getElementById('pwdResetResultTitle');
     const messageEl = document.getElementById('pwdResetResultMessage');
+    const okButton = modal.querySelector('.btn_verify');
 
     iconDiv.innerHTML = success ? 
         '<i class="fas fa-check-circle success-icon"></i>' : 
@@ -258,11 +259,29 @@ function showPasswordResetResult(success, title, message) {
     modal.style.display = 'block';
     setTimeout(() => modal.classList.add('fade-in'), 50);
 
-    modal.addEventListener('click', function(e) {
+    if (okButton) {
+        okButton.onclick = function() {
+            modal.classList.remove('fade-in');
+            setTimeout(() => {
+                modal.style.display = 'none';
+                if (success) {
+                    window.location.reload();
+                }
+            }, 300);
+        };
+    }
+
+    modal.onclick = function(e) {
         if (e.target === modal) {
-            closeModal('reload');
+            modal.classList.remove('fade-in');
+            setTimeout(() => {
+                modal.style.display = 'none';
+                if (success) {
+                    window.location.reload();
+                }
+            }, 300);
         }
-    });
+    };
 }
 
 function deleteUser() {

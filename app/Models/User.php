@@ -23,12 +23,17 @@ class User extends Authenticatable
         'password',
         'contactnum',
         'role',
-        'status'
+        'status',
+        'assigned_blocks'  // Add this line
     ];
 
     protected $hidden = [
         'password',
         'remember_token',
+    ];
+
+    protected $casts = [
+        'assigned_blocks' => 'array'  // Add this line
     ];
 
     public function role()

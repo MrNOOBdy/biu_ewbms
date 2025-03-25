@@ -89,6 +89,10 @@
                         <span class="tab-label">Meter Reading</span>
                     </a>
                     @endif
+                    <a href="{{ route('meter-readers.blocks') }}" class="tab-item {{ request()->routeIs('meter-readers.blocks') ? 'active' : '' }}">
+                        <div class="tab-icon"><i class="fa-solid fa-map-marked-alt"></i></div>
+                        <span class="tab-label"> Meter Reader's Block</span>
+                    </a>
 
                     @if($userRole->hasPermission('access-reports'))
                     <li data-title="Report" class="tab-item dropdown {{ request()->is(['income_rep', 'balance_rep', 'appli_income']) ? 'open' : '' }}">

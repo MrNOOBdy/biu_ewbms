@@ -6,6 +6,14 @@
 <div class="table-header">
     <h3><i class="fas fa-file-invoice-dollar"></i> Latest Bills</h3>
     <div class="header-controls">
+        <div class="filter-section">
+            <select id="blockFilter" onchange="filterReadings()">
+                <option value="">All Blocks</option>
+                @foreach($blocks as $block)
+                    <option value="{{ $block->block_id }}">Block {{ $block->block_id }}</option>
+                @endforeach
+            </select>
+        </div>
         <div class="search-container">
             <input type="text" id="searchInput" placeholder="Search bills...">
             <i class="fas fa-search search-icon"></i>
@@ -21,6 +29,7 @@
             <thead>
                 <tr>
                     <th>Consumer ID</th>
+                    <th>Consumer Name</th>
                     <th>Contact No.</th>
                     <th>Reading Date</th>
                     <th>Due Date</th>
@@ -39,6 +48,7 @@
                     @foreach($bills as $bill)
                         <tr>
                             <td>{{ $bill->consumer->customer_id }}</td>
+                            <td>{{ $bill->consumer->full_name }}</td>
                             <td>{{ $bill->consumer->contact_no }}</td>
                             <td>{{ date('M d, Y', strtotime($bill->reading_date)) }}</td>
                             <td>{{ date('M d, Y', strtotime($bill->due_date)) }}</td>
