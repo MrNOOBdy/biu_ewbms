@@ -1,0 +1,103 @@
+:root {
+    /* colors */
+    --primary-color: #4361ee;
+    --primary-color-hover: #3046c0;
+    --primary-color-light: #4895ef;
+    --primary-color-light-hover: #3d7ac9;
+    --secondary-color: #6c757d;
+    --success-color: #2ecc71;
+    --danger-color: #e74c3c;
+    --warning-color: #f1c40f;
+    
+    /* bg colors */
+    --light-bg: #f8f9fa;
+    --dark-bg: #1a1d21;
+    --dark-secondary: #2a2d35;
+    --background-color: #ffffff;
+    --dark-background: #15171a;
+    
+    /* text colors */
+    --text-color-light: #ffffff;
+    --text-color-dark: #2d3436;
+    --text-muted: #6c757d;
+    
+    /* border colors */
+    --border-color-light: #e9ecef;
+    --border-color-dark: #32363c;
+    
+    /* transitions */
+    --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    
+    /* shadow */
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+    --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.15);
+
+    /* dark mode shadows */
+    --shadow-sm-dark: 0 2px 4px rgba(0, 0, 0, 0.2);
+    --shadow-md-dark: 0 4px 6px rgba(0, 0, 0, 0.3);
+    --shadow-lg-dark: 0 8px 12px rgba(0, 0, 0, 0.4);
+    --shadow-xl-dark: 0 12px 18px rgba(0, 0, 0, 0.5);
+    
+    /* border radius */
+    --border-radius-sm: 6px;
+    --border-radius-md: 8px;
+    --border-radius-lg: 12px;
+    --border-radius-xl: 16px;
+    
+    /* spacing */
+    --spacing-xs: 4px;
+    --spacing-sm: 8px;
+    --spacing-md: 16px;
+    --spacing-lg: 24px;
+    --spacing-xl: 32px;
+    --spacing-2xl: 48px;
+
+    /* layout */
+    --sidebar-width: 250px;
+    --sidebar-collapsed-width: 70px;
+    --header-height: 50px;
+    --content-max-width: 1440px;
+
+    /* bg image and overlay */
+    --bg-image: url('/images/background/adm_background.png');
+    --bg-overlay-light: rgba(255, 255, 255, 0.1);
+    --bg-overlay-dark: rgba(0, 0, 0, 0.2);
+    --backdrop-blur: blur(8px);
+    
+    /* dark mode toggle */
+    --toggle-bg: #2d3436;
+    --toggle-knob: #f1f2f6;
+
+    /* responsive */
+    --mobile-width: 768px;
+    --tablet-width: 1024px;
+
+    /* gradient overlays */
+    --gradient-primary: linear-gradient(135deg, var(--primary-color), var(--primary-color-light));
+    --gradient-dark: linear-gradient(135deg, var(--dark-bg), var(--dark-secondary));
+    --gradient-overlay-dark: linear-gradient(135deg, rgba(26, 29, 33, 0.8), rgba(26, 29, 33, 0.8), rgba(42, 45, 53, 0.8));
+    
+    /* fonts */
+    --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    --font-mono: 'JetBrains Mono', 'Fira Code', 'Fira Mono', 'Roboto Mono', monospace;
+    
+    /* z-index */
+    --z-sidebar: 100;
+    --z-header: 90;
+    --z-overlay: 80;
+    --z-dropdown: 70;
+    --z-modal: 1000;
+}
+
+/* dark mode variables */
+[data-theme="dark"] {
+    --text-color: var(--text-color-light);
+    --bg-color: var(--dark-bg);
+    --bg-secondary: var(--dark-secondary);
+    --border-color: var(--border-color-dark);
+    --background-color: var(--dark-background);
+    --shadow-color: rgba(0, 0, 0, 0.3);
+}

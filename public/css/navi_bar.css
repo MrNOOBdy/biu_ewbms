@@ -1,0 +1,209 @@
+.navigation-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 var(--spacing-lg);
+    height: var(--header-height);
+    background-color: var(--background-color);
+    border-bottom: 1px solid var(--border-color-light);
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.page-title {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+}
+
+.page-title h1 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-color-dark);
+    margin: 0;
+}
+
+.top-bar-right {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+}
+
+.theme-toggle {
+    background: transparent;
+    border: none;
+    color: var(--text-color-dark);
+    width: 40px;
+    height: 40px;
+    border-radius: var(--border-radius-md);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition-fast);
+}
+
+.theme-toggle:hover {
+    background-color: var(--light-bg);
+}
+
+.user-dropdown {
+    position: relative;
+}
+
+.dropdown-toggle {
+    background: transparent;
+    border: none;
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-radius: var(--border-radius-md);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    transition: var(--transition-fast);
+}
+
+.dropdown-toggle:hover {
+    background-color: var(--light-bg);
+}
+
+.user-avatar {
+    width: 36px;
+    height: 36px;
+    background: var(--gradient-primary);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-color-light);
+}
+
+.user-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+}
+
+.username {
+    font-weight: 500;
+    color: var(--text-color-dark);
+}
+
+.user-role {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.user-menu {
+    position: absolute;
+    top: calc(100% + var(--spacing-sm));
+    right: 0;
+    background: var(--background-color);
+    border-radius: var(--border-radius-lg);
+    min-width: 240px;
+    box-shadow: var(--shadow-lg);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all var(--transition-fast);
+    z-index: var(--z-dropdown);
+}
+
+.user-menu.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.user-menu-header {
+    padding: var(--spacing-md);
+    border-bottom: 1px solid var(--border-color-light);
+}
+
+.user-fullname {
+    font-weight: 600;
+    color: var(--text-color-dark);
+    margin-bottom: var(--spacing-xs);
+}
+
+.user-email {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+}
+
+.user-menu-items {
+    padding: var(--spacing-xs) 0;
+}
+
+.menu-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    padding: var(--spacing-sm) var(--spacing-md);
+    color: var(--text-color-dark);
+    text-decoration: none;
+    transition: var(--transition-fast);
+    cursor: pointer;
+    border: none;
+    background: none;
+    width: 100%;
+    text-align: left;
+    font-size: 0.875rem;
+}
+
+.menu-item:hover {
+    background-color: var(--light-bg);
+}
+
+.menu-item i {
+    font-size: 1rem;
+    color: var(--text-muted);
+    width: 20px;
+    text-align: center;
+}
+
+.dark-mode .navigation-bar {
+    background-color: var(--dark-bg);
+    border-bottom-color: var(--border-color-dark);
+}
+
+.dark-mode .page-title h1 {
+    color: var(--text-color-light);
+}
+
+.dark-mode .theme-toggle {
+    color: var(--text-color-light);
+}
+
+.dark-mode .theme-toggle:hover {
+    background-color: var(--dark-secondary);
+}
+
+.dark-mode .dropdown-toggle:hover {
+    background-color: var(--dark-secondary);
+}
+
+.dark-mode .username {
+    color: var(--text-color-light);
+}
+
+.dark-mode .user-menu {
+    background-color: var(--dark-secondary);
+}
+
+.dark-mode .user-menu-header {
+    border-bottom-color: var(--border-color-dark);
+}
+
+.dark-mode .user-fullname {
+    color: var(--text-color-light);
+}
+
+.dark-mode .menu-item {
+    color: var(--text-color-light);
+}
+
+.dark-mode .menu-item:hover {
+    background-color: var(--dark-bg);
+}

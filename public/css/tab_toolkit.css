@@ -1,0 +1,150 @@
+.tab-toolkit {
+    position: fixed;
+    z-index: 1000;
+    background: var(--primary-color);
+    border-radius: 0 6px 6px 0;
+    box-shadow: var(--shadow-md);
+    color: var(--text-color-light);
+    font-size: 14px;
+    min-width: 180px;
+    pointer-events: auto;
+    transition: opacity 0.2s ease-out;
+}
+
+.tab-toolkit::before {
+    content: '';
+    position: absolute;
+    left: -10px;
+    top: 0;
+    height: 100%;
+    width: 10px;
+}
+
+.toolkit-barrier {
+    position: absolute;
+    left: -20px;
+    top: -10px;
+    width: 20px;
+    height: calc(100% + 20px);
+    background: transparent;
+    pointer-events: auto;
+}
+
+.toolkit-content {
+    padding: 12px 16px;
+    white-space: nowrap;
+}
+
+.toolkit-header {
+    padding: 12px 16px;
+    font-weight: 500;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    background: var(--primary-color-hover);
+    border-radius: 0 6px 0 0;
+}
+
+.toolkit-items {
+    padding: 6px 0;
+}
+
+.toolkit-item {
+    padding: 8px 16px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: var(--text-color-light);
+    text-decoration: none;
+}
+
+.toolkit-item[data-tab="${currentTab}"],
+.toolkit-item.active {
+    background-color: var(--primary-color-hover);
+    padding-left: 20px;
+}
+
+.toolkit-item.active {
+    background-color: var(--primary-color-hover);
+    padding-left: 20px;
+    position: relative;
+    font-weight: 500;
+}
+
+.toolkit-item.active::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 3px;
+    background-color: var(--text-color-light);
+    opacity: 1;
+}
+
+.toolkit-item.active::after {
+    display: none;
+}
+
+.toolkit-item::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background-color: var(--text-color-light);
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.toolkit-item:hover::before,
+.toolkit-item[data-tab="${currentTab}"]::before,
+.toolkit-item.active::before {
+    opacity: 1;
+}
+
+.toolkit-item:hover {
+    background-color: var(--primary-color-hover);
+}
+
+.toolkit-item:hover:not(.active) {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.active-indicator {
+    margin-left: 8px;
+    color: var(--text-color-light);
+    opacity: 0.8;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateX(-5px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.dark-mode .tab-toolkit {
+    background: var(--primary-color);
+    border: none;
+}
+
+.dark-mode .toolkit-header {
+    background: var(--primary-color-hover);
+}
+
+.sidebar-expanded .tab-toolkit {
+    display: none;
+}
+
+.tab-toolkit.removing {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}

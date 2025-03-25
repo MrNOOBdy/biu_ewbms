@@ -1,0 +1,117 @@
+.table-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    position: sticky;
+    height: 30px;
+    top: 0;
+    padding: 10px;
+}
+
+.table-header h3 i {
+    margin-right: 8px;
+}
+
+.header-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.filter-section {
+    display: flex;
+    gap: 5px;
+}
+
+.filter-section select {
+    padding: 8px;
+    border: 1px solid var(--border-color-light);
+    border-radius: var(--border-radius-md);
+    font-size: 14px;
+}
+
+.filter-section select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(48, 82, 220, 0.25);
+}
+
+.search-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.search-container input[type="text"],
+.search-container input[type="date"],
+#searchInput {
+    padding: 8px 12px;
+    border: 1px solid var(--border-color-light);
+    border-radius: var(--border-radius-md);
+    font-size: 14px;
+    width: 180px;
+}
+
+.search-container input[type="text"]:focus,
+.search-container input[type="date"]:focus,
+#searchInput:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(48, 82, 220, 0.25);
+}
+
+.search-container .search-icon {
+    position: absolute;
+    right: 12px;
+    color: var(--secondary-color);
+    font-size: 14px;
+    pointer-events: none;
+}
+
+.header-controls a {
+    text-decoration: none;
+}
+
+.add-btn {
+    background-color: var(--success-color);
+    color: var(--text-color-light);
+    padding: 8px 16px;
+    border: none;
+    border-radius: var(--border-radius-sm);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: background-color var(--transition-fast);
+}
+
+.add-btn:hover {
+    background-color: #218838;
+}
+
+.dark-mode .filter-section select {
+    background-color: var(--dark-bg);
+    border-color: var(--border-color-dark);
+    color: var(--text-color-light);
+}
+
+.dark-mode .search-container input[type="text"],
+.dark-mode .search-container input[type="date"],
+.dark-mode #searchInput {
+    background-color: var(--dark-bg);
+    border-color: var(--border-color-dark);
+    color: var(--text-color-light);
+}
+
+.dark-mode .search-container input::placeholder {
+    color: #888;
+}
+
+.dark-mode .search-container .search-icon {
+    color: #888;
+}
+
+.dark-mode .table-header h3 {
+    color: var(--text-color-light);
+}

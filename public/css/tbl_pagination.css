@@ -1,0 +1,84 @@
+.pagination-wrapper {
+    margin-top: 20px;
+    display: flex;
+    justify-content: flex-end;
+    transition: opacity 0.3s ease;
+    padding: 10px;
+}
+
+.pagination {
+    display: flex;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.pagination li {
+    margin: 0 2px;
+}
+
+.pagination li a,
+.pagination li span {
+    display: inline-block;
+    padding: 8px 12px;
+    color: #333;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.pagination li.active span {
+    background-color: var(--primary-color);
+    color: #fff;
+    border-color: var(--primary-color);
+}
+
+.pagination li a:hover {
+    background-color: #e9ecef;
+    border-color: #dee2e6;
+}
+
+.pagination li.disabled span {
+    color: #6c757d;
+    pointer-events: none;
+    background-color: #fff;
+    border-color: #ddd;
+}
+
+/* Add dark mode support */
+.dark-mode .pagination li a,
+.dark-mode .pagination li span {
+    background-color: var(--dark-secondary);
+    border-color: var(--border-color-dark);
+    color: var(--text-color-light);
+}
+
+.dark-mode .pagination li.active span {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.dark-mode .pagination li a:hover {
+    background-color: var(--dark-hover);
+}
+
+.dark-mode .pagination li.disabled span {
+    background-color: var(--dark-secondary);
+    border-color: var(--border-color-dark);
+    color: var(--text-color-muted);
+}
+
+/* Responsive pagination */
+@media (max-width: 576px) {
+    .pagination-wrapper {
+        justify-content: center;
+    }
+    
+    .pagination li a,
+    .pagination li span {
+        padding: 6px 10px;
+        font-size: 14px;
+    }
+}
