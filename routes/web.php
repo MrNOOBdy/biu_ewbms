@@ -15,6 +15,7 @@ use App\Http\Controllers\LocalSetController;
 use App\Http\Controllers\PassResetController;
 use App\Http\Controllers\ConnPayController;
 use App\Http\Controllers\ApplicationIncomeController;
+use App\Http\Controllers\ReportBillController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\BillPayController;
 use App\Http\Controllers\BillingController;
@@ -156,6 +157,8 @@ Route::middleware(['web'])->group(function () {
 
         // Report routes
         Route::get('/appli_income', [ApplicationIncomeController::class, 'index'])->name('appli_income');
+        Route::get('/income_rep', [ReportBillController::class, 'income_index'])->name('income_index');
+        Route::get('/balance_rep', [ReportBillController::class, 'balance_index'])->name('balance_index');
 
         // Meter reader reading routes
         Route::get('/meter_read', [MRController::class, 'index'])->name('meter-readings');

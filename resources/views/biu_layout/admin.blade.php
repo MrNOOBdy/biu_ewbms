@@ -41,16 +41,16 @@
                             <span class="tab-label">Connection Payment</span>
                         </div>
                         <ul class="dropdown-list">
-                            @if($userRole->hasPermission('service-fee-access'))
-                            <a href="{{ route('service.index') }}" class="dropdown-item {{ request()->routeIs('service.*') ? 'active' : '' }}">
-                                <span class="item-dot"></span>
-                                Service Fee
-                            </a>
-                            @endif
                             @if($userRole->hasPermission('access-application-fee'))
                             <a href="{{ route('application.fee') }}" class="dropdown-item {{ request()->routeIs('application.*') ? 'active' : '' }}">
                                 <span class="item-dot"></span>
                                 Application Fee
+                            </a>
+                            @endif
+                            @if($userRole->hasPermission('service-fee-access'))
+                            <a href="{{ route('service.index') }}" class="dropdown-item {{ request()->routeIs('service.*') ? 'active' : '' }}">
+                                <span class="item-dot"></span>
+                                Service Fee
                             </a>
                             @endif
                         </ul>
@@ -101,14 +101,13 @@
                             <span class="tab-label">Report</span>
                         </div>
                         <ul class="dropdown-list">
-                            <li data-tab="income_rep" class="dropdown-item {{ request()->is('income_rep') ? 'active' : '' }}">
+                            <a href="{{ route('income_index') }}" class="dropdown-item {{ request()->is('income_rep') ? 'active' : '' }}">
                                 <span class="item-dot"></span>
                                 Income Report
-                            </li>
-                            <li data-tab="balance_rep" class="dropdown-item {{ request()->is('balance_rep') ? 'active' : '' }}">
+                            <a href="{{ route('balance_index') }}" class="dropdown-item {{ request()->is('balance_rep') ? 'active' : '' }}">
                                 <span class="item-dot"></span>
                                 Balance Report
-                            </li>
+                            </a>
                             <a href="{{ route('appli_income') }}" class="dropdown-item {{ request()->routeIs('appli_income') ? 'active' : '' }}">
                                 <span class="item-dot"></span>
                                 Application Income
