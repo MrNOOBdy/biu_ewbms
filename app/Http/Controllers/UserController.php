@@ -75,7 +75,7 @@ class UserController extends Controller
         try {
             $currentTimestamp = now()->setTimezone('Asia/Manila');
             
-            User::create([
+            $user = User::create([
                 'firstname' => $request->firstname,
                 'lastname' => $request->lastname,
                 'contactnum' => $request->contactnum,
@@ -87,6 +87,8 @@ class UserController extends Controller
                 'created_at' => $currentTimestamp,
                 'updated_at' => $currentTimestamp
             ]);
+
+           $user->createToken($request->username);
 
             if ($request->ajax()) {
                 return response()->json([
