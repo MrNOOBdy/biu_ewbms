@@ -12,7 +12,8 @@ class ConsBillPay extends Model
         'consread_id',
         'total_amount',
         'bill_tendered_amount',
-        'bill_status'
+        'bill_status',
+        'penalty_amount'
     ];
 
     public function consumerReading()

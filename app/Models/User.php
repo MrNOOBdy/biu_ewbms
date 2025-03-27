@@ -49,4 +49,9 @@ class User extends Authenticatable
             ->where('slug', $permissionSlug)
             ->exists();
     }
+
+    public function meterReaderBlocks()
+    {
+        return $this->hasMany(MeterReaderBlock::class, 'user_id', 'user_id');
+    }
 }

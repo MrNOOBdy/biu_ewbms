@@ -89,12 +89,21 @@ function showBillResultModal(success, message) {
 
     modal.style.display = 'block';
     setTimeout(() => modal.classList.add('fade-in'), 10);
+
+    if (success) {
+        modal.setAttribute('data-refresh', 'true');
+    }
 }
 
 function closeBillResultModal() {
     const modal = document.getElementById('billResultModal');
     modal.classList.remove('fade-in');
-    setTimeout(() => modal.style.display = 'none', 300);
+    setTimeout(() => {
+        modal.style.display = 'none';
+        if (modal.getAttribute('data-refresh') === 'true') {
+            location.reload();
+        }
+    }, 300);
 }
 
 function sendBill(consreadId) {

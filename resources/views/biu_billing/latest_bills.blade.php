@@ -225,12 +225,14 @@
 
 <!-- Result Modal -->
 <div id="billResultModal" class="modal">
-    <div class="modal-content result-modal">
-        <div id="billResultIcon"></div>
-        <h3 id="billResultTitle"></h3>
-        <p id="billResultMessage"></p>
-        <div class="modal-actions">
-            <button class="btn_modal btn_verify" onclick="closeBillResultModal()">OK</button>
+    <div class="modal-content">
+        <div class="result-modal">
+            <div id="billResultIcon"></div>
+            <h3 id="billResultTitle"></h3>
+            <p id="billResultMessage"></p>
+            <div class="modal-actions">
+                <button class="btn_modal btn_verify" onclick="closeBillResultModal()">OK</button>
+            </div>
         </div>
     </div>
 </div>

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 use App\Models\Role;
 use App\Models\Bill_rate;
 use App\Models\Consumer;
@@ -14,7 +15,8 @@ class BillPayController extends Controller
 {
     public function showPayments()
     {
-        $bills = ConsumerReading::with(['consumer', 'coverageDate'])
+        $bills = ConsumerReading::with(['consumer', 'billPayments'])
+            ->whereHas('billPayments')
             ->orderBy('reading_date', 'desc')
             ->paginate(20);
         
@@ -59,60 +61,66 @@ class BillPayController extends Controller
 
     public function getBillDetails($billId)
     {
-        $bill = ConsumerReading::findOrFail($billId);
-        $penaltyAmount = 0;
-        
-        if (now()->gt($bill->due_date)) {
-            $billRate = $bill->getBillRate();
-            $consumption = $bill->calculateConsumption();
-            $excessCubic = max(0, $consumption - ConsumerReading::BASE_CUBIC_LIMIT);
-            $penaltyAmount = $excessCubic * $billRate->excess_value_per_cubic;
+        try {
+            $bill = ConsumerReading::with('billPayments')->findOrFail($billId);
+            return response()->json([
+                'present_reading' => $bill->present_reading,
+                'total_amount' => $bill->present_reading,
+                'success' => true
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error fetching bill details'
+            ], 500);
         }
-
-        return response()->json([
-            'present_reading' => $bill->present_reading,
-            'penalty_amount' => $penaltyAmount,
-            'total_amount' => $bill->total_amount + $penaltyAmount
-        ]);
     }
 
     public function processPayment(Request $request)
     {
         try {
-            $bill = ConsumerReading::findOrFail($request->bill_id);
-            $amountTendered = (float)$request->amount_tendered;
-            $totalDue = $bill->total_amount;
-
-            if (now()->gt($bill->due_date)) {
-                $billRate = $bill->getBillRate();
-                $consumption = $bill->calculateConsumption();
-                $excessCubic = max(0, $consumption - ConsumerReading::BASE_CUBIC_LIMIT);
-                $penaltyAmount = $excessCubic * $billRate->excess_value_per_cubic;
-                $totalDue += $penaltyAmount;
+            $bill = ConsumerReading::with('billPayments')->findOrFail($request->bill_id);
+            
+            if (!$bill->billPayments) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Bill not found or not confirmed yet'
+                ], 404);
             }
 
-            if (abs($amountTendered - $totalDue) > 0.01) {
+            $amountTendered = (float)$request->bill_tendered_amount;
+            $penaltyAmount = (float)$request->penalty_amount;
+            $totalAmount = $bill->present_reading + $penaltyAmount;
+
+            if ($amountTendered !== $totalAmount) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Amount tendered must match the total amount exactly'
                 ]);
             }
 
-            $bill->bill_status = 'PAID';
-            $bill->payment_date = now();
-            $bill->amount_paid = $totalDue;
-            $bill->billpay_tendered_amount = $amountTendered;
-            $bill->penalty_amount = $totalDue - $bill->total_amount;
-            $bill->save();
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Payment processed successfully'
-            ]);
+            DB::beginTransaction();
+            try {
+                $bill->billPayments->update([
+                    'bill_status' => 'paid',
+                    'bill_tendered_amount' => $amountTendered,
+                    'penalty_amount' => $penaltyAmount,
+                    'total_amount' => $totalAmount
+                ]);
+                
+                DB::commit();
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Payment processed successfully'
+                ]);
+            } catch (\Exception $e) {
+                DB::rollBack();
+                throw $e;
+            }
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Payment processing failed'
+                'message' => 'Payment processing failed: ' . $e->getMessage()
             ], 500);
         }
     }

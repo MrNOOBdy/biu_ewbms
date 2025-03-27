@@ -1,41 +1,120 @@
-function handlePayment(button) {
-    const billId = button.dataset.billId;
-    fetch(`/billing/get-bill-details/${billId}`)
+function handlePayment(consreadId) {
+    fetch(`/billing/get-bill-details/${consreadId}`)
         .then(response => response.json())
         .then(data => {
-            document.getElementById('billId').value = billId;
-            document.getElementById('presentReading').value = data.present_reading;
-            document.getElementById('penaltyAmount').value = `₱${data.penalty_amount.toFixed(2)}`;
-            document.getElementById('totalAmount').value = `₱${data.total_amount.toFixed(2)}`;
-            
-            const modal = document.getElementById('paymentModal');
-            modal.style.display = 'block';
-            modal.classList.add('fade-in');
+            if (data.success) {
+                const presentReading = parseFloat(data.present_reading) || 0;
 
-            const amountTenderedInput = document.getElementById('amountTendered');
-            amountTenderedInput.addEventListener('input', calculateChange);
-            amountTenderedInput.value = '';
-            document.getElementById('changeAmount').value = '';
+                document.getElementById('billId').value = consreadId;
+                document.getElementById('present_reading').value = `₱${presentReading.toFixed(2)}`;
+                document.getElementById('penalty_amount').value = '0';
+                document.getElementById('total_amount').value = `₱${presentReading.toFixed(2)}`;
+                document.getElementById('bill_tendered_amount').value = '';
+
+                const modal = document.getElementById('paymentModal');
+                modal.style.display = 'block';
+                setTimeout(() => modal.classList.add('fade-in'), 10);
+
+                document.getElementById('penalty_amount').addEventListener('input', updateTotalAmount);
+                document.getElementById('bill_tendered_amount').addEventListener('input', validateTendered);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showPaymentResultModal(false, 'Error fetching bill details');
         });
 }
 
-function calculateChange() {
-    const totalAmount = parseFloat(document.getElementById('totalAmount').value.replace('₱', ''));
-    const amountTendered = parseFloat(document.getElementById('amountTendered').value) || 0;
-    const change = amountTendered - totalAmount;
-    
-    document.getElementById('changeAmount').value = change === 0 ? '₱0.00' : '';
-    
-    const submitButton = document.querySelector('#paymentForm button[type="submit"]');
-    submitButton.disabled = amountTendered !== totalAmount;
+function updateTotalAmount() {
+    const presentReading = parseFloat(document.getElementById('present_reading').value.replace('₱', '')) || 0;
+    const penaltyAmount = parseFloat(document.getElementById('penalty_amount').value) || 0;
+    const totalAmount = presentReading + penaltyAmount;
+    document.getElementById('total_amount').value = `₱${totalAmount.toFixed(2)}`;
 
-    const invalidFeedback = document.querySelector('#amountTendered + .invalid-feedback');
-    if (amountTendered !== totalAmount) {
-        invalidFeedback.textContent = 'Amount must match the total amount exactly';
-        invalidFeedback.style.display = 'block';
-    } else {
-        invalidFeedback.style.display = 'none';
+    const tenderedInput = document.getElementById('bill_tendered_amount');
+    if (tenderedInput.value) {
+        validateTendered();
     }
+}
+
+function validateTendered() {
+    const totalAmount = parseFloat(document.getElementById('total_amount').value.replace('₱', ''));
+    const tendered = parseFloat(document.getElementById('bill_tendered_amount').value) || 0;
+
+    const input = document.getElementById('bill_tendered_amount');
+    const feedback = input.nextElementSibling;
+    const submitButton = document.querySelector('#paymentForm button[type="submit"]');
+
+    if (tendered < totalAmount) {
+        input.classList.add('is-invalid');
+        feedback.textContent = `Amount tendered is insufficient. Required amount is ₱${totalAmount.toFixed(2)}`;
+        submitButton.disabled = true;
+    } else if (tendered > totalAmount) {
+        input.classList.add('is-invalid');
+        feedback.textContent = `Amount tendered is too high. Required amount is ₱${totalAmount.toFixed(2)}`;
+        submitButton.disabled = true;
+    } else {
+        input.classList.remove('is-invalid');
+        feedback.textContent = '';
+        submitButton.disabled = false;
+    }
+}
+
+async function processPayment(event) {
+    event.preventDefault();
+
+    const formData = new FormData(event.target);
+    const totalAmount = parseFloat(document.getElementById('total_amount').value.replace('₱', ''));
+    const tendered = parseFloat(document.getElementById('bill_tendered_amount').value);
+    const penalty = parseFloat(document.getElementById('penalty_amount').value) || 0;
+
+    if (tendered !== totalAmount) {
+        return;
+    }
+
+    fetch('/billing/process-payment', {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            bill_id: formData.get('bill_id'),
+            bill_tendered_amount: tendered,
+            penalty_amount: penalty
+        })
+    })
+        .then(response => response.json())
+        .then(result => {
+            if (result.success) {
+                closeModal('paymentModal');
+                showPaymentResultModal(true, 'Payment processed successfully');
+                setTimeout(() => location.reload(), 1500);
+            } else {
+                showPaymentResultModal(false, result.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showPaymentResultModal(false, 'Payment processing failed');
+        });
+}
+
+function showPaymentResultModal(success, message) {
+    const modal = document.getElementById('paymentResultModal');
+    const icon = document.getElementById('paymentResultIcon');
+    const title = document.getElementById('paymentResultTitle');
+    const messageEl = document.getElementById('paymentResultMessage');
+
+    icon.className = success ? 'success' : 'error';
+    icon.innerHTML = success ?
+        '<i class="fas fa-check-circle"></i>' :
+        '<i class="fas fa-exclamation-triangle"></i>';
+    title.textContent = success ? 'Success' : 'Error';
+    messageEl.textContent = message;
+
+    modal.style.display = 'block';
+    setTimeout(() => modal.classList.add('fade-in'), 10);
 }
 
 function closePaymentModal() {
@@ -44,46 +123,19 @@ function closePaymentModal() {
     setTimeout(() => modal.style.display = 'none', 300);
 }
 
-async function processPayment(event) {
-    event.preventDefault();
-    
-    const formData = new FormData(event.target);
-    try {
-        const response = await fetch('/billing/process-payment', {
-            method: 'POST',
-            body: formData,
-            headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-            }
-        });
-        
-        const result = await response.json();
-        
-        if (result.success) {
-            closePaymentModal();
-            location.reload();
-        } else {
-            alert(result.message || 'Payment processing failed');
-        }
-    } catch (error) {
-        console.error('Payment processing error:', error);
-        alert('Payment processing failed. Please try again.');
-    }
-}
-
 function printBill(button) {
     const billId = button.dataset.billId;
     const printWindow = window.open(`/billing/print-bill/${billId}`, '_blank');
-    
+
     printWindow.addEventListener('load', () => {
         const script = document.createElement('script');
         script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
         script.onload = () => {
-            printWindow.printBillReceipt = function() {
+            printWindow.printBillReceipt = function () {
                 printWindow.print();
             };
 
-            printWindow.downloadBillReceipt = function() {
+            printWindow.downloadBillReceipt = function () {
                 const element = printWindow.document.querySelector(`#bill-receipt`);
                 const opt = {
                     margin: 1,
@@ -93,7 +145,6 @@ function printBill(button) {
                     jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
                 };
 
-                // Hide print buttons before generating PDF
                 const buttons = element.querySelector('.print-buttons');
                 buttons.style.display = 'none';
 
@@ -105,3 +156,69 @@ function printBill(button) {
         printWindow.document.head.appendChild(script);
     });
 }
+
+function closeModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (!modal) return;
+
+    modal.classList.remove('fade-in');
+    setTimeout(() => modal.style.display = 'none', 300);
+}
+
+function filterBills() {
+    const searchValue = document.getElementById('searchInput').value.toLowerCase().trim();
+    const statusValue = document.getElementById('statusFilter').value.toLowerCase();
+    const tbody = document.querySelector('.uni-table tbody');
+    const rows = tbody.querySelectorAll('tr');
+    let hasMatches = false;
+
+    rows.forEach(row => {
+        if (row.classList.contains('empty-state-row')) {
+            row.remove();
+            return;
+        }
+
+        const cells = row.querySelectorAll('td');
+        if (cells.length > 0) {
+            const consumerId = cells[0].textContent.toLowerCase();
+            const name = cells[1].textContent.toLowerCase();
+            const dueDate = cells[2].textContent.toLowerCase();
+            const statusBadge = row.querySelector('.status-badge');
+            const status = statusBadge ? statusBadge.textContent.trim().toLowerCase() : '';
+
+            const matchesSearch = !searchValue ||
+                consumerId.includes(searchValue) ||
+                name.includes(searchValue) ||
+                dueDate.includes(searchValue);
+
+            const matchesStatus = !statusValue || status === statusValue;
+
+            const matches = matchesSearch && matchesStatus;
+            row.style.display = matches ? '' : 'none';
+            if (matches) hasMatches = true;
+        }
+    });
+
+    if (!hasMatches) {
+        showEmptyState(tbody);
+    }
+}
+
+function showEmptyState(tbody) {
+    const colspan = document.querySelector('.uni-table thead th:last-child').cellIndex + 1;
+    tbody.innerHTML = `
+        <tr class="empty-state-row">
+            <td colspan="${colspan}" class="empty-state">
+                <i class="fas fa-search"></i>
+                <p>No bills found for your search criteria</p>
+            </td>
+        </tr>`;
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    window.onclick = function (event) {
+        if (event.target.classList.contains('modal')) {
+            closeModal(event.target.id);
+        }
+    };
+});
