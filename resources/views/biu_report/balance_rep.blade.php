@@ -1,5 +1,7 @@
 @extends('biu_layout.admin')
 
+@section('title', 'BI-U: Balance Report')
+
 @section('tab-content')
 <link rel="stylesheet" href="{{ asset('css/tbl_pagination.css') }}">
 <div class="table-header">

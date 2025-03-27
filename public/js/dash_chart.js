@@ -100,17 +100,31 @@ function initChart() {
 }
 
 function getMonthlyData() {
+    const months = ['January', 'February', 'March', 'April', 'May', 'June',
+        'July', 'August', 'September', 'October', 'November', 'December'];
+
+    const values = new Array(12).fill(0);
+
+    for (let month = 1; month <= 12; month++) {
+        if (monthlyConsumptionData[month]) {
+            values[month - 1] = monthlyConsumptionData[month];
+        }
+    }
+
     return {
-        labels: ['January', 'February', 'March', 'April', 'May', 'June',
-            'July', 'August', 'September', 'October', 'November', 'December'],
-        values: [30, 59, 80, 81, 56, 55, 40, 45, 60, 70, 75, 68]
+        labels: months,
+        values: values
     };
 }
 
 function getYearlyData() {
+    const currentYear = new Date().getFullYear();
+    const years = Array.from({ length: 6 }, (_, i) => (currentYear - 5 + i).toString());
+    const values = years.map(year => yearlyConsumptionData[year] || 0);
+
     return {
-        labels: ['2019', '2020', '2021', '2022', '2023', '2024'],
-        values: [580, 620, 750, 800, 680, 320]
+        labels: years,
+        values: values
     };
 }
 

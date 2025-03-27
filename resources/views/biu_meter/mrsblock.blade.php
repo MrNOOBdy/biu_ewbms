@@ -1,6 +1,6 @@
 @extends('biu_layout.admin')
 
-@section('title', 'Meter Reader Block Assignment')
+@section('title', 'BI-U: MRs Block Assignment')
 
 @section('tab-content')
 <link rel="stylesheet" href="{{ asset('css/modal.css') }}">

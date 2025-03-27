@@ -473,6 +473,12 @@ class ConsumerController extends Controller
 
             $consumer = Consumer::where('customer_id', $id)->firstOrFail();
 
+            $consumerReadings = DB::table('consumer_reading')->where('customer_id', $id)->get();
+            foreach ($consumerReadings as $reading) {
+                DB::table('consumer_bill_pay')->where('consread_id', $reading->consread_id)->delete();
+            }
+            DB::table('consumer_reading')->where('customer_id', $id)->delete();
+
             if ($consumer->status === 'Pending') {
                 DB::table('conn_payment')
                     ->where('customer_id', $id)
@@ -483,27 +489,15 @@ class ConsumerController extends Controller
                     ->where('customer_id', $id)
                     ->where('service_paid_status', 'unpaid')
                     ->delete();
-
-                DB::table('consumer_reading')->where('customer_id', $id)->delete();
-       
-                $consumer->delete();
-                
-                DB::commit();
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Consumer deleted successfully. Paid application records have been preserved.'
-                ]);
             }
 
-            DB::table('consumer_reading')->where('customer_id', $id)->delete();
-            DB::table('conn_payment')->where('customer_id', $id)->delete();
             $consumer->delete();
 
             DB::commit();
 
             return response()->json([
                 'success' => true,
-                'message' => 'Consumer and associated records deleted successfully!'
+                'message' => 'Consumer and all associated records deleted successfully!'
             ]);
 
         } catch (\Exception $e) {

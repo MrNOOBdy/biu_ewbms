@@ -16,17 +16,17 @@
         </div>
         <div class="stat-box">
             <i class="fas fa-file-invoice fa-2x" style="color: var(--primary-color); margin-bottom: 10px;"></i>
-            <h2>0</h2>
+            <h2>{{ $totalBills }}</h2>
             <p>Total Bills</p>
         </div>
         <div class="stat-box">
             <i class="fas fa-exclamation-circle fa-2x" style="color: var(--warning-color); margin-bottom: 10px;"></i>
-            <h2>0</h2>
+            <h2>{{ $unpaidBills }}</h2>
             <p>Unpaid Bills</p>
         </div>
         <div class="stat-box">
             <i class="fas fa-coins fa-2x" style="color: var(--success-color); margin-bottom: 10px;"></i>
-            <h2>0</h2>
+            <h2>₱{{ number_format($totalIncome, 2) }}</h2>
             <p>Total Income</p>
         </div>
     </div>
@@ -38,7 +38,7 @@
             </div>
             <div class="rate-section">
                 @foreach($billRates as $type => $rates)
-                    <h3 style="font-size: 1rem">{{ $type }} Rate:</h>
+                    <h3 style="font-size: 1rem">{{ ucwords(str_replace('_', ' ', $type)) }}</h3>
                     @foreach($rates as $rate)
                         <p>1 - {{ $rate->cubic_meter }} m³: ₱{{ number_format($rate->value, 2) }}</p>
                         <p class="excess-rate">Excess: ₱{{ number_format($rate->excess_value_per_cubic, 2) }}/m³</p>
@@ -61,5 +61,9 @@
         </div>
     </div>
 </div>
+<script>
+    const monthlyConsumptionData = @json($monthlyConsumption);
+    const yearlyConsumptionData = @json($yearlyConsumption);
+</script>
 <script src="{{ asset('js/dash_chart.js') }}"></script>
 @endsection

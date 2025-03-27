@@ -1,5 +1,7 @@
 @extends('biu_layout.admin')
 
+@section('title', 'BI-U: Coverage Date Management')
+
 @section('tab-content')
 <style>
     .table-header {

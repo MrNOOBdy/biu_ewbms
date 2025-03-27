@@ -1,5 +1,7 @@
 @extends('biu_layout.admin')
 
+@section('title', 'BI-U: Bill Notice')
+
 @section('tab-content')
 <link rel="stylesheet" href="{{ asset('css/modal.css') }}">
 
