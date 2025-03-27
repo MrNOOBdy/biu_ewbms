@@ -9,7 +9,6 @@
     <meta name="theme-color" content="#4361ee">
     <meta name="description" content="BI-U: eWBS">
     <meta name="author" content="BI-U">
-
     <link rel="preload" href="{{ asset('css/variables.css') }}" as="style">
     <link rel="preload" href="{{ asset('css/general.css') }}" as="style">
     <link rel="preload" href="/font/Lato-Regular.woff2" as="font" type="font/woff2" crossorigin>

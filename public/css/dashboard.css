@@ -212,3 +212,57 @@
     background: var(--primary-color);
     border-color: var(--primary-color);
 }
+
+.coverage-period {
+    font-size: 0.95rem;
+    padding: 8px 15px;
+    background: var(--background-color);
+    border-radius: var(--border-radius-sm);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-color-light);
+}
+
+.dark-mode .coverage-period {
+    background: var(--background-color-dark);
+    border-color: var(--border-color-dark);
+}
+
+.coverage-period i {
+    margin-right: 8px;
+}
+
+.coverage-period span {
+    color: var(--text-color-dark);
+}
+
+.dark-mode .coverage-period span {
+    color: var(--text-color-light);
+}
+
+.stat-number {
+    font-size: 2rem;
+    transition: font-size 0.2s ease;
+}
+
+.stat-number {
+    font-size: clamp(1.2rem, 2vw + 1rem, 2rem);
+}
+
+@media (max-width: 768px) {
+    .stats-container {
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+    
+    .stat-box {
+        width: calc(50% - 15px);
+    }
+}
+
+.table-header .header-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding-right: 20px;
+}

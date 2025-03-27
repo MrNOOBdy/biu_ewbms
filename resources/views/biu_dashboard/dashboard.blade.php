@@ -5,28 +5,37 @@
 @section('tab-content')
 <link rel="stylesheet" href="{{ asset('css/dashboard.css') }}">
 <div class="table-header">
-    <h3><i class="fas fa-chart-line"></i> Dashboard</h3>
+    <div class="header-content">
+        <h3><i class="fas fa-chart-line"></i> Dashboard</h3>
+        @if($activeCoverage)
+        <div class="coverage-period">
+            <i class="fas fa-calendar-alt"></i> Coverage Period: 
+            <span>{{ \Carbon\Carbon::parse($activeCoverage->coverage_date_from)->format('M d, Y') }} - 
+                  {{ \Carbon\Carbon::parse($activeCoverage->coverage_date_to)->format('M d, Y') }}</span>
+        </div>
+        @endif
+    </div>
 </div>
 <div class="dashboard-container">
     <div class="stats-container">
         <div class="stat-box">
             <i class="fas fa-users fa-2x" style="color: var(--primary-color); margin-bottom: 10px;"></i>
-            <h2>{{ $totalConsumers }}</h2>
+            <h2 class="stat-number">{{ $totalConsumers }}</h2>
             <p>Total Consumers</p>
         </div>
         <div class="stat-box">
             <i class="fas fa-file-invoice fa-2x" style="color: var(--primary-color); margin-bottom: 10px;"></i>
-            <h2>{{ $totalBills }}</h2>
+            <h2 class="stat-number">{{ $totalBills }}</h2>
             <p>Total Bills</p>
         </div>
         <div class="stat-box">
             <i class="fas fa-exclamation-circle fa-2x" style="color: var(--warning-color); margin-bottom: 10px;"></i>
-            <h2>{{ $unpaidBills }}</h2>
+            <h2 class="stat-number">{{ $unpaidBills }}</h2>
             <p>Unpaid Bills</p>
         </div>
         <div class="stat-box">
             <i class="fas fa-coins fa-2x" style="color: var(--success-color); margin-bottom: 10px;"></i>
-            <h2>₱{{ number_format($totalIncome, 2) }}</h2>
+            <h2 class="stat-number">₱{{ number_format($totalIncome, 2) }}</h2>
             <p>Total Income</p>
         </div>
     </div>

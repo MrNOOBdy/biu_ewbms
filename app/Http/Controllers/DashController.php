@@ -10,21 +10,43 @@ use App\Models\Consumer;
 use App\Models\LocalSet;
 use App\Models\ConsumerReading;
 use App\Models\ConsBillPay;
+use App\Models\Cov_date;
 
 class DashController extends Controller
 {
     public function dashboard()
     {
         $userRole = Role::where('name', auth()->user()->role)->first();
+        
+        $activeCoverage = Cov_date::where('status', Cov_date::STATUS_OPEN)->first();
+        
         $totalConsumers = Consumer::count();
         $billRates = Bill_rate::all()->groupBy('consumer_type');
         
-        $totalBills = ConsumerReading::count();
+        $totalBills = ConsumerReading::when($activeCoverage, function($query) use ($activeCoverage) {
+            return $query->whereBetween('reading_date', [
+                $activeCoverage->coverage_date_from, 
+                $activeCoverage->coverage_date_to
+            ]);
+        })->count();
         
-        $unpaidBills = ConsBillPay::where('bill_status', 'Unpaid')->count();
+        $unpaidBills = ConsBillPay::join('consumer_reading', 'consumer_bill_pay.consread_id', '=', 'consumer_reading.consread_id')
+            ->where('consumer_bill_pay.bill_status', 'Unpaid')
+            ->when($activeCoverage, function($query) use ($activeCoverage) {
+                return $query->whereBetween('consumer_reading.reading_date', [
+                    $activeCoverage->coverage_date_from, 
+                    $activeCoverage->coverage_date_to
+                ]);
+            })->count();
         
-        $totalIncome = ConsBillPay::where('bill_status', 'Paid')
-                                 ->sum('total_amount');
+        $totalIncome = ConsBillPay::join('consumer_reading', 'consumer_bill_pay.consread_id', '=', 'consumer_reading.consread_id')
+            ->where('consumer_bill_pay.bill_status', 'Paid')
+            ->when($activeCoverage, function($query) use ($activeCoverage) {
+                return $query->whereBetween('consumer_reading.reading_date', [
+                    $activeCoverage->coverage_date_from, 
+                    $activeCoverage->coverage_date_to
+                ]);
+            })->sum('consumer_bill_pay.total_amount');
 
         $monthlyConsumption = ConsumerReading::selectRaw('MONTH(created_at) as month, SUM(consumption) as total_consumption')
             ->whereYear('created_at', date('Y'))
@@ -56,7 +78,8 @@ class DashController extends Controller
             'unpaidBills',
             'totalIncome',
             'monthlyConsumption',
-            'yearlyConsumption'
+            'yearlyConsumption',
+            'activeCoverage'
         ));
     }
 }
