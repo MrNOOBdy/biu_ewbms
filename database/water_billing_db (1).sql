@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Mar 25, 2025 at 10:28 PM
+-- Generation Time: Mar 27, 2025 at 11:35 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -135,6 +135,15 @@ CREATE TABLE `consumer_bill_pay` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `consumer_bill_pay`
+--
+
+INSERT INTO `consumer_bill_pay` (`id`, `consread_id`, `total_amount`, `bill_tendered_amount`, `bill_status`, `created_at`, `updated_at`) VALUES
+(1, 6, 170.00, 0.00, 'unpaid', '2025-03-26 01:14:40', '2025-03-26 01:14:40'),
+(2, 7, 195.00, 0.00, 'unpaid', '2025-03-26 01:15:30', '2025-03-26 01:15:30'),
+(3, 8, 375.00, 0.00, 'unpaid', '2025-03-26 02:46:49', '2025-03-26 02:46:49');
 
 -- --------------------------------------------------------
 
@@ -507,7 +516,8 @@ CREATE TABLE `meter_reader_blocks` (
 
 INSERT INTO `meter_reader_blocks` (`id`, `user_id`, `block_id`, `created_at`, `updated_at`) VALUES
 (26, 22, 1, '2025-03-25 14:02:46', '2025-03-25 14:02:46'),
-(28, 2, 2, '2025-03-25 14:16:44', '2025-03-25 14:16:44');
+(28, 2, 2, '2025-03-25 14:16:44', '2025-03-25 14:16:44'),
+(29, 13, 3, '2025-03-27 02:38:17', '2025-03-27 02:38:17');
 
 -- --------------------------------------------------------
 
@@ -580,7 +590,8 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 (57, '2025_02_20_105743_modify_payment_tables', 45),
 (58, '2025_02_20_112133_modify_service_fee_table', 46),
 (60, '2025_03_25_132614_modify-consumer-reading-table', 47),
-(61, '2025_03_25_211155_create_meter_reader_blocks_table', 48);
+(61, '2025_03_25_211155_create_meter_reader_blocks_table', 48),
+(62, '2025_03_26_221228_create_personal_access_tokens_table', 49);
 
 -- --------------------------------------------------------
 
@@ -696,6 +707,25 @@ INSERT INTO `permissions` (`permission_id`, `name`, `slug`, `description`, `crea
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `personal_access_tokens`
+--
+
+CREATE TABLE `personal_access_tokens` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `tokenable_type` varchar(255) NOT NULL,
+  `tokenable_id` bigint(20) UNSIGNED NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `token` varchar(64) NOT NULL,
+  `abilities` text DEFAULT NULL,
+  `last_used_at` timestamp NULL DEFAULT NULL,
+  `expires_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `roles`
 --
 
@@ -714,7 +744,7 @@ INSERT INTO `roles` (`role_id`, `name`, `created_at`, `updated_at`) VALUES
 (1, 'Meter Reader', NULL, NULL),
 (2, 'Treasurer', NULL, NULL),
 (3, 'Administrator', NULL, '2025-03-24 05:44:01'),
-(34, 'Guest', '2025-01-17 06:51:11', '2025-03-23 08:44:55');
+(34, 'Guest', '2025-01-17 06:51:11', '2025-03-26 06:57:04');
 
 -- --------------------------------------------------------
 
@@ -906,12 +936,12 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`user_id`, `firstname`, `lastname`, `username`, `email`, `password`, `contactnum`, `role`, `status`, `remember_token`, `created_at`, `updated_at`) VALUES
-(1, 'Ejay Luis', 'Rebucas', 'chillZY', 'luisej258@gmail.com', '$2y$12$fCX6Kv14r9B9P9q2.g41ces1HMHp0fbPZQH4oJrIh2my1AkMj0imK', '09275824005', 'Administrator', 'activate', 'gkas3TbiDYLdxvLfdRBO4SQl9CxokgH4SV5vi5i2gee7Mu9vpmq2maY9Va8u', '2025-01-14 00:16:33', '2025-03-25 00:24:21'),
+(1, 'Ejay Luis', 'Rebucas', 'chillZY', 'luisej258@gmail.com', '$2y$12$fCX6Kv14r9B9P9q2.g41ces1HMHp0fbPZQH4oJrIh2my1AkMj0imK', '09275824005', 'Administrator', 'activate', 'Q5jcw9vwwOtAbVz3PGMIUBcQqdhmBer72QF47xCmCNhaaFLyYh7TAtZADGox', '2025-01-14 00:16:33', '2025-03-25 00:24:21'),
 (2, 'Clyde Mark', 'Rebucas', 'herogods tzy', 'clyde217@gmail.com', '$2y$12$4FkXp9utOxOlxOcKwQ.UMOk.wKLi2tJUn1z.jhJADElcakvz3PQU2', '09876543211', 'Meter Reader', 'activate', NULL, '2025-01-16 04:19:05', '2025-03-25 12:40:14'),
 (3, 'Ronald James', 'Rebucas', 'rjrhebz', 'none@gmail.com', '$2y$12$rbLg/9/tnMNSqKFf8nRrsezo37BiGK/lPtsN4pzJGTU8XT.UH.J0i', '09708122926', 'Treasurer', 'activate', NULL, '2025-01-19 19:24:05', '2025-02-04 02:04:08'),
-(12, 'shina', 'melendres', 'shin', 'melendresshina@gmail.com', '$2y$12$ID8oWAKlDdeR8tImYMXFhuKjnW.YGYGQBgP21Q2f92u5B7ZBINcfS', '09636455571', 'Administrator', 'activate', NULL, '2025-02-06 19:40:17', '2025-03-24 05:44:01'),
-(13, 'John Bernard', 'Manzano', 'admin@m', 'manzanojohnb11@gmail.com', '$2y$12$240ZVJfklf3Qx94HmIzyF.2VoWg9wUqTVvuEbFALmjeVKx.2yYyzG', '09458338246', 'Administrator', 'activate', NULL, '2025-02-06 21:19:03', '2025-03-24 05:44:01'),
-(22, 'Jean Edrean', 'Buyan', 'jean123', 'luisejay55@gmail.com', '$2y$12$mkxaOg5mgdSDAlir072.ZeDodQ0HX.fipPnhoHJH8se14AgcyY.3O', '09876543266', 'Meter Reader', 'activate', NULL, '2025-03-16 00:59:48', '2025-03-25 14:12:11');
+(12, 'shina', 'melendres', 'shin', 'melendresshina@gmail.com', '$2y$12$MQL1ftpYsmm33FcUw9Xz6uJyNCMIncZrXcXVpiRPQ1Tutwxju8PEq', '09636455571', 'Administrator', 'activate', NULL, '2025-02-06 19:40:17', '2025-03-26 04:00:47'),
+(13, 'John Bernard', 'Manzano', 'admin@m', 'manzanojohnb11@gmail.com', '$2y$12$240ZVJfklf3Qx94HmIzyF.2VoWg9wUqTVvuEbFALmjeVKx.2yYyzG', '09458338246', 'Meter Reader', 'activate', NULL, '2025-02-06 21:19:03', '2025-03-27 02:38:03'),
+(22, 'Jean Edrean', 'Buyan', 'jean123', 'luisejay55@gmail.com', '$2y$12$mkxaOg5mgdSDAlir072.ZeDodQ0HX.fipPnhoHJH8se14AgcyY.3O', '09876543266', 'Meter Reader', 'activate', NULL, '2025-03-16 00:59:48', '2025-03-27 02:37:52');
 
 -- --------------------------------------------------------
 
@@ -941,10 +971,10 @@ CREATE TABLE `water_consumers` (
 --
 
 INSERT INTO `water_consumers` (`watercon_id`, `block_id`, `customer_id`, `firstname`, `middlename`, `lastname`, `address`, `contact_no`, `consumer_type`, `status`, `application_fee`, `service_fee`, `created_at`, `updated_at`) VALUES
-(45, 1, 'B01-01', 'Juan', 'Santos', 'Dela Cruz', 'Block 1, Street 1', '09123456789', 'Residential', 'Pending', 1050.00, 0.00, '2025-02-27 02:15:46', '2025-02-27 02:15:46'),
-(46, 1, 'B01-02', 'Maria', 'Garcia', 'Santos', 'Block 1, Street 2', '09234567890', 'Residential', 'Pending', 1050.00, 0.00, '2025-02-27 02:15:46', '2025-02-27 02:15:46'),
-(53, 1, 'B01-03', 'Clyde Mark', 'Corro', 'Rebucas', 'Purok 6, Panab-an', '09275824654', 'Industrial', 'Active', 0.00, 0.00, '2025-02-28 03:00:23', '2025-03-16 02:44:40'),
-(56, 2, 'B02-01', 'Ejay Luis', 'Corro', 'Rebucas', 'Purok 6, Capayas', '09275824005', 'Residential', 'Inactive', 0.00, 0.00, '2025-03-24 03:52:56', '2025-03-24 04:54:46'),
+(45, 1, 'B01-01', 'Punitin', 'Santos', 'Dela Cruz', 'Block 1, Tagum Sur', '09636455571', 'Residential', 'Pending', 1050.00, 0.00, '2025-02-27 02:15:46', '2025-03-27 00:56:11'),
+(46, 1, 'B01-02', 'Niel Clarence', 'B.', 'Japos', 'Block 1, Street 2', '09954179164', 'Residential', 'Pending', 1050.00, 0.00, '2025-02-27 02:15:46', '2025-02-27 02:15:46'),
+(53, 1, 'B01-03', 'Andrei', 'P.', 'Garay', 'Purok 6, Panab-an', '09661554110', 'Industrial', 'Active', 0.00, 0.00, '2025-02-28 03:00:23', '2025-03-27 02:33:46'),
+(56, 2, 'B02-01', 'Ejay Luis', 'Corro', 'Rebucas', 'Purok 6, Capayas', '09275824005', 'Residential', 'Active', 0.00, 0.00, '2025-03-24 03:52:56', '2025-03-26 05:07:34'),
 (57, 3, 'B03-01', 'Jean Edrean', 'Luis', 'Buyan', 'Purok 6, BarangayTest', '09545932543', 'Commercial', 'Active', 0.00, 0.00, '2025-03-24 04:44:27', '2025-03-24 04:44:41');
 
 --
@@ -1074,6 +1104,14 @@ ALTER TABLE `permissions`
   ADD UNIQUE KEY `permissions_slug_unique` (`slug`);
 
 --
+-- Indexes for table `personal_access_tokens`
+--
+ALTER TABLE `personal_access_tokens`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `personal_access_tokens_token_unique` (`token`),
+  ADD KEY `personal_access_tokens_tokenable_type_tokenable_id_index` (`tokenable_type`,`tokenable_id`);
+
+--
 -- Indexes for table `roles`
 --
 ALTER TABLE `roles`
@@ -1138,13 +1176,13 @@ ALTER TABLE `blocks`
 -- AUTO_INCREMENT for table `conn_payment`
 --
 ALTER TABLE `conn_payment`
-  MODIFY `connpay_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=44;
+  MODIFY `connpay_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=46;
 
 --
 -- AUTO_INCREMENT for table `consumer_bill_pay`
 --
 ALTER TABLE `consumer_bill_pay`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `consumer_reading`
@@ -1186,19 +1224,25 @@ ALTER TABLE `manage_notice`
 -- AUTO_INCREMENT for table `meter_reader_blocks`
 --
 ALTER TABLE `meter_reader_blocks`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=29;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=30;
 
 --
 -- AUTO_INCREMENT for table `migrations`
 --
 ALTER TABLE `migrations`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=62;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=63;
+
+--
+-- AUTO_INCREMENT for table `personal_access_tokens`
+--
+ALTER TABLE `personal_access_tokens`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `roles`
 --
 ALTER TABLE `roles`
-  MODIFY `role_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=56;
+  MODIFY `role_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=57;
 
 --
 -- AUTO_INCREMENT for table `service_fee_payment`
@@ -1216,7 +1260,7 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `water_consumers`
 --
 ALTER TABLE `water_consumers`
-  MODIFY `watercon_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=58;
+  MODIFY `watercon_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=60;
 
 --
 -- Constraints for dumped tables
