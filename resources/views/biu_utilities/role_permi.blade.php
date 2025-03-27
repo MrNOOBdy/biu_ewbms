@@ -28,21 +28,21 @@
                 <div class="permission-grid">
                     @foreach($permissions as $permission)
                         @if(in_array($permission->slug, getPermissionSlugsForSection($section)))
-                            <div class="permission-item" data-slug="{{ $permission->slug }}">
-                                <div style="display: flex; align-items: center; gap: 10px;">
-                                    <div class="custom-checkbox">
-                                        <input type="checkbox" 
-                                            id="permission_{{ $permission->permission_id }}"
-                                            {{ ($role->name === 'Administrator' && in_array($permission->slug, [
-                                                'access-dashboard', 'access-consumers', 'access-utilities',
-                                                'access-settings', 'view-role-management', 'add-new-role',
-                                                'edit-role', 'manage-role-permissions', 'delete-role'
-                                            ])) ? 'checked disabled' : '' }}
-                                            {{ $role->permissions->contains($permission->permission_id) ? 'checked' : '' }}>
+                            @if(!($role->name === 'Administrator' && in_array($permission->slug, [
+                                'add-new-role', 'edit-role', 'manage-role-permissions', 
+                                'delete-role', 'view-role-management'
+                            ])))
+                                <div class="permission-item" data-slug="{{ $permission->slug }}">
+                                    <div style="display: flex; align-items: center; gap: 10px;">
+                                        <div class="custom-checkbox">
+                                            <input type="checkbox" 
+                                                id="permission_{{ $permission->permission_id }}"
+                                                {{ $role->permissions->contains($permission->permission_id) ? 'checked' : '' }}>
+                                        </div>
+                                        {{ $permission->name }}
                                     </div>
-                                    {{ $permission->name }}
                                 </div>
-                            </div>
+                            @endif
                         @endif
                     @endforeach
                 </div>

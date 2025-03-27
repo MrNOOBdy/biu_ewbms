@@ -65,6 +65,11 @@ class ConsumerReading extends Model
 
     public function billPayments()
     {
-        return $this->hasMany(ConsBillPay::class, 'consread_id', 'consread_id');
+        return $this->hasOne(ConsBillPay::class, 'consread_id', 'consread_id');
+    }
+
+    public function getBillAmount()
+    {
+        return $this->billPayments ? $this->billPayments->total_amount : $this->present_reading;
     }
 }

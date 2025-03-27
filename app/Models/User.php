@@ -24,7 +24,7 @@ class User extends Authenticatable
         'contactnum',
         'role',
         'status',
-        'assigned_blocks'  // Add this line
+        'assigned_blocks'
     ];
 
     protected $hidden = [
@@ -33,7 +33,7 @@ class User extends Authenticatable
     ];
 
     protected $casts = [
-        'assigned_blocks' => 'array'  // Add this line
+        'assigned_blocks' => 'array'
     ];
 
     public function role()

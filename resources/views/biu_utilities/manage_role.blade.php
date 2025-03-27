@@ -7,7 +7,7 @@
 <div class="table-header">
     <h3><i class="fas fa-user-shield"></i> Role Management</h3>
     <div class="header-controls">
-        @if($userRole && $userRole->permissions->contains('slug', 'add-new-role'))
+        @if($userRole && ($userRole->isAdministrator() || $userRole->permissions->contains('slug', 'add-new-role')))
         <button class="add-btn" onclick="showAddRoleModal()">
             <i class="fas fa-plus"></i> New Role
         </button>
@@ -21,7 +21,8 @@
                 <tr>
                     <th>ID</th>
                     <th>Role Name</th>
-                    @if($userRole && ($userRole->permissions->contains('slug', 'manage-role-permissions') || 
+                    @if($userRole && ($userRole->isAdministrator() || 
+                        $userRole->permissions->contains('slug', 'manage-role-permissions') || 
                         $userRole->permissions->contains('slug', 'edit-role') || 
                         $userRole->permissions->contains('slug', 'delete-role')))
                         <th>Actions</th>
@@ -35,19 +36,19 @@
                     <td>{{ $role->name }}</td>
                     <td>
                         <div class="action-buttons">
-                            @if($userRole && $userRole->permissions->contains('slug', 'manage-role-permissions'))
+                            @if($userRole && ($userRole->isAdministrator() || $userRole->permissions->contains('slug', 'manage-role-permissions')))
                             <a href="{{ route('role-permissions', ['role_id' => $role->role_id]) }}" class="btn_uni btn-view">
                                 <i class="fas fa-lock"></i> Permissions
                             </a>
                             @endif
                             
-                            @if($userRole && $userRole->permissions->contains('slug', 'edit-role'))
+                            @if($userRole && ($userRole->isAdministrator() || $userRole->permissions->contains('slug', 'edit-role')))
                             <button class="btn_uni btn-view" onclick="editRole({{ $role->role_id }})">
                                 <i class="fas fa-edit"></i> Edit
                             </button>
                             @endif
                             
-                            @if($userRole && $userRole->permissions->contains('slug', 'delete-role'))
+                            @if($userRole && ($userRole->isAdministrator() || $userRole->permissions->contains('slug', 'delete-role')))
                             <button class="btn_uni btn-deactivate" onclick="deleteRole({{ $role->role_id }})">
                                 <i class="fas fa-trash"></i> Delete
                             </button>

@@ -13,7 +13,6 @@ use App\Http\Controllers\Cov_dateController;
 use App\Http\Controllers\ConsumerController;
 use App\Http\Controllers\LocalSetController;
 use App\Http\Controllers\PassResetController;
-use App\Http\Controllers\Consumer_billingController;
 use App\Http\Controllers\ConnPayController;
 use App\Http\Controllers\ApplicationIncomeController;
 use App\Http\Controllers\ServiceController;
@@ -173,6 +172,10 @@ Route::middleware(['web'])->group(function () {
 
         // Latest bill routes
         Route::get('/latest-bills', [BillingController::class, 'latestBills'])->name('latest-bills');
+        Route::get('/billing/get-reading-details/{consreadId}', [BillingController::class, 'getReadingDetails']);
+        Route::get('/billing/get-bill-details/{consreadId}', [BillingController::class, 'getBillDetails']);
+        Route::post('/billing/add-bill', [BillingController::class, 'addBill']);
+        Route::post('/billing/send-bill-sms', [BillingController::class, 'sendBillSMS']);
 
         // Bill Notice routes
        Route::get('/notice-bill', [Bill_NoticeController::class, 'noticeBill'])->name('notice-bill');

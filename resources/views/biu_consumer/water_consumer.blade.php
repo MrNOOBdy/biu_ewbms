@@ -392,4 +392,3 @@
 
 <script src="{{ asset('js/wat_consumer.js') }}"></script>
 @endsection
-

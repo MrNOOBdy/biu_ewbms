@@ -203,32 +203,38 @@ class ConsumerController extends Controller
         try {
             $consumer = Consumer::where('customer_id', $id)->firstOrFail();
             
+            // Get the count of readings
             $billingsCount = DB::table('consumer_reading')
                 ->where('customer_id', $id)
                 ->count();
                 
-            $paymentsCount = DB::table('conn_payment')
-                ->where('customer_id', $id)
+            // Get the count of payments from consumer_bill_pay through consumer_reading
+            $paymentsCount = DB::table('consumer_reading as cr')
+                ->join('consumer_bill_pay as cbp', 'cr.consread_id', '=', 'cbp.consread_id')
+                ->where('cr.customer_id', $id)
                 ->count();
 
-            $pendingBalance = DB::table('consumer_reading')
-                ->where('customer_id', $id)
-                ->where('bill_status', 'unpaid')
-                ->sum('total_amount');
+            // Get pending balance from consumer_bill_pay through consumer_reading
+            $pendingBalance = DB::table('consumer_reading as cr')
+                ->join('consumer_bill_pay as cbp', 'cr.consread_id', '=', 'cbp.consread_id')
+                ->where('cr.customer_id', $id)
+                ->where('cbp.bill_status', 'unpaid')
+                ->sum('cbp.total_amount');
                 
             $consumer->billings_count = $billingsCount;
             $consumer->payments_count = $paymentsCount;
-            $consumer->pending_balance = number_format($pendingBalance, 2);
+            $consumer->pending_balance = $pendingBalance > 0 ? number_format($pendingBalance, 2) : '0.00';
 
             return response()->json([
                 'success' => true,
                 'consumer' => $consumer
             ]);
         } catch (\Exception $e) {
+            \Log::error('Error in view consumer: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Error retrieving consumer details'
-            ]);
+            ], 500);
         }
     }
 
@@ -593,28 +599,25 @@ class ConsumerController extends Controller
     {
         try {
             $consumer = Consumer::where('customer_id', $id)->firstOrFail();
-            $billings = DB::table('consumer_reading')
-                ->where('customer_id', $id)
-                ->orderBy('reading_date', 'desc')
-                ->get();
-            $userRole = Auth::user()->role()->first();
+            $billings = DB::table('consumer_reading as cr')
+                ->join('consumer_bill_pay as cbp', 'cr.consread_id', '=', 'cbp.consread_id')
+                ->where('cr.customer_id', $id)
+                ->where('cbp.bill_status', 'paid')
+                ->select(
+                    'cr.reading_date',
+                    'cr.previous_reading',
+                    'cr.present_reading',
+                    'cr.consumption',
+                    'cr.due_date',
+                    'cbp.total_amount',
+                    'cbp.bill_status'
+                )
+                ->orderBy('cr.reading_date', 'desc')
+                ->paginate(10);
 
-            if (request()->ajax()) {
-                return response()->json([
-                    'success' => true,
-                    'html' => view('consum_billings.cons_billings', compact('consumer', 'billings', 'userRole'))->render()
-                ]);
-            }
-
-            return view('consum_billings.cons_billings', compact('consumer', 'billings', 'userRole'));
+            return view('consum_billings.cons_billings', compact('consumer', 'billings'));
         } catch (\Exception $e) {
             \Log::error('Error in viewBillings: ' . $e->getMessage());
-            if (request()->ajax()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Error loading billing history'
-                ], 500);
-            }
             return redirect()->route('consumers.index')
                 ->with('error', 'Error loading billing history');
         }

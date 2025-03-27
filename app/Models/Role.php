@@ -26,29 +26,9 @@ class Role extends Model
 
     public function hasPermission($permissionSlug)
     {
-        if ($this->isAdministrator() && $this->isEssentialPermission($permissionSlug)) {
-            return true;
-        }
-        
         return $this->permissions()
             ->where('slug', $permissionSlug)
             ->exists();
-    }
-
-    private function isEssentialPermission($slug)
-    {
-        $essentialPermissions = [
-            'access-dashboard',
-            'access-consumers',
-            'access-utilities',
-            'access-settings',
-            'view-role-management',
-            'add-new-role',
-            'edit-role',
-            'manage-role-permissions',
-            'delete-role'
-        ];
-        return in_array($slug, $essentialPermissions);
     }
 
     public function hasAnyPermission($permissions)
