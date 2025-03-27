@@ -117,7 +117,24 @@ function sendBill(consreadId) {
             document.getElementById('sms_presentReading').textContent = data.present_reading;
             document.getElementById('sms_consumption').textContent = data.consumption;
 
-            const message = `Dear ${data.consumer.firstname},\n\nYour water bill details:\nPresent Reading: ${data.present_reading}\nConsumption: ${data.consumption} m³\nAmount Due: ₱${data.present_reading}\nDue Date: ${formatDate(data.due_date)}\n\nPlease settle your bill before the due date.\n\nThank you,\nBI-U: eWBS`;
+            const message = `Dear ${data.consumer.firstname},
+
+Your water bill details:
+Coverage Date From: ${formatDate(data.coverage_date.coverage_date_from)}
+Coverage Date To: ${formatDate(data.coverage_date.coverage_date_to)}
+
+Previous Reading: ${data.previous_reading}
+Present Reading: ${data.present_reading}
+Consumed: ${data.consumption} m³
+Amount Due: ₱${data.present_reading}
+Due Date: ${formatDate(data.due_date)}
+Meter Reader: ${data.meter_reader}
+
+Reminder: 
+Please pay your bill on or before due date to avoid penalty. 5 working day to settle your due/delinquent after due date to avoid water service cut-off.
+
+Thank you,
+BI-U: eWBS`;
 
             document.getElementById('sms_message').value = message;
 

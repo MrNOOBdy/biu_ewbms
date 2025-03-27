@@ -36,11 +36,18 @@ class BillingController extends Controller
 
     public function getReadingDetails($consreadId)
     {
-        $reading = ConsumerReading::with('consumer')->findOrFail($consreadId);
+        $reading = ConsumerReading::with(['consumer', 'consumer.block'])->findOrFail($consreadId);
         
+        // Get active coverage dates
         $coverageDate = Cov_date::where('status', Cov_date::STATUS_OPEN)->first();
-        
         $reading->coverage_date = $coverageDate;
+
+        // Get meter reader for consumer's block
+        $meterReader = MeterReaderBlock::with('user')
+            ->where('block_id', $reading->consumer->block_id)
+            ->first();
+        
+        $reading->meter_reader = $meterReader ? $meterReader->user->name : 'Not Assigned';
         
         return response()->json($reading);
     }

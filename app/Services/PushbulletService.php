@@ -11,7 +11,7 @@ class PushbulletService
 {
     protected $apiKey;
     protected $apiUrl = 'https://api.pushbullet.com/v2';
-    protected $systemName = 'BI-U: eWater Billing System';
+    protected $systemName = 'Bien Unido Waterworks System';
 
     public function __construct()
     {

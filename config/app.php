@@ -154,6 +154,9 @@ return [
         App\Providers\EventServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
         App\Providers\ViewComposerServiceProvider::class,
+
+        // Sanctum Service Provider
+        Laravel\Sanctum\SanctumServiceProvider::class,
     ],
 
 ];
