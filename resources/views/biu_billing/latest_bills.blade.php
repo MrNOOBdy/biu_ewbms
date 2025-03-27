@@ -209,8 +209,8 @@
                 <p><strong>Consumer Name:</strong> <span id="sms_consumerName"></span></p>
                 <p><strong>Contact No:</strong> <span id="sms_contactNo"></span></p>
                 <p><strong>Present Reading:</strong> <span id="sms_presentReading"></span> m³</p>
-                <p><strong>Consumption:</strong> <span id="sms_consumption"></span> m³</p>
-                <div class="form-group">
+                <p><strong>Consumption:</strong> <span id="sms_consumption"></span>m³</p>
+                <div class="form-group">    
                     <label for="sms_message">Message Preview:</label>
                     <textarea id="sms_message" class="form-control" readonly></textarea>
                 </div>

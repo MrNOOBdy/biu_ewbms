@@ -13,7 +13,7 @@ class MRController extends Controller
         $blocks = Block::all();
         $readings = ConsumerReading::with('consumer')
             ->orderBy('created_at', 'desc')
-            ->paginate(10);
+            ->paginate(20);
 
         return view('biu_meter.meter_read', compact('readings', 'blocks'));
     }

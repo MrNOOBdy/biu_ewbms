@@ -613,7 +613,7 @@ class ConsumerController extends Controller
                     'cbp.bill_status'
                 )
                 ->orderBy('cr.reading_date', 'desc')
-                ->paginate(10);
+                ->paginate(20);
 
             return view('consum_billings.cons_billings', compact('consumer', 'billings'));
         } catch (\Exception $e) {

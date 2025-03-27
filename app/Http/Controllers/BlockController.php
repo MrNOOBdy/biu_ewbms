@@ -14,7 +14,7 @@ class BlockController extends Controller
     {
         try {
             $blocks = Block::orderBy('block_id')
-                ->paginate(10); 
+                ->paginate(20); 
 
             $user = Auth::user();
             $userRole = Role::where('name', $user->role)->first();

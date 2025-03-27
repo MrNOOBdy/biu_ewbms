@@ -16,7 +16,7 @@ class BillPayController extends Controller
     {
         $bills = ConsumerReading::with(['consumer', 'coverageDate'])
             ->orderBy('reading_date', 'desc')
-            ->paginate(10);
+            ->paginate(20);
         
         return view('biu_billing.bill_payment', compact('bills'));
     }

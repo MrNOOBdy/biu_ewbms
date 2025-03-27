@@ -117,8 +117,7 @@ function sendBill(consreadId) {
             document.getElementById('sms_presentReading').textContent = data.present_reading;
             document.getElementById('sms_consumption').textContent = data.consumption;
 
-            const billAmount = data.calculated_bill || 0;
-            const message = `Dear ${data.consumer.firstname},\n\nYour water bill details:\nReading: ${data.present_reading} m³\nConsumption: ${data.consumption} m³\nAmount Due: ₱${billAmount}\nDue Date: ${formatDate(data.due_date)}\n\nPlease settle your bill before the due date.\n\nThank you,\nBI-U Water`;
+            const message = `Dear ${data.consumer.firstname},\n\nYour water bill details:\nPresent Reading: ${data.present_reading}\nConsumption: ${data.consumption} m³\nAmount Due: ₱${data.present_reading}\nDue Date: ${formatDate(data.due_date)}\n\nPlease settle your bill before the due date.\n\nThank you,\nBI-U: eWBS`;
 
             document.getElementById('sms_message').value = message;
 

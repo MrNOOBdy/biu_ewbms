@@ -21,7 +21,7 @@ function filterMeterReaderTable() {
     }
 
     if (visibleRows === 0) {
-        const tbody = document.querySelector('.uni-table tbody');
+        const tbody = document.querySelector('.uni-table tbody')    ;
         const emptyRow = document.createElement('tr');
         emptyRow.className = 'empty-state-row';
         emptyRow.innerHTML = `

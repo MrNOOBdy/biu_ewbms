@@ -179,6 +179,8 @@ Route::middleware(['web'])->group(function () {
 
         // Bill Notice routes
        Route::get('/notice-bill', [Bill_NoticeController::class, 'noticeBill'])->name('notice-bill');
+       Route::get('/billing/notice/{id}/details', [Bill_NoticeController::class, 'getBillDetails']);
+       Route::post('/billing/notice/send-sms', [Bill_NoticeController::class, 'sendNoticeSMS'])->name('billing.notice.send-sms');
 
         // Meter reader block assignment routes
         Route::get('/meter-readers/blocks', [MRsBlockCont::class, 'index'])->name('meter-readers.blocks');

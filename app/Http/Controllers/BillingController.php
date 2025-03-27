@@ -12,6 +12,7 @@ use App\Models\ConsumerReading;
 use App\Models\ConsBillPay;
 use App\Models\Block;
 use App\Services\PushbulletService;
+use App\Models\MeterReaderBlock;
 
 class BillingController extends Controller
 {
@@ -28,7 +29,7 @@ class BillingController extends Controller
                       });
             })
             ->orderBy('reading_date', 'desc')
-            ->paginate(10);
+            ->paginate(20);
 
         return view('biu_billing.latest_bills', compact('bills', 'blocks', 'consumer'));
     }
@@ -37,7 +38,6 @@ class BillingController extends Controller
     {
         $reading = ConsumerReading::with('consumer')->findOrFail($consreadId);
         
-        // Get active coverage dates
         $coverageDate = Cov_date::where('status', Cov_date::STATUS_OPEN)->first();
         
         $reading->coverage_date = $coverageDate;
@@ -104,7 +104,6 @@ class BillingController extends Controller
                 throw new \Exception('Consumer has no contact number');
             }
 
-            // Format phone number if needed
             $phoneNumber = preg_replace('/[^0-9]/', '', $phoneNumber);
             if (strlen($phoneNumber) === 10) {
                 $phoneNumber = '+63' . $phoneNumber;
@@ -112,11 +111,10 @@ class BillingController extends Controller
                 $phoneNumber = '+63' . substr($phoneNumber, 1);
             }
 
+            $message = preg_replace('/^BI-U Water:?\s*\n?/i', '', $request->message);
+
             $pushbullet = new PushbulletService();
-            $result = $pushbullet->sendSMS(
-                $phoneNumber,
-                $request->message
-            );
+            $result = $pushbullet->sendSMS($phoneNumber, $message);
 
             if (!$result) {
                 throw new \Exception('Failed to send SMS through Pushbullet');

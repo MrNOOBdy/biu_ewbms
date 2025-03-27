@@ -11,14 +11,19 @@ class PushbulletService
 {
     protected $apiKey;
     protected $apiUrl = 'https://api.pushbullet.com/v2';
+    protected $systemName = 'BI-U: eWater Billing System';
 
     public function __construct()
     {
         $this->apiKey = env('PUSHBULLET_API_KEY');
     }
 
-    public function sendSMS($phoneNumber, $message, $senderName = 'BI-U Water', $isOTP = false)
+    public function sendSMS($phoneNumber, $message, $senderName = null, $isOTP = false)
     {
+        $senderName = $senderName ?? $this->systemName;
+        
+        $formattedMessage = "[{$this->systemName}]\n\n{$message}";
+
         if ($isOTP) {
             $otpKey = "otp_request_{$phoneNumber}";
             if (Cache::has($otpKey)) {
@@ -57,7 +62,7 @@ class PushbulletService
                     'data' => [
                         'target_device_iden' => $phoneDevice['iden'],
                         'addresses' => [$phoneNumber],
-                        'message' => $messageWithSender
+                        'message' => $formattedMessage
                     ]
                 ]);
 
