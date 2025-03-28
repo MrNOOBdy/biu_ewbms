@@ -66,7 +66,7 @@ class DashController extends Controller
         if (!$userRole) {
             Log::error("User role not found for user ID: {$user->id}");
             Auth::logout();
-            return redirect()->route('adm_login.form')
+            return redirect()->route('adm_login.form')  
                 ->with('error', 'User role not found. There seems to be an error adding the user. Please contact the administrator.');
         }
         

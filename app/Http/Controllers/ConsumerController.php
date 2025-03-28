@@ -203,18 +203,15 @@ class ConsumerController extends Controller
         try {
             $consumer = Consumer::where('customer_id', $id)->firstOrFail();
             
-            // Get the count of readings
             $billingsCount = DB::table('consumer_reading')
                 ->where('customer_id', $id)
                 ->count();
                 
-            // Get the count of payments from consumer_bill_pay through consumer_reading
             $paymentsCount = DB::table('consumer_reading as cr')
                 ->join('consumer_bill_pay as cbp', 'cr.consread_id', '=', 'cbp.consread_id')
                 ->where('cr.customer_id', $id)
                 ->count();
 
-            // Get pending balance from consumer_bill_pay through consumer_reading
             $pendingBalance = DB::table('consumer_reading as cr')
                 ->join('consumer_bill_pay as cbp', 'cr.consread_id', '=', 'cbp.consread_id')
                 ->where('cr.customer_id', $id)
@@ -593,21 +590,24 @@ class ConsumerController extends Controller
     {
         try {
             $consumer = Consumer::where('customer_id', $id)->firstOrFail();
+            
             $billings = DB::table('consumer_reading as cr')
                 ->join('consumer_bill_pay as cbp', 'cr.consread_id', '=', 'cbp.consread_id')
-                ->where('cr.customer_id', $id)
-                ->where('cbp.bill_status', 'paid')
+                ->where([
+                    ['cr.customer_id', '=', $id],
+                    ['cbp.bill_status', '=', 'paid']
+                ])
                 ->select(
                     'cr.reading_date',
+                    'cr.due_date',
                     'cr.previous_reading',
                     'cr.present_reading',
                     'cr.consumption',
-                    'cr.due_date',
                     'cbp.total_amount',
                     'cbp.bill_status'
                 )
                 ->orderBy('cr.reading_date', 'desc')
-                ->paginate(20);
+                ->paginate(10);
 
             return view('consum_billings.cons_billings', compact('consumer', 'billings'));
         } catch (\Exception $e) {

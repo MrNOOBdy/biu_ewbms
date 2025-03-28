@@ -41,14 +41,18 @@
                         <td>{{ number_format($billing->consumption, 2) }} m³</td>
                         <td>₱ {{ number_format($billing->total_amount, 2) }}</td>
                         <td>
-                            <span class="status-badge status-active">Paid</span>
+                            <span class="badge {{ $billing->bill_status === 'paid' ? 'badge-success' : 'badge-warning' }}">
+                                {{ ucfirst($billing->bill_status) }}
+                            </span>
                         </td>
                     </tr>
                 @empty
                     <tr>
                         <td colspan="7" class="empty-state">
-                            <i class="fas fa-file-invoice"></i>
-                            <p>No paid billing history found for {{ $consumer->firstname }} {{ $consumer->lastname }}</p>
+                            <div style="text-align: center; padding: 20px;">
+                                <i class="fas fa-file-invoice" style="font-size: 2em; color: #ccc;"></i>
+                                <p style="margin-top: 10px;">No paid billing history found for {{ $consumer->firstname }} {{ $consumer->lastname }}</p>
+                            </div>
                         </td>
                     </tr>
                 @endforelse
@@ -60,7 +64,6 @@
                 {{ $billings->links('pagination.custom') }}
             </div>
         @endif
-        
     </div>
 </div>
 @endsection

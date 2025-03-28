@@ -47,9 +47,12 @@
                 </tr>
             </thead>
             <tbody>
-                @forelse ($connPayments as $payment)
+                @forelse ($connPayments->sortByDesc(function($payment) {
+                    return $payment->conn_pay_status === 'unpaid' ? 1 : 0;
+                }) as $payment)
                     @if($payment->consumer)
-                        <tr data-customer-id="{{ $payment->customer_id }}">
+                        <tr data-customer-id="{{ $payment->customer_id }}"
+                            class="{{ $payment->conn_pay_status === 'unpaid' ? 'unpaid-row' : '' }}">
                             <td>Block {{ $payment->consumer->block_id ?? 'N/A' }}</td>
                             <td>{{ $payment->customer_id }}</td>
                             <td>{{ $payment->consumer->firstname ?? 'N/A' }}</td>

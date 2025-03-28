@@ -102,8 +102,8 @@
                     <th>Name</th>
                     <th>Reading Date</th>
                     <th>Due Date</th>
-                    <th>Previous Reading</th>
-                    <th>Present Reading</th>
+                    <th>Prev. Reading</th>
+                    <th>Pres. Reading</th>
                     <th>Consumption m<sup>3</sup></th>
                     <th>Bill Status</th>
                     <th>Action</th>
@@ -136,7 +136,7 @@
                                     </button>
                                 @else
                                     <button class="btn_uni btn-billing" onclick="sendBill({{ $bill->consread_id }})">
-                                        <i class="fas fa-paper-plane"></i> Send Bill
+                                        <i class="fas fa-paper-plane"></i> Send Bill SMS
                                     </button>
                                 @endif
                             </div>

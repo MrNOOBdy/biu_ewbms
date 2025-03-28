@@ -22,7 +22,10 @@ class ConnPayController extends Controller
         try {
             $connPayments = ConnPayment::with('consumer')
                 ->whereHas('consumer')
+                ->orderByRaw("CASE WHEN conn_pay_status = 'unpaid' THEN 0 ELSE 1 END")
+                ->orderBy('created_at', 'desc')
                 ->get();
+            
             $blocks = Block::all();
 
             return view('biu_conpay.application', compact('connPayments', 'blocks', 'userRole'));

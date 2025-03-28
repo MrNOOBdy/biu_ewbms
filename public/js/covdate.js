@@ -38,12 +38,12 @@ function showAddModal() {
 function filterTable() {
     const dateFromPicker = document.querySelector('#dateFrom')?._flatpickr;
     const dateToPicker = document.querySelector('#dateTo')?._flatpickr;
-    
+
     if (!dateFromPicker || !dateToPicker) return;
-    
+
     const dateFrom = dateFromPicker.selectedDates[0];
     const dateTo = dateToPicker.selectedDates[0];
-    
+
     const tbody = document.querySelector('.table-container:not(.active-table) .uni-table tbody');
     const rows = tbody.querySelectorAll('tr:not(.empty-row)');
     let hasMatches = false;
@@ -56,9 +56,9 @@ function filterTable() {
     rows.forEach(row => {
         const covDateFrom = row.querySelector('td:first-child').textContent;
         const covDateValue = new Date(covDateFrom);
-        
-        const matchesFilter = (!dateFrom || covDateValue >= dateFrom) && 
-                            (!dateTo || covDateValue <= dateTo);
+
+        const matchesFilter = (!dateFrom || covDateValue >= dateFrom) &&
+            (!dateTo || covDateValue <= dateTo);
 
         if (matchesFilter) {
             row.style.display = '';
@@ -83,7 +83,7 @@ function filterTable() {
 function clearFilter() {
     const dateFromPicker = document.getElementById('dateFrom')._flatpickr;
     const dateToPicker = document.getElementById('dateTo')._flatpickr;
-    
+
     dateFromPicker.clear();
     dateToPicker.clear();
     filterTable();
@@ -92,11 +92,11 @@ function clearFilter() {
 function closeModal(modalId) {
     const modal = document.getElementById(modalId);
     if (!modal) return;
-    
+
     if (modalId === 'resultModal' && modal.getAttribute('data-refresh') === 'true') {
         return;
     }
-    
+
     modal.classList.remove('fade-in');
     setTimeout(() => {
         modal.style.display = 'none';
@@ -112,18 +112,100 @@ function handleFormSubmit(event) {
     const form = event.target;
     const formData = new FormData(form);
 
-    if (formData.get('status') === 'Open') {
-        const activeRow = document.querySelector('.active-table tbody tr:not(.empty-row)');
-        if (activeRow) {
-            pendingFormData = formData;
-            const modal = document.getElementById('statusSwitchModal');
-            modal.style.display = 'block';
-            setTimeout(() => modal.classList.add('fade-in'), 10);
+  
+    validateCoverageDates(formData).then(validationResult => {
+        if (!validationResult.success) {
+            showResultModal(false, validationResult.message, 'warning', false);
             return;
         }
+
+        if (formData.get('status') === 'Open') {
+            const activeRow = document.querySelector('.active-table tbody tr:not(.empty-row)');
+            if (activeRow) {
+                pendingFormData = formData;
+                const modal = document.getElementById('statusSwitchModal');
+                modal.style.display = 'block';
+                setTimeout(() => modal.classList.add('fade-in'), 10);
+                return;
+            }
+        }
+
+        submitNewCoverageDate(formData);
+    });
+}
+
+function validateCoverageDates(formData) {
+    const dateData = {
+        coverage_date_from: formData.get('coverage_date_from'),
+        coverage_date_to: formData.get('coverage_date_to'),
+        reading_date: formData.get('reading_date'),
+        due_date: formData.get('due_date')
+    };
+
+    const dates = Object.entries(dateData);
+    const duplicates = [];
+
+    const dateLabels = {
+        coverage_date_from: 'Coverage From',
+        coverage_date_to: 'Coverage To',
+        reading_date: 'Reading Date',
+        due_date: 'Due Date'
+    };
+
+    dates.forEach(([key1, date1], index) => {
+        dates.slice(index + 1).forEach(([key2, date2]) => {
+            if (date1 === date2) {
+                duplicates.push(`${dateLabels[key1]} and ${dateLabels[key2]}`);
+            }
+        });
+    });
+
+    if (duplicates.length > 0) {
+        return Promise.resolve({
+            success: false,
+            message: 'Duplicate dates found between: ' + duplicates.join(', ')
+        });
     }
 
-    submitNewCoverageDate(formData);
+    const readingDate = new Date(dateData.reading_date);
+    const coverageFrom = new Date(dateData.coverage_date_from);
+    const coverageTo = new Date(dateData.coverage_date_to);
+    const dueDate = new Date(dateData.due_date);
+
+    if (readingDate < coverageFrom) {
+        return Promise.resolve({
+            success: false,
+            message: 'Reading Date must be after or equal to Coverage Date From'
+        });
+    }
+
+    if (readingDate > coverageTo) {
+        return Promise.resolve({
+            success: false,
+            message: 'Reading Date must be before or equal to Coverage Date To'
+        });
+    }
+
+    return fetch('/coverage-dates/validate', {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify(dateData)
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.overlapping) {
+                return {
+                    success: false,
+                    message: 'The coverage dates overlap with an existing coverage period'
+                };
+            }
+            return { success: true };
+        })
+        .catch(() => ({ success: true }));
 }
 
 function submitNewCoverageDate(formData) {
@@ -137,31 +219,31 @@ function submitNewCoverageDate(formData) {
         },
         body: formData
     })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            closeModal('addCoverageDateModal');
-            closeModal('statusSwitchModal');
-            pendingFormData = null;
-            showResultModal(true, 'Coverage date created successfully');
-        } else {
-            pendingFormData = null;
-            closeModal('statusSwitchModal');
-            throw new Error(JSON.stringify({ message: data.message, type: 'warning' }));
-        }
-    })
-    .catch(error => {
-        let errorData;
-        try {
-            errorData = JSON.parse(error.message);
-        } catch (e) {
-            errorData = { message: error.message || 'An unexpected error occurred', type: 'warning' };
-        }
-        showResultModal(false, errorData.message, errorData.type);
-    });
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                closeModal('addCoverageDateModal');
+                closeModal('statusSwitchModal');
+                pendingFormData = null;
+                showResultModal(true, 'Coverage date created successfully');
+            } else {
+                pendingFormData = null;
+                closeModal('statusSwitchModal');
+                throw new Error(JSON.stringify({ message: data.message, type: 'warning' }));
+            }
+        })
+        .catch(error => {
+            let errorData;
+            try {
+                errorData = JSON.parse(error.message);
+            } catch (e) {
+                errorData = { message: error.message || 'An unexpected error occurred', type: 'warning' };
+            }
+            showResultModal(false, errorData.message, errorData.type);
+        });
 }
 
-function showResultModal(success, message, type = null, forceStatic = false) {
+function showResultModal(success, message, type = null, shouldRefresh = true) {
     const modal = document.getElementById('resultModal');
     const icon = document.getElementById('resultIcon');
     const title = document.getElementById('resultTitle');
@@ -180,32 +262,35 @@ function showResultModal(success, message, type = null, forceStatic = false) {
         icon.innerHTML = '<i class="fas fa-check-circle"></i>';
         title.textContent = 'Success';
     }
-    
+
     messageElement.textContent = message;
     modal.style.display = 'block';
-    modal.setAttribute('data-refresh', 'true');
-    
-    if (forceStatic) {
-        modal.setAttribute('data-static', 'true');
+
+    if (shouldRefresh) {
+        modal.setAttribute('data-refresh', 'true');
+    } else {
+        modal.removeAttribute('data-refresh');
     }
-    
+
     setTimeout(() => {
         modal.classList.add('fade-in');
     }, 10);
 
-    // Add click event listener for handling clicks outside the modal
     document.addEventListener('click', handleResultModalClick);
 }
 
 function closeResultModal() {
     const modal = document.getElementById('resultModal');
     modal.classList.remove('fade-in');
-    
+
     setTimeout(() => {
         modal.style.display = 'none';
         modal.removeAttribute('data-static');
         document.removeEventListener('click', handleResultModalClick);
-        window.location.reload(); // Force page reload
+
+        if (modal.getAttribute('data-refresh') === 'true') {
+            window.location.reload();
+        }
     }, 300);
 }
 
@@ -221,14 +306,13 @@ function handleResultModalClick(event) {
 }
 
 function refreshTable() {
-    window.location.reload(); // Replace the existing refresh with a full page reload
+    window.location.reload();
 }
 
 function initializeAllDatePickers() {
-    // Initialize filter date pickers with specific configuration
     const filterConfig = {
         ...flatpickrConfig,
-        onChange: function(selectedDates, dateStr, instance) {
+        onChange: function (selectedDates, dateStr, instance) {
             if (instance.element.id === 'dateFrom' || instance.element.id === 'dateTo') {
                 filterTable();
             }
@@ -238,7 +322,6 @@ function initializeAllDatePickers() {
     ['#dateFrom', '#dateTo'].forEach(selector => {
         const element = document.querySelector(selector);
         if (element) {
-            // Destroy existing instance if any
             if (element._flatpickr) {
                 element._flatpickr.destroy();
             }
@@ -246,12 +329,11 @@ function initializeAllDatePickers() {
         }
     });
 
-    // Initialize modal date pickers
     const modalSelectors = [
         '#coverage_date_from', '#coverage_date_to', '#reading_date', '#due_date',
         '#edit_coverage_date_from', '#edit_coverage_date_to', '#edit_reading_date', '#edit_due_date'
     ];
-    
+
     modalSelectors.forEach(selector => {
         const element = document.querySelector(selector);
         if (element && !element._flatpickr) {
@@ -292,26 +374,25 @@ function editCoverageDate(id) {
         .then(response => response.json())
         .then(data => {
             document.getElementById('edit_covdate_id').value = data.covdate_id;
-            
+
             const modal = document.getElementById('editCoverageDateModal');
             const statusGroup = modal.querySelector('.inline-form-group:has(#edit_status)');
-            
+
             if (data.status === 'Open') {
                 statusGroup.style.display = 'none';
             } else {
                 statusGroup.style.display = 'flex';
             }
-            
+
             modal.style.display = 'block';
             setTimeout(() => {
                 modal.classList.add('fade-in');
                 initializeAllDatePickers();
-                
+
                 const initPicker = (selector, date) => {
                     const picker = document.querySelector(selector);
                     if (picker._flatpickr) {
                         picker._flatpickr.setDate(date);
-                        // Store original values for comparison
                         picker.dataset.originalValue = date;
                     }
                 };
@@ -338,8 +419,7 @@ function handleEditFormSubmit(event) {
     const form = event.target;
     const id = document.getElementById('edit_covdate_id').value;
     const formData = new FormData(form);
-    
-    // Check for changes using dataset.originalValue
+
     const hasChanges = ['coverage_date_from', 'coverage_date_to', 'reading_date', 'due_date'].some(field => {
         const input = document.querySelector(`#edit_${field}`);
         const currentValue = input._flatpickr.formatDate(input._flatpickr.selectedDates[0], "Y-m-d");
@@ -354,10 +434,9 @@ function handleEditFormSubmit(event) {
         return;
     }
 
-    // Rest of the function remains the same
     const tr = document.querySelector(`[data-covdate-id="${id}"]`);
     const currentStatus = tr?.dataset.status;
-    
+
     if (currentStatus === 'Open') {
         formData.set('status', 'Open');
     }
@@ -398,27 +477,27 @@ function submitEditForm(id, formData) {
         },
         body: formData
     })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            closeModal('editCoverageDateModal');
-            if(pendingFormData) {
-                closeModal('statusSwitchModal');
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                closeModal('editCoverageDateModal');
+                if (pendingFormData) {
+                    closeModal('statusSwitchModal');
+                }
+                showResultModal(true, 'Coverage date updated successfully');
+            } else {
+                throw new Error(JSON.stringify({ message: data.message, type: 'warning' }));
             }
-            showResultModal(true, 'Coverage date updated successfully');
-        } else {
-            throw new Error(JSON.stringify({ message: data.message, type: 'warning' }));
-        }
-    })
-    .catch(error => {
-        let errorData;
-        try {
-            errorData = JSON.parse(error.message);
-        } catch (e) {
-            errorData = { message: 'An unexpected error occurred', type: 'warning' };
-        }
-        showResultModal(false, errorData.message, errorData.type);
-    });
+        })
+        .catch(error => {
+            let errorData;
+            try {
+                errorData = JSON.parse(error.message);
+            } catch (e) {
+                errorData = { message: 'An unexpected error occurred', type: 'warning' };
+            }
+            showResultModal(false, errorData.message, errorData.type);
+        });
 }
 
 function deleteCoverageDate(id) {
@@ -438,25 +517,24 @@ function confirmDelete() {
             'Accept': 'application/json'
         }
     })
-    .then(response => response.json())
-    .then(data => {
-        closeModal('deleteCoverageDateModal');
-        if (data.success) {
-            showResultModal(true, 'Coverage date deleted successfully', 'success', true);
-        } else {
-            throw { message: data.message, type: data.type || 'warning' };
-        }
-    })
-    .catch(error => {
-        closeModal('deleteCoverageDateModal');
-        showResultModal(false, error.message || 'Error deleting coverage date', 'warning', true);
-    });
+        .then(response => response.json())
+        .then(data => {
+            closeModal('deleteCoverageDateModal');
+            if (data.success) {
+                showResultModal(true, 'Coverage date deleted successfully', 'success', true);
+            } else {
+                throw { message: data.message, type: data.type || 'warning' };
+            }
+        })
+        .catch(error => {
+            closeModal('deleteCoverageDateModal');
+            showResultModal(false, error.message || 'Error deleting coverage date', 'warning', true);
+        });
 }
 
-document.addEventListener('DOMContentLoaded', function() {
-    // Ensure flatpickr is loaded before initializing
+document.addEventListener('DOMContentLoaded', function () {
     if (typeof flatpickr === 'function') {
-        setTimeout(initializeAllDatePickers, 100); // Small delay to ensure DOM is ready
+        setTimeout(initializeAllDatePickers, 100);
     } else {
         console.error('Flatpickr not loaded');
     }

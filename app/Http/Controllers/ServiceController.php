@@ -19,8 +19,10 @@ class ServiceController extends Controller
             $servicePayments = ServiceFee::with('consumer')
                 ->whereHas('consumer')
                 ->where('reconnection_fee', '>', 0)
+                ->orderByRaw("CASE WHEN service_paid_status = 'unpaid' THEN 0 ELSE 1 END")
                 ->orderBy('created_at', 'desc')
                 ->get();
+            
             $blocks = Block::all();
 
             return view('biu_conpay.service', compact('servicePayments', 'blocks', 'userRole'));

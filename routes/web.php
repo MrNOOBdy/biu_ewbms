@@ -119,6 +119,7 @@ Route::middleware(['web'])->group(function () {
             Route::put('/{id}', [Cov_dateController::class, 'update'])->name('coverage-dates.update');
             Route::delete('/{id}', [Cov_dateController::class, 'destroy'])->name('coverage-dates.destroy');
             Route::get('/{id}', [Cov_dateController::class, 'show'])->name('coverage-dates.show');
+            Route::post('/validate', [Cov_dateController::class, 'validateOverlap'])->name('coverage-dates.validate');
         });
 
         // Water Consumer Management routes

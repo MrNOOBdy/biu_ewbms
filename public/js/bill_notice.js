@@ -1,16 +1,16 @@
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     const noticeSelect = document.getElementById('noticeSelect');
-    
-    noticeSelect.addEventListener('mousedown', function(e) {
+
+    noticeSelect.addEventListener('mousedown', function (e) {
         e.stopPropagation();
     });
 
-    noticeSelect.addEventListener('click', function(e) {
+    noticeSelect.addEventListener('click', function (e) {
         e.stopPropagation();
         this.focus();
     });
-    
-    noticeSelect.addEventListener('change', function() {
+
+    noticeSelect.addEventListener('change', function () {
         const selectedNotice = this.value;
         if (selectedNotice) {
             fetchNoticeAnnouncement(selectedNotice);
@@ -30,7 +30,7 @@ function fetchNoticeAnnouncement(noticeId) {
 function toggleAllCheckboxes() {
     const mainCheckbox = document.getElementById('selectAll');
     const checkboxes = document.getElementsByClassName('bill-checkbox');
-    
+
     Array.from(checkboxes).forEach(checkbox => {
         checkbox.checked = mainCheckbox.checked;
     });
@@ -47,7 +47,7 @@ async function sendNotice() {
     const noticeId = document.getElementById('noticeSelect').value;
     const message = document.getElementById('announcementText').value;
     const selectedBills = getSelectedBills();
-    
+
     if (!noticeId) {
         alert('Please select a notice type');
         return;
@@ -212,7 +212,7 @@ function showResultModal(success, title, message, results = null) {
     icon.innerHTML = success ?
         '<i class="fas fa-check-circle"></i>' :
         '<i class="fas fa-exclamation-triangle"></i>';
-    
+
     titleEl.textContent = title;
     messageEl.textContent = message;
 
@@ -225,7 +225,7 @@ function showResultModal(success, title, message, results = null) {
                 <span>${r.success ? '✓' : '✗'}</span>
             </div>
         `).join('');
-        
+
         messageEl.appendChild(resultsList);
     }
 
@@ -237,7 +237,10 @@ function closeResultModal() {
     const modal = document.getElementById('billResultModal');
     if (modal) {
         modal.classList.remove('fade-in');
-        setTimeout(() => modal.style.display = 'none', 300);
+        setTimeout(() => {
+            modal.style.display = 'none';
+            window.location.reload();
+        }, 300);
     }
 }
 
@@ -247,7 +250,7 @@ function viewDetails(billId) {
         .then(data => {
             if (data.success) {
                 const bill = data.data;
-                
+
                 document.getElementById('detail_customerId').textContent = bill.consumer.customer_id;
                 document.getElementById('detail_consumerName').textContent = `${bill.consumer.firstname} ${bill.consumer.lastname}`;
                 document.getElementById('detail_contactNo').textContent = bill.consumer.contact_no;
@@ -259,14 +262,14 @@ function viewDetails(billId) {
                 document.getElementById('detail_previousReading').textContent = bill.previous_reading;
                 document.getElementById('detail_presentReading').textContent = bill.present_reading;
                 document.getElementById('detail_consumption').textContent = bill.consumption;
-                document.getElementById('detail_billAmount').textContent = 
-                    bill.bill_payments ? 
-                    formatAmount(bill.bill_payments.total_amount) : 
-                    'Pending';
-                document.getElementById('detail_billStatus').textContent = 
-                    bill.bill_payments ? 
-                    bill.bill_payments.bill_status.toUpperCase() : 
-                    'Pending';
+                document.getElementById('detail_billAmount').textContent =
+                    bill.bill_payments ?
+                        formatAmount(bill.bill_payments.total_amount) :
+                        'Pending';
+                document.getElementById('detail_billStatus').textContent =
+                    bill.bill_payments ?
+                        bill.bill_payments.bill_status.toUpperCase() :
+                        'Pending';
 
                 openViewDetailsModal();
             } else {
@@ -323,7 +326,7 @@ function formatDate(dateString) {
     });
 }
 
-window.onclick = function(event) {
+window.onclick = function (event) {
     if (event.target.classList.contains('modal')) {
         if (event.target.id === 'noticeModal') {
             closeNoticeModal();

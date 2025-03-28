@@ -196,18 +196,56 @@ class RoleController extends Controller
     public function updatePermissions(Request $request, $roleId)
     {
         try {
-            $userRole = Role::where('name', auth()->user()->role)->first();
-
             $role = Role::findOrFail($roleId);
-            $permissions = $request->input('permissions');
+            $permissions = $request->input('permissions', []);
             
             DB::beginTransaction();
             
-            $role->permissions()->detach();
+            $allPermissionIds = Permission::pluck('permission_id')->toArray();
+            
+            $permissionsToGrant = [];
+            $permissionsToRevoke = [];
             
             foreach ($permissions as $permission) {
+                $permissionId = intval($permission['permission_id']);
                 if ($permission['granted']) {
-                    $role->permissions()->attach($permission['permission_id']);
+                    $permissionsToGrant[] = $permissionId;
+                } else {
+                    $permissionsToRevoke[] = $permissionId;
+                }
+            }
+            
+            $unmentionedPermissions = array_diff(
+                $allPermissionIds,
+                array_map(function($p) { 
+                    return intval($p['permission_id']); 
+                }, $permissions)
+            );
+            $permissionsToRevoke = array_merge($permissionsToRevoke, $unmentionedPermissions);
+            
+            if (!empty($permissionsToRevoke)) {
+                DB::table('role_permission')
+                    ->where('role_id', $roleId)
+                    ->whereIn('permission_id', $permissionsToRevoke)
+                    ->delete();
+            }
+            
+            if (!empty($permissionsToGrant)) {
+                $existingPermissions = DB::table('role_permission')
+                    ->where('role_id', $roleId)
+                    ->whereIn('permission_id', $permissionsToGrant)
+                    ->pluck('permission_id')
+                    ->toArray();
+                
+                $newPermissions = array_diff($permissionsToGrant, $existingPermissions);
+                
+                foreach ($newPermissions as $permissionId) {
+                    DB::table('role_permission')->insert([
+                        'role_id' => $roleId,
+                        'permission_id' => $permissionId,
+                        'created_at' => now(),
+                        'updated_at' => now()
+                    ]);
                 }
             }
             
@@ -217,13 +255,14 @@ class RoleController extends Controller
                 'success' => true,
                 'message' => 'Permissions updated successfully'
             ]);
+            
         } catch (\Exception $e) {
             DB::rollBack();
             \Log::error('Permission update error: ' . $e->getMessage());
             
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to update permissions'
+                'message' => 'Failed to update permissions: ' . $e->getMessage()
             ], 500);
         }
     }

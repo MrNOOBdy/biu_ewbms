@@ -28,10 +28,7 @@
                 <div class="permission-grid">
                     @foreach($permissions as $permission)
                         @if(in_array($permission->slug, getPermissionSlugsForSection($section)))
-                            @if(!($role->name === 'Administrator' && in_array($permission->slug, [
-                                'add-new-role', 'edit-role', 'manage-role-permissions', 
-                                'delete-role', 'view-role-management'
-                            ])))
+                
                                 <div class="permission-item" data-slug="{{ $permission->slug }}">
                                     <div style="display: flex; align-items: center; gap: 10px;">
                                         <div class="custom-checkbox">
@@ -42,7 +39,7 @@
                                         {{ $permission->name }}
                                     </div>
                                 </div>
-                            @endif
+                         
                         @endif
                     @endforeach
                 </div>

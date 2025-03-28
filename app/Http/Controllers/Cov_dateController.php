@@ -48,22 +48,26 @@ class Cov_dateController extends Controller
                 'status' => 'required|in:Open,Close'
             ]);
 
-            if ($this->hasDuplicateDates($validated)) {
+            $dateValidationResult = $this->validateDates($validated);
+            if (!$dateValidationResult['valid']) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'All dates (Coverage From, Coverage To, Reading Date, Due Date) must be different'
+                    'message' => $dateValidationResult['message']
                 ], 422);
             }
 
-            if (strtotime($validated['coverage_date_from']) > strtotime($validated['reading_date'])) {
+            if ($this->hasOverlappingDates($validated)) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Reading Date must be after Coverage Date From'
+                    'message' => 'The coverage dates overlap with an existing coverage period'
                 ], 422);
             }
 
             if ($validated['status'] === 'Open') {
-                Cov_date::where('status', 'Open')->update(['status' => 'Close']);
+                $activeCount = Cov_date::where('status', 'Open')->count();
+                if ($activeCount > 0) {
+                    Cov_date::where('status', 'Open')->update(['status' => 'Close']);
+                }
             }
 
             $coverage_date = Cov_date::create($validated);
@@ -117,12 +121,24 @@ class Cov_dateController extends Controller
             ]);
 
             $coverage_date = Cov_date::findOrFail($id);
-            
+
+            $dateValidationResult = $this->validateDates($validated, $id);
+            if (!$dateValidationResult['valid']) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $dateValidationResult['message']
+                ], 422);
+            }
+
+            if ($this->hasOverlappingDates($validated, $id)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'The coverage dates overlap with an existing coverage period'
+                ], 422);
+            }
+
             if ($validated['status'] === 'Open' && $coverage_date->status === 'Close') {
-                $currentActive = Cov_date::where('status', 'Open')->first();
-                if ($currentActive) {
-                    $currentActive->update(['status' => 'Close']);
-                }
+                Cov_date::where('status', 'Open')->update(['status' => 'Close']);
             }
 
             $coverage_date->update($validated);
@@ -178,6 +194,22 @@ class Cov_dateController extends Controller
         }
     }
 
+    public function validateOverlap(Request $request)
+    {
+        $data = $request->validate([
+            'coverage_date_from' => 'required|date',
+            'coverage_date_to' => 'required|date',
+            'reading_date' => 'required|date',
+            'due_date' => 'required|date'
+        ]);
+
+        $overlapping = $this->hasOverlappingDates($data);
+
+        return response()->json([
+            'overlapping' => $overlapping
+        ]);
+    }
+
     private function hasDuplicateDates($data)
     {
         $dates = [
@@ -195,6 +227,71 @@ class Cov_dateController extends Controller
         if ($excludeId) {
             $query->where('covdate_id', '!=', $excludeId);
         }
+        return $query->exists();
+    }
+
+    private function validateDates(array $data, $excludeId = null): array
+    {
+        $dates = [
+            'Coverage From' => $data['coverage_date_from'],
+            'Coverage To' => $data['coverage_date_to'],
+            'Reading Date' => $data['reading_date'],
+            'Due Date' => $data['due_date']
+        ];
+
+        $duplicates = [];
+        foreach ($dates as $label1 => $date1) {
+            foreach ($dates as $label2 => $date2) {
+                if ($label1 !== $label2 && $date1 === $date2) {
+                    $duplicates[] = "$label1 and $label2";
+                }
+            }
+        }
+
+        if (!empty($duplicates)) {
+            return [
+                'valid' => false,
+                'message' => 'Duplicate dates found between: ' . implode(', ', array_unique($duplicates))
+            ];
+        }
+
+        $readingDate = strtotime($data['reading_date']);
+        $coverageFrom = strtotime($data['coverage_date_from']);
+        $coverageTo = strtotime($data['coverage_date_to']);
+        $dueDate = strtotime($data['due_date']);
+
+        if ($readingDate < $coverageFrom) {
+            return [
+                'valid' => false,
+                'message' => 'Reading Date must be after or equal to Coverage Date From'
+            ];
+        }
+
+        if ($readingDate > $coverageTo) {
+            return [
+                'valid' => false,
+                'message' => 'Reading Date must be before or equal to Coverage Date To'
+            ];
+        }
+
+        return ['valid' => true];
+    }
+
+    private function hasOverlappingDates(array $data, $excludeId = null): bool
+    {
+        $query = Cov_date::where(function ($q) use ($data) {
+            $q->whereBetween('coverage_date_from', [$data['coverage_date_from'], $data['coverage_date_to']])
+              ->orWhereBetween('coverage_date_to', [$data['coverage_date_from'], $data['coverage_date_to']])
+              ->orWhere(function ($q) use ($data) {
+                  $q->where('coverage_date_from', '<=', $data['coverage_date_from'])
+                    ->where('coverage_date_to', '>=', $data['coverage_date_to']);
+              });
+        });
+
+        if ($excludeId) {
+            $query->where('covdate_id', '!=', $excludeId);
+        }
+
         return $query->exists();
     }
 }
