@@ -1,7 +1,7 @@
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     const sidebar = document.getElementById("sidebar");
     const sidebarToggleBtn = document.getElementById("sidebar-toggle-btn");
-    
+
     const isSidebarCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
     if (isSidebarCollapsed) {
         sidebar.classList.add('sidebar-collapsed');
@@ -29,19 +29,23 @@ document.addEventListener('DOMContentLoaded', function() {
     const dropdowns = document.querySelectorAll('.tab-item.dropdown');
     dropdowns.forEach(dropdown => {
         const header = dropdown.querySelector('.tab-header');
+        const hasActiveItem = dropdown.querySelector('.dropdown-item.active');
+
+        if (hasActiveItem) {
+            dropdown.classList.add('active-parent');
+        }
+
         if (header) {
             header.addEventListener('click', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
 
                 if (!sidebar.classList.contains('sidebar-collapsed')) {
-                    const hasActiveItem = dropdown.querySelector('.dropdown-item.active');
-                    if (!hasActiveItem) {
-                        dropdown.classList.toggle('open');
-                    }
+                    dropdown.classList.toggle('open');
 
+        
                     dropdowns.forEach(other => {
-                        if (other !== dropdown && !other.querySelector('.dropdown-item.active')) {
+                        if (other !== dropdown) {
                             other.classList.remove('open');
                         }
                     });
@@ -53,18 +57,21 @@ document.addEventListener('DOMContentLoaded', function() {
     const activeDropdownItems = document.querySelectorAll('.dropdown-item.active');
     activeDropdownItems.forEach(item => {
         const parentDropdown = item.closest('.dropdown');
-        if (parentDropdown && !sidebar.classList.contains('sidebar-collapsed')) {
-            parentDropdown.classList.add('open');
+        if (parentDropdown) {
+            parentDropdown.classList.add('active-parent');
+            if (!sidebar.classList.contains('sidebar-collapsed')) {
+                parentDropdown.classList.add('open');
+            }
         }
     });
 
     const currentPath = window.location.pathname;
     const sidebarLinks = document.querySelectorAll('.sidebar-nav a');
-    
+
     sidebarLinks.forEach(link => {
         if (link.getAttribute('href') === currentPath) {
             link.classList.add('active');
-            
+
             const parentDropdown = link.closest('.dropdown');
             if (parentDropdown) {
                 parentDropdown.classList.add('open');

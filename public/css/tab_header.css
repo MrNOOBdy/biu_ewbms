@@ -87,6 +87,27 @@
 }
 
 .add-btn:hover {
+    background-color: var(--success-color-hover);
+}
+
+.back-btn {
+    background-color: var(--secondary-color);
+    color: var(--text-color-light);
+    padding: 6px 16px;
+    border: none;
+    border-radius: var(--border-radius-sm);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: background-color var(--transition-fast);
+}
+
+.back-btn:hover {
+    background-color:rgb(73, 77, 81);
+}
+
+.add-btn:hover {
     background-color: #218838;
 }
 

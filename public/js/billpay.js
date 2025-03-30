@@ -123,23 +123,22 @@ function closePaymentModal() {
     setTimeout(() => modal.style.display = 'none', 300);
 }
 
-function printBill(button) {
-    const billId = button.dataset.billId;
-    const printWindow = window.open(`/billing/print-bill/${billId}`, '_blank');
+function printBill(consreadId) {
+    const printWindow = window.open(`/billing/print-receipt/${consreadId}`, '_blank');
 
     printWindow.addEventListener('load', () => {
         const script = document.createElement('script');
         script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
         script.onload = () => {
-            printWindow.printBillReceipt = function () {
+            printWindow.printBillReceipt = function() {
                 printWindow.print();
             };
 
-            printWindow.downloadBillReceipt = function () {
-                const element = printWindow.document.querySelector(`#bill-receipt`);
+            printWindow.downloadBillReceipt = function() {
+                const element = printWindow.document.querySelector('#bill-receipt');
                 const opt = {
                     margin: 1,
-                    filename: `water-bill-${billId}.pdf`,
+                    filename: `water-bill-${consreadId}.pdf`,
                     image: { type: 'jpeg', quality: 0.98 },
                     html2canvas: { scale: 2 },
                     jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
@@ -149,6 +148,43 @@ function printBill(button) {
                 buttons.style.display = 'none';
 
                 printWindow.html2pdf().set(opt).from(element).save().then(() => {
+                    buttons.style.display = 'block';
+                });
+            };
+        };
+        printWindow.document.head.appendChild(script);
+    });
+}
+
+function printBillReceipt(billId) {
+    const printWindow = window.open(`/billing/print-receipt/${billId}`, '_blank');
+    printWindow.addEventListener('load', () => {
+        // Add the html2pdf script dynamically
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
+        script.onload = () => {
+            // Define the print and download functions in the new window
+            printWindow.printBillReceipt = function (billId) {
+                printWindow.print();
+            };
+
+            printWindow.downloadBillReceipt = function (billId) {
+                const element = printWindow.document.querySelector(`#receipt-${billId}`);
+                const opt = {
+                    margin: 1,
+                    filename: `bill-receipt-${billId}.pdf`,
+                    image: { type: 'jpeg', quality: 0.98 },
+                    html2canvas: { scale: 2 },
+                    jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+                };
+
+                // Hide the buttons before generating PDF
+                const buttons = element.querySelector('.print-buttons');
+                buttons.style.display = 'none';
+
+                // Generate PDF
+                printWindow.html2pdf().set(opt).from(element).save().then(() => {
+                    // Show the buttons again after PDF generation
                     buttons.style.display = 'block';
                 });
             };

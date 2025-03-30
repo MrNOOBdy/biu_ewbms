@@ -77,9 +77,11 @@ body::before {
 .block-contents {
     display: flex;
     flex-direction: column;
+    width: 80%;
     flex: 1;
-    overflow: hidden;   
-    position: relative;
+    margin-left: var(--sidebar-width);
+    background: var(--background-color);
+    transition: margin-left var(--transition-normal);
 }
 
 #tab-content {

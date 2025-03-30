@@ -60,8 +60,6 @@ function showEmptyState(tbody) {
     tbody.appendChild(emptyRow);
 }
 
-// ...existing code...
-
 function showServicePaymentModal(customerId) {
     const row = document.querySelector(`tr[data-customer-id="${customerId}"]`);
     const reconnectionFee = parseFloat(row.querySelector('td:nth-child(6)').textContent.replace('₱', '').replace(',', '').trim());

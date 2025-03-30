@@ -171,7 +171,7 @@ Route::middleware(['web'])->group(function () {
             Route::get('/get-bills/{consumerId}', [BillPayController::class, 'getBills'])->name('billing.get-bills');
             Route::get('/get-bill-details/{billId}', [BillPayController::class, 'getBillDetails'])->name('billing.details');
             Route::post('/process-payment', [BillPayController::class, 'processPayment'])->name('billing.process-payment');
-            Route::get('/print-bill/{billId}', [BillPayController::class, 'printBill'])->name('billing.print');
+            Route::get('/print-receipt/{billId}', [BillPayController::class, 'printReceipt'])->name('billing.print-receipt');
         });
 
         // Latest bill routes

@@ -125,24 +125,20 @@ class BillPayController extends Controller
         }
     }
 
-    public function printBill($billId)
+    public function printReceipt($billId)
     {
         try {
-            $bill = ConsumerReading::with(['consumer', 'coverageDate'])
+            $bill = ConsumerReading::with(['consumer', 'billPayments'])
                 ->where('consread_id', $billId)
                 ->firstOrFail();
             
-            $penaltyAmount = 0;
-            if (now()->gt($bill->due_date)) {
-                $billRate = $bill->getBillRate();
-                $consumption = $bill->calculateConsumption();
-                $excessCubic = max(0, $consumption - ConsumerReading::BASE_CUBIC_LIMIT);
-                $penaltyAmount = $excessCubic * $billRate->excess_value_per_cubic;
+            if (!$bill->billPayments) {
+                throw new \Exception('Bill payments not found');
             }
-
-            return view('receipts.water_bill', compact('bill', 'penaltyAmount'));
+            
+            return view('receipts.bill_receipt', compact('bill'));
         } catch (\Exception $e) {
-            \Log::error('Error in BillPayController@printBill: ' . $e->getMessage());
+            \Log::error('Error in BillPayController@printReceipt: ' . $e->getMessage());
             return redirect()->back()->with('error', 'Error generating bill receipt');
         }
     }

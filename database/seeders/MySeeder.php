@@ -2,35 +2,17 @@
 
 namespace Database\Seeders;
 
-use Carbon\Carbon;
-use App\Models\ConsumerReading;
-use App\Models\Cov_date;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use App\Models\Permission;
 
 class MySeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
-    public function run(): void
+    public function run()
     {
-        // Updated readings with more realistic values
-        $readings = [
-            [
-                'customer_id' => 'B01-01',
-                'covdate_id' => '4',
-                'reading_date' => '2025-03-25',
-                'due_date' => '2025-04-01',
-                'previous_reading' => 150,   
-                'present_reading' => 170,    
-                'consumption' => 10,    
-                'meter_reader' => 'John Doe'
-            ],
-        ];
-
-        foreach ($readings as $reading) {
-            ConsumerReading::create($reading);
-        }
+        Permission::create([
+            'name' => 'Access Meter Readers Block',
+            'slug' => 'access-meter-readers-block',
+            'description' => 'Can access meter readers block management'
+        ]);
     }
 }

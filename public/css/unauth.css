@@ -36,7 +36,7 @@
     justify-content: center;
     align-items: center;
     gap: var(--spacing-xl);
-    margin: 10px 0 40px 0;
+    margin: 10px 0 20px 0;
     animation: fadeIn 1.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -54,6 +54,37 @@
     transition: transform 0.3s ease;
 }
 
+.unauth-logo-cont:hover .unauth-logo_login,
+.unauth-logo-cont:hover .unauth-logo2 {
+    transform: scale(1.05);
+}
+
+.login-header {
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.login-header h2 {
+    color: var(--primary-color);
+    font-size: 1.6rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+    animation: fadeInUp 0.8s ease-out;
+}
+
+.login-divider {
+    width: 80px;
+    height: 3px;
+    background: var(--primary-color);
+    margin: 0 auto;
+    margin-bottom: 15px;
+    animation: widthGrow 1s ease-out;
+}
+
+.dark-mode .login-header h2 {
+    color: #ffffff;
+}
+
 .unauth-form-group {
     position: relative;
     margin-bottom: 1.8rem;
@@ -64,7 +95,7 @@
     top: -11px;
     left: 30px;
     font-size: 0.92rem;
-    color: #454545;
+    color: var(--primary-color);
     font-weight: 600;
     padding: 0 8px;
     background: #ffffff;
@@ -126,6 +157,16 @@ form button {
     transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
     overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.login-arrow {
+    margin-left: 10px;
+    opacity: 0;
+    transform: translateX(-10px);
+    transition: all 0.3s ease;
 }
 
 form button:hover {
@@ -134,8 +175,28 @@ form button:hover {
     box-shadow: 0 4px 12px rgba(48, 82, 220, 0.15);
 }
 
+form button:hover .login-arrow {
+    opacity: 1;
+    transform: translateX(0);
+}
+
 form button:active {
     transform: translateY(0);
+}
+
+form button:before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.2);
+    transition: all 0.4s ease;
+}
+
+form button:hover:before {
+    left: 100%;
 }
 
 .forgot-password {
@@ -227,6 +288,18 @@ form button:active {
 
 .dark-mode .toggle-password:hover {
     color: var(--text-color-light);
+}
+
+.system-info {
+    margin-top: 20px;
+    font-size: 0.8rem;
+    color: #888;
+    animation: fadeIn 1s ease-out 0.7s;
+    animation-fill-mode: both;
+}
+
+.dark-mode .system-info {
+    color: #777;
 }
 
 .reset-method-container {
@@ -354,5 +427,14 @@ form input:-webkit-autofill:active {
     }
     100% {
         opacity: 1;
+    }
+}
+
+@keyframes widthGrow {
+    from {
+        width: 0;
+    }
+    to {
+        width: 80px;
     }
 }

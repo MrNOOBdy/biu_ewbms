@@ -60,8 +60,8 @@
                                     </button>
                                 @endif
                                 @if($bill->billPayments->bill_status == 'paid')
-                                <button class="btn_uni btn-view" onclick="printBill('{{ $bill->consread_id }}')">
-                                    <i class="fas fa-print"></i> Print
+                                <button class="btn_uni btn-billing" title="Print Bill" onclick="printBill('{{ $bill->consread_id }}')">
+                                    <i class="fas fa-print"></i>Print
                                 </button>
                                 @endif
                             </div>
