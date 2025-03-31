@@ -1,19 +1,13 @@
-document.documentElement.classList.add(
-    localStorage.getItem('darkMode') === 'true' ? 'dark-mode' : 'light-mode'
-);
-
-
-
 function initializeDarkMode() {
     const darkModeSelect = document.getElementById('darkModeSelect');
     const globalToggle = document.getElementById('darkModeToggle');
-    
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
-    
     const savedPreference = localStorage.getItem('darkModePreference') || 'system';
 
     function updateDarkMode(preference) {
         const isDark = preference === 'on' || (preference === 'system' && prefersDark.matches);
+        document.documentElement.classList.remove('dark-mode', 'light-mode');
+        document.documentElement.classList.add(isDark ? 'dark-mode' : 'light-mode');
         document.body.classList.toggle('dark-mode', isDark);
         
         if (globalToggle) {
@@ -50,12 +44,4 @@ function initializeDarkMode() {
     });
 }
 
-document.addEventListener('DOMContentLoaded', function() {
-    const savedPreference = localStorage.getItem('darkModePreference') || 'system';
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
-    
-    const isDark = savedPreference === 'on' || (savedPreference === 'system' && prefersDark.matches);
-    document.body.classList.toggle('dark-mode', isDark);
-    
-    initializeDarkMode();
-});
+initializeDarkMode();

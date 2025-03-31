@@ -3,9 +3,11 @@
     --primary-color: #4361ee;
     --primary-color-hover: #3046c0;
     --primary-color-light: #4895ef;
+    --primary-color-dark: #2a2a2a;
     --primary-color-light-hover: #3d7ac9;
     --secondary-color: #6c757d;
     --success-color: #2ecc71;
+    --success-color-dark: #27ae60;
     --danger-color: #e74c3c;
     --warning-color: #f1c40f;
     
@@ -50,6 +52,7 @@
     /* spacing */
     --spacing-xs: 4px;
     --spacing-sm: 8px;
+    --spacing-semi-md: 12px;
     --spacing-md: 16px;
     --spacing-lg: 24px;
     --spacing-xl: 32px;

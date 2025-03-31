@@ -4,243 +4,107 @@
 
 @section('tab-content')
 <style>
-    .table-header {
+    .active-header-container,
+    .closed-header-container {
+        padding: var(--spacing-semi-md);
+        border-radius: var(--border-radius-md) var(--border-radius-md) 0 0;
+        margin-left: var(--spacing-md);
+        width:95%;
         display: flex;
-        justify-content: space-between;
         align-items: center;
-        margin-bottom: 10px;
-        position: sticky;
-        height: 30px;
-        top: 0;
-        padding: 10px;
+        box-shadow: var(--shadow-md);
+        color: var(--text-color-light);
     }
 
-    .table-header h3 i {
-        margin-right: 8px;
+    .active-header-container {
+        background: var(--success-color);
     }
 
-    .active-header {
-        padding: 4px 8px;
-        border-radius: 4px;
-        background-color: #a6f0b7;
-        margin-top: -20px;
-        margin-bottom: -20px;
+    .dark-mode .active-header-container {
+        background: var(--success-color-dark);
     }
 
-    .dark-mode .active-header {
-        background-color: #134a1e;
-        color: #7dd992;
+    .closed-header-container {
+        background: var(--primary-color-light);
+        justify-content: space-between;
     }
 
+    .dark-mode .closed-header-container {
+        background: var(--primary-color-dark);
+    }
+
+    .active-header,
     .closed-header {
-        padding: 4px 8px;
-        border-radius: 4px;
-        background-color: #f0a6a6;
-        margin-top: 30px;
-    }
-
-    .dark-mode .closed-header {
-        background-color: #4a1313;
-        color: #d97d7d;
+        margin: 0;
+        font-size: 1.1rem;
     }
 
     .active-header i,
     .closed-header i {
-        margin-right: 5px;
-    }
-
-    .date-filter-container {
-        display: flex;
-        align-items: center;
-        gap: 12px;
+        margin-right: var(--spacing-sm);
     }
 
     .date-range-group {
-        position: absolute;
-        right: 15%;
         display: flex;
         align-items: center;
-        gap: 6px;
+        gap: var(--spacing-md);
+        margin: 0 var(--spacing-xl);
     }
 
-    .date-picker,
-    .flatpickr-input {
-        width: 110px;
-        height: 22px;
-        padding: 4px 8px;
-        border: 1px solid #ced4da;
-        border-radius: 4px;
-        font-size: 13px;
-        color: #495057;
-        background-color: #fff;
-    }
-
-    .date-picker:focus {
-        border-color: #80bdff;
-        outline: 0;
-        box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
-    }
-
-    .flatpickr-input {
-        background-color: white !important;
-        cursor: pointer;
+    .date-range-group input {
+        background: var(--bg-overlay-light);
         border: 1px solid var(--border-color-light);
-        width: 130px;
-        font-size: 14px;
-        color: var(--text-color-dark);
-        padding: 8px 12px;
+        padding: var(--spacing-sm) var(--spacing-md);
         border-radius: var(--border-radius-sm);
-    }
-
-    .flatpickr-alt-input {
-        color: #495057 !important;
-    }
-
-    .flatpickr-input.form-control[readonly] {
-        background-color: white !important;
-    }
-
-    .flatpickr-input::placeholder {
-        color: #6c757d;
-    }
-
-    .flatpickr-input:focus {
-        outline: none;
-        box-shadow: none;
-    }
-
-    .flatpickr-calendar {
-        z-index: 99999 !important;
-    }
-
-    .flatpickr-monthDropdown-months,
-    .flatpickr-yearDropdown {
-        padding: 5px !important;
-    }
-
-    .dark-mode .date-range-group p {
         color: var(--text-color-light);
+        width: 150px;
     }
 
     .date-range-group p {
         margin: 0;
-        color: #6c757d;
-        font-size: 13px;
-    }
-
-    .dark-mode .date-range-group input {
-        background-color: var(--dark-bg);
-        border-color: var(--border-color-dark);
         color: var(--text-color-light);
     }
 
-    .filter-buttons {
-        display: flex;
-        gap: 8px;
-    }
-
-    .filter-btn,
-    .add-coverage-btn {
-        height: 32px;
-        padding: 0 12px;
+    .filter-btn {
+        padding: var(--spacing-sm) var(--spacing-md);
         border: none;
-        border-radius: 4px;
-        font-size: 13px;
+        border-radius: var(--border-radius-sm);
         cursor: pointer;
         display: flex;
         align-items: center;
-        gap: 4px;
-    }
-
-    .filter-apply {
-        background-color: var(--primary-color);
-        color: white;
-    }
-
-    .filter-apply:hover {
-        background-color: #0056b3;
+        gap: var(--spacing-xs);
+        transition: var(--transition-fast);
     }
 
     .filter-reset {
-        background-color: var(--secondary-color);
-        color: white;
+        background: var(--danger-color);
+        color: var(--text-color-light);
     }
 
     .filter-reset:hover {
-        background-color: #5a6268;
+        background: color-mix(in srgb, var(--danger-color) 85%, black);
     }
 
-    .add-coverage-btn {
-        background-color: var(--success-color);
+    .date-range-group .flatpickr-input::placeholder {
         color: white;
-        margin-left: auto;
     }
 
-    .add-coverage-btn:hover {
-        background-color: #218838;
+    .date-range-group .flatpickr-input:focus {
+        outline: none;
+        border-color: var(--primary-color-light);
+        box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.2);
     }
-
-    .modal input[type="date"]::placeholder {
-        color: var(--text-color-dark);
-        opacity: 0.5;
-    }
-
-    .modal input[type="date"]::-webkit-datetime-edit-text,
-    .modal input[type="date"]::-webkit-datetime-edit-month-field,
-    .modal input[type="date"]::-webkit-datetime-edit-day-field,
-    .modal input[type="date"]::-webkit-datetime-edit-year-field {
-        color: transparent;
-    }
-
-    .modal input[type="date"]:focus::-webkit-datetime-edit-text,
-    .modal input[type="date"]:focus::-webkit-datetime-edit-month-field,
-    .modal input[type="date"]:focus::-webkit-datetime-edit-day-field,
-    .modal input[type="date"]:focus::-webkit-datetime-edit-year-field,
-    .modal input[type="date"]:valid::-webkit-datetime-edit-text,
-    .modal input[type="date"]:valid::-webkit-datetime-edit-month-field,
-    .modal input[type="date"]:valid::-webkit-datetime-edit-day-field,
-    .modal input[type="date"]:valid::-webkit-datetime-edit-year-field {
-        color: var(--text-color-dark);
-    }
-
-    .modal select:-moz-focusring {
-        color: transparent;
-        text-shadow: 0 0 0 var(--text-color-dark);
-    }
-
-    .inline-form-group {
-        display: flex;
-        align-items: center;
-        margin-bottom: 15px;
-        gap: 10px;
-    }
-
-    .inline-form-group label {
-        flex: 0 0 160px;
-        text-align: right;
-        margin-bottom: 0;
-        padding-left: 0;
-    }
-
-    .inline-form-group .form-control {
-        flex: 0 0 200px;
-    }
-
-    .inline-form-group .invalid-feedback {
-        position: absolute;
-        margin-left: 140px;
-        margin-top: 40px;
-    } 
 </style>
 <link rel="stylesheet" href="{{ asset('css/flatpickr.min.css') }}">
 <link rel="stylesheet" href="{{ asset('css/modal.css') }}">
+<link rel="stylesheet" href="{{ asset('css/tbl_pagination.css') }}">
 
 <div class="table-header">
     <h3><i class="fas fa-calendar-alt"></i> Coverage Date Management</h3>
     <div class="header-controls">
         <div class="date-filter-container">
             @if(Auth::user()->hasPermission('add-coverage-date'))
-            <button class="add-coverage-btn" type="button" onclick="showAddModal()">
+            <button class="add-btn" type="button" onclick="showAddModal()">
                 <i class="fas fa-plus-circle"></i> Add Coverage Date
             </button>
             @endif
@@ -249,13 +113,13 @@
 </div>
 
 <!-- Active Coverage Date Section -->
-<div class="table-header">
+<div class="active-header-container">
     <h4 class="active-header">
         <i class="fas fa-calendar-check"></i>
         Active Coverage Period
     </h4>
 </div>
-<div class="content-wrapper" style="height: 10%;">
+<div class="content-wrapper" style="height: 12%;">
     <div class="table-container active-table">
         <table class="uni-table">
             <thead>
@@ -271,24 +135,21 @@
                 </tr>
             </thead>
             <tbody>
-                @php
-                    $activeCoverage = $coverage_dates->where('status', 'Open')->first();
-                @endphp
-                @if ($activeCoverage)
-                    <tr data-covdate-id="{{ $activeCoverage->covdate_id }}" data-status="{{ $activeCoverage->status }}">
-                        <td>{{ date('M d, Y', strtotime($activeCoverage->coverage_date_from)) }}</td>
-                        <td>{{ date('M d, Y', strtotime($activeCoverage->coverage_date_to)) }}</td>
-                        <td>{{ date('M d, Y', strtotime($activeCoverage->reading_date)) }}</td>
-                        <td>{{ date('M d, Y', strtotime($activeCoverage->due_date)) }}</td>
+                @if ($active_coverage)
+                    <tr data-covdate-id="{{ $active_coverage->covdate_id }}" data-status="{{ $active_coverage->status }}">
+                        <td>{{ date('M d, Y', strtotime($active_coverage->coverage_date_from)) }}</td>
+                        <td>{{ date('M d, Y', strtotime($active_coverage->coverage_date_to)) }}</td>
+                        <td>{{ date('M d, Y', strtotime($active_coverage->reading_date)) }}</td>
+                        <td>{{ date('M d, Y', strtotime($active_coverage->due_date)) }}</td>
                         <td>
                             <span class="status-badge status-active">
-                                {{ $activeCoverage->status }}
+                                {{ $active_coverage->status }}
                             </span>
                         </td>
                         @if(Auth::user()->hasPermission('edit-coverage-date'))
                         <td>
                             <div class="action-buttons">
-                                <button class="btn_uni btn-view" onclick="editCoverageDate({{ $activeCoverage->covdate_id }})">
+                                <button class="btn_uni btn-view" onclick="editCoverageDate({{ $active_coverage->covdate_id }})">
                                     <i class="fas fa-edit"></i>
                                 </button>
                             </div>
@@ -309,7 +170,7 @@
 </div>
 
 <!-- Closed Coverage Dates Section -->
-<div class="table-header">
+<div class="closed-header-container" style="margin-top: 1rem;">
     <h4 class="closed-header">
         <i class="fas fa-calendar-times"></i>
         Previous/Closed Coverage Periods
@@ -318,11 +179,6 @@
         <input type="text" id="dateFrom" class="form-control flatpickr-input" placeholder="From date">
         <p>to</p>
         <input type="text" id="dateTo" class="form-control flatpickr-input" placeholder="To date">
-    </div>
-    <div class="filter-buttons">
-        <button type="button" class="filter-btn filter-apply" onclick="filterTable()">
-            <i class="fas fa-filter"></i> Filter
-        </button>
         <button type="button" class="filter-btn filter-reset" onclick="clearFilter()">
             <i class="fas fa-undo"></i> Reset
         </button>
@@ -344,10 +200,7 @@
                 </tr>
             </thead>
             <tbody>
-                @php
-                    $closedCoverages = $coverage_dates->where('status', 'Close');
-                @endphp
-                @forelse ($closedCoverages as $date)
+                @forelse ($coverage_dates as $date)
                     <tr data-covdate-id="{{ $date->covdate_id }}" data-status="{{ $date->status }}">
                         <td>{{ date('M d, Y', strtotime($date->coverage_date_from)) }}</td>
                         <td>{{ date('M d, Y', strtotime($date->coverage_date_to)) }}</td>
@@ -385,6 +238,11 @@
                 @endforelse
             </tbody>
         </table>
+        @if($coverage_dates->hasPages())
+            <div class="pagination-wrapper">
+                {{ $coverage_dates->links('pagination.custom') }}
+            </div>
+        @endif
     </div>
 </div>
 

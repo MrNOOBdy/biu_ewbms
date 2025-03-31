@@ -16,17 +16,26 @@ class Cov_dateController extends Controller
                 abort(403, 'Unauthorized action.');
             }
             
-            $coverage_dates = Cov_date::orderBy('coverage_date_from', 'desc')->get();
+            // Get active coverage date
+            $active_coverage = Cov_date::where('status', 'Open')->first();
+            
+            // Get closed coverage dates with pagination
+            $closed_coverage_dates = Cov_date::where('status', 'Close')
+                ->orderBy('coverage_date_from', 'desc')
+                ->paginate(10);
+            
             $user = Auth::user();
             $userRole = Role::where('name', $user->role)->first();
             
             return view('biu_genset.coverage_date', [
-                'coverage_dates' => $coverage_dates,
+                'active_coverage' => $active_coverage,
+                'coverage_dates' => $closed_coverage_dates,
                 'userRole' => $userRole
             ]);
         } catch (\Exception $e) {
             \Log::error('Error loading coverage dates: ' . $e->getMessage());
             return view('biu_genset.coverage_date', [
+                'active_coverage' => null,
                 'coverage_dates' => collect([]),
                 'userRole' => null
             ]);

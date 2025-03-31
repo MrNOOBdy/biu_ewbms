@@ -36,6 +36,15 @@
     <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('favicon-16x16.png') }}">
     <link rel="manifest" href="{{ asset('site.webmanifest') }}">
 
+    <script>
+        (function() {
+            const savedPreference = localStorage.getItem('darkModePreference') || 'system';
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const isDark = savedPreference === 'on' || (savedPreference === 'system' && prefersDark);
+            document.documentElement.classList.add(isDark ? 'dark-mode' : 'light-mode');
+        })();
+    </script>
+
     @if (app()->environment('production'))
         <link rel="stylesheet" href="{{ asset('css/main.min.css') }}">
     @else
@@ -57,7 +66,7 @@
 
 </head>
 <body>
-    <!-- @if(!Request::is('admin'))
+    @if(!auth()->check())
     <div class="global-dark-mode-toggle">
         <span class="gdm-mode-text">Dark Mode</span>
         <label class="gdm-toggle-switch">
@@ -68,7 +77,7 @@
             <span class="gdm-toggle-label"></span>
         </label>
     </div>
-    @endif -->
+    @endif
 
     <div class="content">
         @yield('content')
