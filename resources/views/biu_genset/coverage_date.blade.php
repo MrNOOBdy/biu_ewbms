@@ -95,7 +95,6 @@
         box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.2);
     }
 </style>
-<link rel="stylesheet" href="{{ asset('css/flatpickr.min.css') }}">
 <link rel="stylesheet" href="{{ asset('css/modal.css') }}">
 <link rel="stylesheet" href="{{ asset('css/tbl_pagination.css') }}">
 
@@ -370,7 +369,6 @@
 @endsection
 
 @push('scripts')
-<script src="{{ asset('js/flatpickr.min.js') }}"></script>
 <script src="{{ asset('js/covdate.js') }}"></script>
 <script>
     // Initialize on page load

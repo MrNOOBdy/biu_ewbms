@@ -112,7 +112,7 @@ function handleFormSubmit(event) {
     const form = event.target;
     const formData = new FormData(form);
 
-  
+
     validateCoverageDates(formData).then(validationResult => {
         if (!validationResult.success) {
             showResultModal(false, validationResult.message, 'warning', false);
@@ -142,35 +142,17 @@ function validateCoverageDates(formData) {
         due_date: formData.get('due_date')
     };
 
-    const dates = Object.entries(dateData);
-    const duplicates = [];
-
-    const dateLabels = {
-        coverage_date_from: 'Coverage From',
-        coverage_date_to: 'Coverage To',
-        reading_date: 'Reading Date',
-        due_date: 'Due Date'
-    };
-
-    dates.forEach(([key1, date1], index) => {
-        dates.slice(index + 1).forEach(([key2, date2]) => {
-            if (date1 === date2) {
-                duplicates.push(`${dateLabels[key1]} and ${dateLabels[key2]}`);
-            }
-        });
-    });
-
-    if (duplicates.length > 0) {
-        return Promise.resolve({
-            success: false,
-            message: 'Duplicate dates found between: ' + duplicates.join(', ')
-        });
-    }
-
     const readingDate = new Date(dateData.reading_date);
     const coverageFrom = new Date(dateData.coverage_date_from);
     const coverageTo = new Date(dateData.coverage_date_to);
     const dueDate = new Date(dateData.due_date);
+
+    if (coverageTo <= coverageFrom) {
+        return Promise.resolve({
+            success: false,
+            message: 'Coverage Date To must be after Coverage Date From'
+        });
+    }
 
     if (readingDate < coverageFrom) {
         return Promise.resolve({
@@ -186,26 +168,14 @@ function validateCoverageDates(formData) {
         });
     }
 
-    return fetch('/coverage-dates/validate', {
-        method: 'POST',
-        headers: {
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-        },
-        body: JSON.stringify(dateData)
-    })
-        .then(response => response.json())
-        .then(data => {
-            if (data.overlapping) {
-                return {
-                    success: false,
-                    message: 'The coverage dates overlap with an existing coverage period'
-                };
-            }
-            return { success: true };
-        })
-        .catch(() => ({ success: true }));
+    if (dueDate <= readingDate) {
+        return Promise.resolve({
+            success: false,
+            message: 'Due Date must be after Reading Date'
+        });
+    }
+
+    return Promise.resolve({ success: true });
 }
 
 function submitNewCoverageDate(formData) {
@@ -458,46 +428,61 @@ function handleEditFormSubmit(event) {
 function confirmStatusSwitch() {
     if (!pendingFormData) return;
 
-    if (document.getElementById('editCoverageDateForm').elements['covdate_id']) {
+    const form = document.getElementById('editCoverageDateForm');
+    if (form.elements['covdate_id']) {
         const id = document.getElementById('edit_covdate_id').value;
         submitEditForm(id, pendingFormData);
     } else {
-        submitNewCoverageDate(pendingFormData);
+        validateCoverageDates(pendingFormData).then(validationResult => {
+            if (!validationResult.success) {
+                showResultModal(false, validationResult.message, 'warning');
+                return;
+            }
+            submitNewCoverageDate(pendingFormData);
+        });
     }
 }
 
 function submitEditForm(id, formData) {
     clearFormErrors(document.getElementById('editCoverageDateForm'));
 
-    fetch(`/coverage-dates/${id}`, {
-        method: 'POST',
-        headers: {
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-            'Accept': 'application/json'
-        },
-        body: formData
-    })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                closeModal('editCoverageDateModal');
-                if (pendingFormData) {
-                    closeModal('statusSwitchModal');
-                }
-                showResultModal(true, 'Coverage date updated successfully');
-            } else {
-                throw new Error(JSON.stringify({ message: data.message, type: 'warning' }));
-            }
+    validateCoverageDates(formData).then(validationResult => {
+        if (!validationResult.success) {
+            showResultModal(false, validationResult.message, 'warning');
+            return;
+        }
+
+        fetch(`/coverage-dates/${id}`, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                'Accept': 'application/json'
+            },
+            body: formData
         })
-        .catch(error => {
-            let errorData;
-            try {
-                errorData = JSON.parse(error.message);
-            } catch (e) {
-                errorData = { message: 'An unexpected error occurred', type: 'warning' };
-            }
-            showResultModal(false, errorData.message, errorData.type);
-        });
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    closeModal('editCoverageDateModal');
+                    if (pendingFormData) {
+                        closeModal('statusSwitchModal');
+                        pendingFormData = null;
+                    }
+                    showResultModal(true, 'Coverage date updated successfully');
+                } else {
+                    throw new Error(JSON.stringify({ message: data.message || 'Failed to update coverage date', type: 'warning' }));
+                }
+            })
+            .catch(error => {
+                let errorData;
+                try {
+                    errorData = JSON.parse(error.message);
+                } catch (e) {
+                    errorData = { message: 'An unexpected error occurred', type: 'warning' };
+                }
+                showResultModal(false, errorData.message, errorData.type);
+            });
+    });
 }
 
 function deleteCoverageDate(id) {

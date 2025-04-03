@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use App\Models\Notice;
 use App\Models\Role;
 use App\Models\Bill_rate;
@@ -11,6 +12,8 @@ use App\Models\LocalSet;
 use App\Models\ConsumerReading;
 use App\Models\ConsBillPay;
 use App\Models\Cov_date;
+use App\Models\ConnPayment;
+use App\Models\ServiceFee;
 
 class DashController extends Controller
 {
@@ -38,8 +41,8 @@ class DashController extends Controller
                     $activeCoverage->coverage_date_to
                 ]);
             })->count();
-        
-        $totalIncome = ConsBillPay::join('consumer_reading', 'consumer_bill_pay.consread_id', '=', 'consumer_reading.consread_id')
+
+        $waterBillIncome = ConsBillPay::join('consumer_reading', 'consumer_bill_pay.consread_id', '=', 'consumer_reading.consread_id')
             ->where('consumer_bill_pay.bill_status', 'Paid')
             ->when($activeCoverage, function($query) use ($activeCoverage) {
                 return $query->whereBetween('consumer_reading.reading_date', [
@@ -47,6 +50,24 @@ class DashController extends Controller
                     $activeCoverage->coverage_date_to
                 ]);
             })->sum('consumer_bill_pay.total_amount');
+
+        $applicationFees = ConnPayment::when($activeCoverage, function($query) use ($activeCoverage) {
+            return $query->whereBetween('created_at', [
+                $activeCoverage->coverage_date_from, 
+                $activeCoverage->coverage_date_to
+            ]);
+        })->where('conn_pay_status', 'Paid')
+          ->sum('conn_amount_paid');
+
+        $serviceFees = ServiceFee::when($activeCoverage, function($query) use ($activeCoverage) {
+            return $query->whereBetween('created_at', [
+                $activeCoverage->coverage_date_from, 
+                $activeCoverage->coverage_date_to
+            ]); 
+        })->where('service_paid_status', 'Paid')
+          ->sum(DB::raw('service_amount_paid + COALESCE(reconnection_fee, 0)'));
+
+        $totalIncome = $waterBillIncome + $applicationFees + $serviceFees;
 
         $monthlyConsumption = ConsumerReading::selectRaw('MONTH(created_at) as month, SUM(consumption) as total_consumption')
             ->whereYear('created_at', date('Y'))

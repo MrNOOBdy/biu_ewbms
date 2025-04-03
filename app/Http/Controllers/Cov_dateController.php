@@ -15,11 +15,9 @@ class Cov_dateController extends Controller
             if (!Auth::user()->hasPermission('access-coverage-date')) {
                 abort(403, 'Unauthorized action.');
             }
-            
-            // Get active coverage date
+
             $active_coverage = Cov_date::where('status', 'Open')->first();
-            
-            // Get closed coverage dates with pagination
+         
             $closed_coverage_dates = Cov_date::where('status', 'Close')
                 ->orderBy('coverage_date_from', 'desc')
                 ->paginate(10);
@@ -241,29 +239,6 @@ class Cov_dateController extends Controller
 
     private function validateDates(array $data, $excludeId = null): array
     {
-        $dates = [
-            'Coverage From' => $data['coverage_date_from'],
-            'Coverage To' => $data['coverage_date_to'],
-            'Reading Date' => $data['reading_date'],
-            'Due Date' => $data['due_date']
-        ];
-
-        $duplicates = [];
-        foreach ($dates as $label1 => $date1) {
-            foreach ($dates as $label2 => $date2) {
-                if ($label1 !== $label2 && $date1 === $date2) {
-                    $duplicates[] = "$label1 and $label2";
-                }
-            }
-        }
-
-        if (!empty($duplicates)) {
-            return [
-                'valid' => false,
-                'message' => 'Duplicate dates found between: ' . implode(', ', array_unique($duplicates))
-            ];
-        }
-
         $readingDate = strtotime($data['reading_date']);
         $coverageFrom = strtotime($data['coverage_date_from']);
         $coverageTo = strtotime($data['coverage_date_to']);
@@ -283,18 +258,26 @@ class Cov_dateController extends Controller
             ];
         }
 
+        if ($dueDate <= $readingDate) {
+            return [
+                'valid' => false,
+                'message' => 'Due Date must be after Reading Date'
+            ];
+        }
+
         return ['valid' => true];
     }
 
     private function hasOverlappingDates(array $data, $excludeId = null): bool
     {
-        $query = Cov_date::where(function ($q) use ($data) {
-            $q->whereBetween('coverage_date_from', [$data['coverage_date_from'], $data['coverage_date_to']])
-              ->orWhereBetween('coverage_date_to', [$data['coverage_date_from'], $data['coverage_date_to']])
-              ->orWhere(function ($q) use ($data) {
-                  $q->where('coverage_date_from', '<=', $data['coverage_date_from'])
-                    ->where('coverage_date_to', '>=', $data['coverage_date_to']);
-              });
+        $start = $data['coverage_date_from'];
+        $end = $data['coverage_date_to'];
+
+        $query = Cov_date::where(function ($q) use ($start, $end) {
+            $q->where(function ($inner) use ($start, $end) {
+                $inner->where('coverage_date_from', '<', $end)
+                      ->where('coverage_date_to', '>', $start);
+            });
         });
 
         if ($excludeId) {

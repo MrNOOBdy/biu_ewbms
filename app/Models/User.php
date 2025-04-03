@@ -54,4 +54,32 @@ class User extends Authenticatable
     {
         return $this->hasMany(MeterReaderBlock::class, 'user_id', 'user_id');
     }
+
+    public function absences()
+    {
+        return $this->hasMany(MeterReaderSub::class, 'absent_reader_id', 'user_id');
+    }
+
+    public function substitutions()
+    {
+        return $this->hasMany(MeterReaderSub::class, 'substitute_reader_id', 'user_id');
+    }
+
+    public function activeSubstitution()
+    {
+        return $this->substitutions()
+                    ->where('status', 'active')
+                    ->where('start_date', '<=', now())
+                    ->where('end_date', '>=', now())
+                    ->first();
+    }
+
+    public function activeAbsence()
+    {
+        return $this->absences()
+                    ->where('status', 'active')
+                    ->where('start_date', '<=', now())
+                    ->where('end_date', '>=', now())
+                    ->first();
+    }
 }

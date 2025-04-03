@@ -838,3 +838,33 @@ tr.highlight {
 .btn_modal.btn_verify:hover {
     background-color: #157347;
 }
+
+.substitution-item {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    padding: 15px;
+    margin-bottom: 10px;
+}
+
+.btn-substitute {
+    background: #17a2b8;
+    color: white;
+}
+
+.btn-end {
+    background: #dc3545;
+    color: white;
+    padding: 5px 10px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.substitutions-section {
+    margin-top: 30px;
+    padding: 20px;
+    background: white;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+}
