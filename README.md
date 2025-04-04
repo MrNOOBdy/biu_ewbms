@@ -7,3 +7,5 @@
 5. Run ```php artisan migrate``` to update the database tables.
 
 Done.
+
+1. Run ```php artisan migrate``` to add meter_reader_subtitutions table.
