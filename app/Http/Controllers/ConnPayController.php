@@ -24,7 +24,7 @@ class ConnPayController extends Controller
                 ->whereHas('consumer')
                 ->orderByRaw("CASE WHEN conn_pay_status = 'unpaid' THEN 0 ELSE 1 END")
                 ->orderBy('created_at', 'desc')
-                ->get();
+                ->paginate(20);
             
             $blocks = Block::all();
 

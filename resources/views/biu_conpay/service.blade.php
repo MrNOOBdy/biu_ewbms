@@ -94,6 +94,7 @@
                 @endforelse
             </tbody>
         </table>
+        {{ $servicePayments->links('pagination.custom') }}
     </div>
 </div>
 

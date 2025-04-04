@@ -21,7 +21,7 @@ class ServiceController extends Controller
                 ->where('reconnection_fee', '>', 0)
                 ->orderByRaw("CASE WHEN service_paid_status = 'unpaid' THEN 0 ELSE 1 END")
                 ->orderBy('created_at', 'desc')
-                ->get();
+                ->paginate(20);
             
             $blocks = Block::all();
 

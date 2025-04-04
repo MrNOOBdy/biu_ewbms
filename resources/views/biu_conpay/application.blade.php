@@ -4,6 +4,7 @@
 
 @section('tab-content')
 <link rel="stylesheet" href="{{ asset('css/modal.css') }}">
+<link rel="stylesheet" href="{{ asset('css/tbl_pagination.css') }}">
 <div class="table-header">
     <h3><i class="fas fa-file-invoice-dollar"></i> Application Fee Payments</h3>
     <div class="header-controls">
@@ -95,6 +96,7 @@
                 @endforelse
             </tbody>
         </table>
+        {{ $connPayments->links('pagination.custom') }}
     </div>
 </div>
 
