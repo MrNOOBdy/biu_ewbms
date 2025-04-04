@@ -6,6 +6,7 @@ use Illuminate\Database\Seeder;
 use App\Models\Permission;
 use App\Models\Consumer;
 use App\Models\Fees;
+use App\Models\Block;
 use Faker\Factory as Faker;
 use Illuminate\Support\Facades\DB;
 
@@ -20,16 +21,22 @@ class MySeeder extends Seeder
             ['amount' => 1050.00]
         );
 
-        $blockIds = DB::table('blocks')->pluck('block_id')->toArray();
-        
+        $blocks = Block::all();
         $consumerTypes = DB::table('bill_rate')->pluck('consumer_type')->toArray();
 
         for ($i = 0; $i < 100; $i++) {
             try {
                 DB::beginTransaction();
 
-                $blockId = $faker->randomElement($blockIds);
+                $block = $faker->randomElement($blocks->toArray());
+                $blockId = $block['block_id'];
                 
+                $barangays = is_array($block['barangays']) ? $block['barangays'] : json_decode($block['barangays'], true);
+                
+                $purok = 'Purok ' . $faker->numberBetween(1, 7);
+                $barangay = $faker->randomElement($barangays);
+                $address = $purok . ', ' . $barangay;
+
                 $lastConsumer = Consumer::where('block_id', $blockId)
                     ->orderBy('customer_id', 'desc')
                     ->first();
@@ -48,7 +55,7 @@ class MySeeder extends Seeder
                     'firstname' => $faker->firstName,
                     'middlename' => $faker->optional(0.7)->lastName,
                     'lastname' => $faker->lastName,
-                    'address' => $faker->streetAddress . ', ' . $faker->city,
+                    'address' => $address,
                     'contact_no' => '09' . $faker->numberBetween(100000000, 999999999),
                     'consumer_type' => $faker->randomElement($consumerTypes),
                     'status' => 'Pending',
