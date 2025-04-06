@@ -60,6 +60,7 @@ Route::middleware(['web'])->group(function () {
 
         // User management routes
         Route::get('/users', [UserController::class, 'index'])->name('users.index');
+        Route::get('/users/search', [UserController::class, 'search'])->name('users.search');
         Route::get('/users/{id}', [UserController::class, 'show'])->name('users.show');
         Route::post('/users', [UserController::class, 'store'])->name('users.store');
         Route::post('/users/{id}/activate', [UserController::class, 'activate'])->name('users.activate');
@@ -91,6 +92,7 @@ Route::middleware(['web'])->group(function () {
             Route::get('/{id}/edit', [NoticeController::class, 'edit'])->name('notifications.edit');
             Route::put('/{id}', [NoticeController::class, 'update'])->name('notifications.update');
             Route::delete('/{id}', [NoticeController::class, 'destroy'])->name('notifications.destroy');
+            Route::get('/search', [NoticeController::class, 'search'])->name('notifications.search');
         });
 
         // Bill rates routes
@@ -105,6 +107,7 @@ Route::middleware(['web'])->group(function () {
         // Block management routes
         Route::prefix('blocks')->group(function () {
             Route::get('/', [BlockController::class, 'index'])->name('blocks.index');
+            Route::get('/search', [BlockController::class, 'search'])->name('blocks.search');
             Route::post('/', [BlockController::class, 'store'])->name('blocks.store');
             Route::post('/{id}/add-barangay', [BlockController::class, 'addBarangay'])->name('blocks.addBarangay');
             Route::get('/{id}/edit', [BlockController::class, 'edit'])->name('blocks.edit');
@@ -130,7 +133,7 @@ Route::middleware(['web'])->group(function () {
             Route::put('/{id}', [ConsumerController::class, 'update'])->name('consumers.update');
             Route::delete('/{id}', [ConsumerController::class, 'destroy'])->name('consumers.destroy');
             Route::post('/{id}/status', [ConsumerController::class, 'updateStatus'])->name('consumers.status');
-            Route::get('/filter', [ConsumerController::class, 'filter'])->name('consumers.filter');
+            Route::get('/filter', [ConsumerController::class, 'search'])->name('consumers.filter');
             Route::get('/generate-id/{blockId}', [ConsumerController::class, 'generateId'])->name('consumers.generateId');
             Route::get('/{id}/view', [ConsumerController::class, 'view'])->name('consumers.view');
             Route::post('/{id}/reconnect', [ConsumerController::class, 'reconnect'])->name('consumers.reconnect');
@@ -144,6 +147,7 @@ Route::middleware(['web'])->group(function () {
 
         // Application payment routes
         Route::get('/application-fee', [ConnPayController::class, 'index'])->name('application.fee');
+        Route::get('/application-fee/search', [ConnPayController::class, 'search'])->name('application.search');
         Route::post('/process-payment', [ConnPayController::class, 'processPayment'])->name('process.payment');
         Route::get('/check-application-permission', [ConnPayController::class, 'checkPermission']);
         Route::get('/application-income', [ConnPayController::class, 'showIncome'])->name('application.income');
@@ -152,21 +156,27 @@ Route::middleware(['web'])->group(function () {
         // Service routes
         Route::prefix('service')->group(function () {
             Route::get('/', [ServiceController::class, 'index'])->name('service.index');
+            Route::get('/search', [ServiceController::class, 'search'])->name('service.search');
             Route::post('/process-payment', [ServiceController::class, 'processPayment'])->name('service.process.payment');
             Route::get('/print-receipt/{customer_id}', [ServiceController::class, 'printReceipt'])->name('service.print');
         });
 
         // Report routes
         Route::get('/appli_income', [ApplicationIncomeController::class, 'index'])->name('appli_income');
+        Route::get('/appli_income/search', [ApplicationIncomeController::class, 'search'])->name('appli_income.search');
         Route::get('/income_rep', [ReportBillController::class, 'income_index'])->name('income_index');
+        Route::get('/income_rep/search', [ReportBillController::class, 'searchIncome'])->name('income.search');
         Route::get('/balance_rep', [ReportBillController::class, 'balance_index'])->name('balance_index');
+        Route::get('/balance_rep/search', [ReportBillController::class, 'searchBalance'])->name('balance.search');
 
         // Meter reader reading routes
         Route::get('/meter_read', [MRController::class, 'index'])->name('meter-readings');
+        Route::get('/meter-readings/search', [MRController::class, 'search'])->name('meter-readings.search');
 
         // Billing pay routes
         Route::prefix('billing')->group(function () {
             Route::get('/payments', [BillPayController::class, 'showPayments'])->name('billing.payments');
+            Route::get('/payments/search', [BillPayController::class, 'search'])->name('billing.payments.search');
             Route::post('/readings', [BillPayController::class, 'storeReadings'])->name('billing.store-readings');
             Route::get('/get-bills/{consumerId}', [BillPayController::class, 'getBills'])->name('billing.get-bills');
             Route::get('/get-bill-details/{billId}', [BillPayController::class, 'getBillDetails'])->name('billing.details');
@@ -180,6 +190,7 @@ Route::middleware(['web'])->group(function () {
         Route::get('/billing/get-bill-details/{consreadId}', [BillingController::class, 'getBillDetails']);
         Route::post('/billing/add-bill', [BillingController::class, 'addBill']);
         Route::post('/billing/send-bill-sms', [BillingController::class, 'sendBillSMS']);
+        Route::get('/billing/search', [BillingController::class, 'search'])->name('billing.search');
 
         // Bill Notice routes
        Route::get('/notice-bill', [Bill_NoticeController::class, 'noticeBill'])->name('notice-bill');
@@ -188,6 +199,7 @@ Route::middleware(['web'])->group(function () {
 
         // Meter reader block assignment routes
         Route::get('/meter-readers/blocks', [MRsBlockCont::class, 'index'])->name('meter-readers.blocks');
+        Route::get('/meter-readers/blocks/search', [MRsBlockCont::class, 'search'])->name('meter-readers.search');
         Route::post('/meter-readers/assign-blocks', [MRsBlockCont::class, 'assignBlocks'])->name('meter-readers.assign-blocks');
         Route::get('/meter-readers/{id}/blocks', [MRsBlockCont::class, 'getAssignedBlocks'])->name('meter-readers.get-blocks');
 

@@ -142,4 +142,56 @@ class BillPayController extends Controller
             return redirect()->back()->with('error', 'Error generating bill receipt');
         }
     }
+
+    public function search(Request $request)
+    {
+        try {
+            $query = ConsumerReading::with(['consumer', 'billPayments'])
+                ->whereHas('billPayments');
+
+            if ($request->has('query')) {
+                $searchTerm = $request->get('query');
+                $query->whereHas('consumer', function($q) use ($searchTerm) {
+                    $q->where('customer_id', 'LIKE', "%{$searchTerm}%")
+                      ->orWhere('firstname', 'LIKE', "%{$searchTerm}%")
+                      ->orWhere('lastname', 'LIKE', "%{$searchTerm}%");
+                });
+            }
+
+            if ($request->has('status')) {
+                $status = $request->get('status');
+                if (!empty($status)) {
+                    $query->whereHas('billPayments', function($q) use ($status) {
+                        $q->where('bill_status', $status);
+                    });
+                }
+            }
+
+            $bills = $query->orderBy('reading_date', 'desc')->get();
+
+            return response()->json([
+                'success' => true,
+                'bills' => $bills->map(function($bill) {
+                    return [
+                        'consread_id' => $bill->consread_id,
+                        'customer_id' => $bill->consumer->customer_id,
+                        'consumer_name' => $bill->consumer->firstname . ' ' . $bill->consumer->lastname,
+                        'due_date' => date('M d, Y', strtotime($bill->due_date)),
+                        'previous_reading' => $bill->previous_reading,
+                        'present_reading' => $bill->present_reading,
+                        'consumption' => $bill->consumption,
+                        'total_amount' => number_format($bill->billPayments->total_amount, 2),
+                        'status' => $bill->billPayments->bill_status,
+                        'raw_amount' => $bill->billPayments->total_amount
+                    ];
+                })
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to search bills: ' . $e->getMessage()
+            ]);
+        }
+    }
 }

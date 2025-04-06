@@ -80,7 +80,7 @@ const BlockModule = {
                 document.getElementById('originalBlockId').value = blockId;
                 document.getElementById('edit_block_id').value = data.block.block_id;
                 document.getElementById('edit_barangays').value = data.block.barangays;
-                
+
                 this.clearValidationErrors();
                 modal.style.display = 'block';
                 setTimeout(() => modal.classList.add('fade-in'), 10);
@@ -196,8 +196,8 @@ const BlockModule = {
         const messageElement = document.getElementById('blockResultMessage');
 
         icon.className = success ? 'success' : 'error';
-        icon.innerHTML = success ? 
-            '<i class="fas fa-check-circle"></i>' : 
+        icon.innerHTML = success ?
+            '<i class="fas fa-check-circle"></i>' :
             '<i class="fas fa-exclamation-circle"></i>';
         title.textContent = success ? 'Success' : 'Error';
         messageElement.textContent = message;
@@ -218,57 +218,80 @@ const BlockModule = {
         }, 300);
     },
 
-    filterBlocks() {
-        const searchInput = document.getElementById('searchInput').value.toLowerCase();
+    async filterBlocks() {
+        const searchInput = document.getElementById('searchInput').value.trim();
         const blockFilter = document.getElementById('blockFilter').value;
         const tbody = document.querySelector('.uni-table tbody');
-        const rows = tbody.getElementsByTagName('tr');
-        const pagination = document.querySelector('.pagination-wrapper');
+        const paginationWrapper = document.querySelector('.pagination-wrapper');
 
-        let hasVisibleRows = false;
+        const permissions = document.getElementById('blockPermissions');
+        const canEdit = permissions.dataset.canEdit === 'true';
+        const canDelete = permissions.dataset.canDelete === 'true';
+        const hasPermissions = canEdit || canDelete;
 
-        for (const row of rows) {
-            if (!row.classList.contains('empty-row')) {
-                const blockId = row.cells[0].textContent;
-                const barangays = row.cells[1].textContent.toLowerCase();
-                
-                const matchesSearch = barangays.includes(searchInput);
-                const matchesBlock = !blockFilter || blockId === blockFilter;
-
-                if (matchesSearch && matchesBlock) {
-                    row.style.display = '';
-                    hasVisibleRows = true;
-                } else {
-                    row.style.display = 'none';
+        try {
+            const response = await fetch(`/blocks/search?query=${encodeURIComponent(searchInput)}&block_id=${encodeURIComponent(blockFilter)}`, {
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
                 }
-            }
-        }
+            });
 
-        if (pagination) {
-            pagination.style.display = (searchInput || blockFilter) ? 'none' : 'flex';
-        }
+            const data = await response.json();
 
-        const existingEmptyRow = tbody.querySelector('.empty-row');
-        if (!hasVisibleRows) {
-            if (!existingEmptyRow) {
-                const colspan = document.querySelector('.uni-table thead th:last-child').cellIndex + 1;
-                const emptyRow = document.createElement('tr');
-                emptyRow.className = 'empty-row';
-                emptyRow.innerHTML = `
-                    <td colspan="${colspan}" class="text-center">
-                        No blocks found matching the search criteria
-                    </td>`;
-                tbody.appendChild(emptyRow);
+            if (data.success) {
+                tbody.innerHTML = '';
+
+                if (data.blocks.length === 0) {
+                    const colspan = document.querySelector('.uni-table thead tr').children.length;
+                    tbody.innerHTML = `
+                        <tr class="empty-row">
+                            <td colspan="${colspan}" class="text-center">
+                                <i class="fas fa-th-large"></i>
+                                <p>No blocks found</p>
+                            </td>
+                        </tr>
+                    `;
+                } else {
+                    data.blocks.forEach(block => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${block.block_id}</td>
+                            <td style="max-width: 0; white-space: normal; overflow: hidden; text-overflow: ellipsis;">
+                                ${block.barangays}
+                            </td>
+                            ${hasPermissions ? `
+                            <td>
+                                <div class="action-buttons">
+                                    ${canEdit ? `
+                                        <button class="btn_uni btn-view" onclick="BlockModule.showEditBlockModal(${block.block_id})">
+                                            <i class="fas fa-edit"></i> Edit Block
+                                        </button>
+                                    ` : ''}
+                                    ${canDelete ? `
+                                        <button class="btn_uni btn-deactivate" onclick="BlockModule.showDeleteBlockModal(${block.block_id})">
+                                            <i class="fas fa-trash"></i> Delete Block
+                                        </button>
+                                    ` : ''}
+                                </div>
+                            </td>` : ''}
+                        `;
+                        tbody.appendChild(row);
+                    });
+                }
+
+                if (paginationWrapper) {
+                    paginationWrapper.style.display = searchInput || blockFilter ? 'none' : 'flex';
+                }
             } else {
-                existingEmptyRow.style.display = '';
+                this.showResultModal(false, data.message);
             }
-        } else if (existingEmptyRow) {
-            existingEmptyRow.style.display = 'none';
+        } catch (error) {
+            this.showResultModal(false, 'Failed to search blocks');
         }
     }
 };
 
-window.addEventListener('click', function(event) {
+window.addEventListener('click', function (event) {
     const modals = {
         'newBlockModal': BlockModule.closeNewBlockModal,
         'editBlockModal': BlockModule.closeEditBlockModal,
@@ -282,4 +305,11 @@ window.addEventListener('click', function(event) {
             closeFunction.call(BlockModule);
         }
     });
+});
+
+window.addEventListener('DOMContentLoaded', function () {
+    const searchButton = document.querySelector('.btn-search');
+    if (searchButton) {
+        searchButton.addEventListener('click', () => BlockModule.filterBlocks());
+    }
 });

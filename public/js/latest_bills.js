@@ -196,61 +196,79 @@ function formatDate(dateString) {
     });
 }
 
-function filterBills() {
-    const searchValue = document.getElementById('searchInput').value.toLowerCase().trim();
+async function filterBills() {
+    const searchValue = document.getElementById('searchInput').value.trim();
     const statusValue = document.getElementById('statusFilter').value;
     const tbody = document.querySelector('.uni-table tbody');
-    const paginationWrapper = document.querySelector('.pagination-wrapper');
+    const paginationContainer = document.querySelector('.pagination-wrapper');
 
-    if (paginationWrapper) {
-        paginationWrapper.style.display = 'none';
-    }
+    try {
+        const response = await fetch(`/billing/search?query=${encodeURIComponent(searchValue)}&status=${encodeURIComponent(statusValue)}`, {
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+            }
+        });
 
-    const rows = tbody.querySelectorAll('tr');
-    let hasMatches = false;
+        const data = await response.json();
 
-    rows.forEach(row => {
-        if (row.classList.contains('empty-state-row')) {
-            row.remove();
-            return;
-        }
+        if (data.success) {
+            tbody.innerHTML = '';
 
-        const cells = row.querySelectorAll('td');
-        if (cells.length > 0) {
-            const consumerId = cells[0].textContent.toLowerCase();
-            const contactNo = cells[1].textContent.toLowerCase();
-            const name = cells[2].textContent.toLowerCase();
-            const readingDate = cells[3].textContent.toLowerCase();
-            const statusBadge = row.querySelector('.status-badge');
-            const status = statusBadge ? statusBadge.textContent.trim().toLowerCase() : '';
-
-            if (status === 'paid') {
-                row.style.display = 'none';
-                return;
+            if (data.bills.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="10" class="empty-state">
+                            <i class="fas fa-file-invoice"></i>
+                            <p>No bills found</p>
+                        </td>
+                    </tr>
+                `;
+            } else {
+                data.bills.forEach(bill => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${bill.customer_id}</td>
+                        <td>${bill.contact_no}</td>
+                        <td>${bill.consumer_name}</td>
+                        <td>${bill.reading_date}</td>
+                        <td>${bill.due_date}</td>
+                        <td>${bill.previous_reading}</td>
+                        <td>${bill.present_reading}</td>
+                        <td>${bill.consumption}</td>
+                        <td>
+                            <span class="status-badge ${bill.bill_status === 'Pending' ? 'status-pending' :
+                            (bill.bill_status === 'paid' ? 'status-active' : 'status-inactive')
+                        }">
+                                ${bill.bill_status}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                ${bill.bill_status === 'Pending' ? `
+                                    <button class="btn_uni btn-view" onclick="showAddBillModal(${bill.consread_id})">
+                                        <i class="fas fa-plus-circle"></i> Add Bill
+                                    </button>
+                                ` : `
+                                    <button class="btn_uni btn-billing" onclick="sendBill(${bill.consread_id})">
+                                        <i class="fas fa-paper-plane"></i> Send Bill SMS
+                                    </button>
+                                `}
+                            </div>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
             }
 
-            const matchesSearch = !searchValue ||
-                consumerId.includes(searchValue) ||
-                contactNo.includes(searchValue) ||
-                name.includes(searchValue) ||
-                readingDate.includes(searchValue);
-
-            const matchesStatus = !statusValue ||
-                (statusValue === 'Pending' && status === 'pending') ||
-                (statusValue === 'unpaid' && status === 'unpaid');
-
-            const matches = matchesSearch && (matchesStatus || !statusValue);
-            row.style.display = matches ? '' : 'none';
-            if (matches) hasMatches = true;
+            if (paginationContainer) {
+                paginationContainer.style.display = searchValue || statusValue ? 'none' : 'flex';
+            }
+        } else {
+            showBillResultModal(false, data.message);
         }
-    });
-
-    if (!hasMatches) {
-        showEmptyState(tbody);
-    }
-
-    if (!searchValue && !statusValue && paginationWrapper) {
-        paginationWrapper.style.display = 'flex';
+    } catch (error) {
+        console.error('Failed to filter bills:', error);
+        showBillResultModal(false, 'Failed to filter bills');
     }
 }
 

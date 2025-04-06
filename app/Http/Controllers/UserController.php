@@ -358,4 +358,57 @@ class UserController extends Controller
             ], 500);
         }
     }
+
+    public function search(Request $request)
+    {
+        try {
+            $query = $request->get('query');
+            $roleFilter = $request->get('role');
+            $statusFilter = $request->get('status');
+            
+            $users = User::query();
+
+            if (!empty($query)) {
+                $users->where(function($q) use ($query) {
+                    $q->where('firstname', 'LIKE', "%{$query}%")
+                      ->orWhere('lastname', 'LIKE', "%{$query}%")
+                      ->orWhere('username', 'LIKE', "%{$query}%")
+                      ->orWhere('email', 'LIKE', "%{$query}%")
+                      ->orWhere('contactnum', 'LIKE', "%{$query}%");
+                });
+            }
+
+            if (!empty($roleFilter)) {
+                $users->where('role', $roleFilter);
+            }
+
+            if (!empty($statusFilter)) {
+                $users->where('status', $statusFilter);
+            }
+
+            $users = $users->orderBy('created_at', 'desc')->get();
+
+            return response()->json([
+                'success' => true,
+                'users' => $users->map(function($user) {
+                    return [
+                        'user_id' => $user->user_id,
+                        'firstname' => $user->firstname,
+                        'lastname' => $user->lastname,
+                        'contactnum' => $user->contactnum,
+                        'email' => $user->email,
+                        'username' => $user->username,
+                        'role' => $user->role,
+                        'status' => $user->status
+                    ];
+                })
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to search users: ' . $e->getMessage()
+            ]);
+        }
+    }
 }

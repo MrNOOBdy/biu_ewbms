@@ -32,7 +32,7 @@ const NoticeModule = {
     async saveNotice() {
         const type = document.getElementById('noticeType').value;
         const announcement = document.getElementById('noticeAnnouncement').value;
-        
+
         const formData = {
             type,
             announcement,
@@ -80,7 +80,7 @@ const NoticeModule = {
                 document.getElementById('editNoticeId').value = data.notice.notice_id;
                 document.getElementById('editNoticeType').value = data.notice.type;
                 document.getElementById('editNoticeAnnouncement').value = data.notice.announcement;
-                
+
                 this.clearValidationErrors();
                 modal.style.display = 'block';
                 setTimeout(() => modal.classList.add('fade-in'), 10);
@@ -181,6 +181,80 @@ const NoticeModule = {
         }
     },
 
+    async searchNotice() {
+        const searchInput = document.getElementById('noticeSearchInput');
+        const query = searchInput.value.trim();
+        const tableBody = document.querySelector('.uni-table tbody');
+        const paginationContainer = document.querySelector('.pagination-container');
+
+        const permissions = document.getElementById('userPermissions');
+        const canEdit = permissions.dataset.canEdit === 'true';
+        const canDelete = permissions.dataset.canDelete === 'true';
+        const hasPermissions = canEdit || canDelete;
+
+        try {
+            const response = await fetch(`/notifications/search?query=${encodeURIComponent(query)}`, {
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                }
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                tableBody.innerHTML = '';
+
+                if (data.notifications.length === 0) {
+                    const colspan = document.querySelector('.uni-table thead tr').children.length;
+                    tableBody.innerHTML = `
+                        <tr class="empty-row">
+                            <td colspan="${colspan}" class="empty-state">
+                                <i class="fas fa-bell-slash"></i>
+                                <p>No notifications found</p>
+                            </td>
+                        </tr>
+                    `;
+                } else {
+                    data.notifications.forEach(notice => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${notice.type}</td>
+                            <td style="max-width: 300px; white-space: normal; overflow: hidden; text-overflow: ellipsis; line-height: 1.5em; max-height: 3em;">
+                                ${notice.announcement}
+                            </td>
+                            <td>${notice.created_at}</td>
+                            <td>${notice.updated_at}</td>
+                            ${hasPermissions ? `
+                            <td>
+                                <div class="action-buttons">
+                                    ${canEdit ? `
+                                        <button class="btn_uni btn-view" onclick="NoticeModule.editNotice(${notice.notice_id})">
+                                            <i class="fas fa-edit"></i> Edit
+                                        </button>
+                                    ` : ''}
+                                    ${canDelete ? `
+                                        <button class="btn_uni btn-deactivate" onclick="NoticeModule.deleteNotice(${notice.notice_id})">
+                                            <i class="fas fa-trash"></i> Delete
+                                        </button>
+                                    ` : ''}
+                                </div>
+                            </td>` : ''}
+                        `;
+                        tableBody.appendChild(row);
+                    });
+                }
+
+                if (paginationContainer) {
+                    paginationContainer.style.display = query ? 'none' : 'flex';
+                }
+            } else {
+                this.showResultModal(false, data.message);
+            }
+        } catch (error) {
+            this.showResultModal(false, 'Failed to search notifications');
+        }
+    },
+
     showResultModal(success, message) {
         const modal = document.getElementById('noticeResultModal');
         const icon = document.getElementById('noticeResultIcon');
@@ -188,8 +262,8 @@ const NoticeModule = {
         const messageElement = document.getElementById('noticeResultMessage');
 
         icon.className = success ? 'success' : 'warning';
-        icon.innerHTML = success ? 
-            '<i class="fas fa-check-circle"></i>' : 
+        icon.innerHTML = success ?
+            '<i class="fas fa-check-circle"></i>' :
             '<i class="fas fa-exclamation-triangle"></i>';
         title.textContent = success ? 'Success' : 'Warning';
         messageElement.textContent = message;
@@ -209,62 +283,9 @@ const NoticeModule = {
             }
         }, 300);
     },
-
-    filterNoticeTable() {
-        const input = document.getElementById('noticeSearchInput');
-        const filter = input.value.toLowerCase();
-        const tbody = document.querySelector('.uni-table tbody');
-        const rows = tbody.getElementsByTagName('tr');
-        const pagination = document.querySelector('.pagination-wrapper');
-
-        let hasVisibleRows = false;
-
-        for (const row of rows) {
-            if (!row.classList.contains('empty-row')) {
-                const cells = row.getElementsByTagName('td');
-                let rowText = '';
-                for (const cell of cells) {
-                    rowText += cell.textContent + ' ';
-                }
-
-                if (rowText.toLowerCase().includes(filter)) {
-                    row.style.display = '';
-                    hasVisibleRows = true;
-                } else {
-                    row.style.display = 'none';
-                }
-            }
-        }
-
-        // Toggle pagination visibility based on search
-        if (pagination) {
-            pagination.style.display = filter ? 'none' : 'flex';
-        }
-
-        // Handle empty state
-        const existingEmptyRow = tbody.querySelector('.empty-row');
-        if (!hasVisibleRows) {
-            if (!existingEmptyRow) {
-                const emptyRow = document.createElement('tr');
-                emptyRow.className = 'empty-row';
-                const colspan = document.querySelector('.uni-table thead th:last-child').cellIndex + 1;
-                emptyRow.innerHTML = `
-                    <td colspan="${colspan}" class="empty-state">
-                        <i class="fas fa-bell-slash"></i>
-                        <p>No notifications found</p>
-                    </td>`;
-                tbody.appendChild(emptyRow);
-            } else {
-                existingEmptyRow.style.display = '';
-            }
-        } else if (existingEmptyRow) {
-            existingEmptyRow.style.display = 'none';
-        }
-    }
 };
 
-// Handle clicking outside modals
-window.addEventListener('click', function(event) {
+window.addEventListener('click', function (event) {
     const modals = [
         'noticeModal',
         'noticeEditModal',

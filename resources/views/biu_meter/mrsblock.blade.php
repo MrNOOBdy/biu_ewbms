@@ -19,8 +19,10 @@
     <h3><i class="fas fa-map-marked-alt"></i> Meter Reader Block Assignment</h3>
     <div class="header-controls">
         <div class="search-container">
-            <input type="text" id="meterReaderSearchInput" placeholder="Search meter readers..." onkeyup="filterMeterReaderTable()">
-            <i class="fas fa-search search-icon"></i>
+            <input type="text" id="meterReaderSearchInput" placeholder="Search meter readers...">
+            <button class="btn-search" onclick="filterMeterReaders()">
+                <i class="fas fa-search"></i> Search
+            </button>
         </div>
     </div>
 </div>

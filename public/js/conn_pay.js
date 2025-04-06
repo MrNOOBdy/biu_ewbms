@@ -52,53 +52,77 @@ function closePaymentResultModal() {
     }, 300);
 }
 
-function filterApplications() {
-    const searchValue = document.getElementById('searchInput').value.toLowerCase().trim();
+async function filterApplications() {
+    const searchValue = document.getElementById('searchInput').value.trim();
     const blockValue = document.getElementById('blockFilter').value;
     const statusValue = document.getElementById('statusFilter').value;
     const tbody = document.querySelector('.uni-table tbody');
-    const rows = tbody.querySelectorAll('tr');
-    let hasMatches = false;
+    const paginationContainer = document.querySelector('.pagination-wrapper');
 
-    rows.forEach(row => {
-        if (row.classList.contains('empty-state-row')) {
-            row.remove();
+    try {
+        const response = await fetch(`/application-fee/search?query=${encodeURIComponent(searchValue)}&block=${encodeURIComponent(blockValue)}&status=${encodeURIComponent(statusValue)}`, {
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+            }
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            tbody.innerHTML = '';
+
+            if (data.payments.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="9" class="empty-state">
+                            <i class="fas fa-file-invoice"></i>
+                            <p>No application payments found</p>
+                        </td>
+                    </tr>
+                `;
+            } else {
+                data.payments.forEach(payment => {
+                    const row = document.createElement('tr');
+                    row.dataset.customerId = payment.customer_id;
+                    row.classList.toggle('unpaid-row', payment.status === 'unpaid');
+
+                    row.innerHTML = `
+                        <td>Block ${payment.block_id}</td>
+                        <td>${payment.customer_id}</td>
+                        <td>${payment.firstname}</td>
+                        <td>${payment.middlename}</td>
+                        <td>${payment.lastname}</td>
+                        <td>₱${payment.application_fee}</td>
+                        <td>₱${payment.amount_paid}</td>
+                        <td>
+                            <span class="status-badge ${payment.status === 'paid' ? 'status-active' : 'status-inactive'}">
+                                ${payment.status.charAt(0).toUpperCase() + payment.status.slice(1)}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                ${payment.status === 'unpaid' ? `
+                                    <button class="btn_uni btn-activate" title="Pay Application Fee" onclick="showPaymentModal('${payment.customer_id}')">
+                                        <i class="fas fa-money-bill-wave"></i>Pay
+                                    </button>
+                                ` : `
+                                    <button class="btn_uni btn-billing" title="Print Receipt" onclick="printReceipt('${payment.customer_id}')">
+                                        <i class="fas fa-print"></i>Print
+                                    </button>
+                                `}
+                            </div>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            }
+
+            if (paginationContainer) {
+                paginationContainer.style.display = searchValue || blockValue || statusValue ? 'none' : 'flex';
+            }
         }
-    });
-
-    const dataRows = Array.from(rows).filter(row => !row.querySelector('.empty-state'));
-    if (dataRows.length === 0) {
-        showEmptyState(tbody);
-        return;
-    }
-
-    dataRows.forEach(row => {
-        const cells = row.querySelectorAll('td');
-        if (cells.length > 0) {
-            const block = cells[0].textContent.toLowerCase();
-            const customerId = cells[1].textContent.toLowerCase();
-            const firstName = cells[2].textContent.toLowerCase();
-            const middleName = cells[3].textContent.toLowerCase();
-            const lastName = cells[4].textContent.toLowerCase();
-            const status = row.querySelector('.status-badge')?.textContent.trim().toLowerCase() || '';
-
-            const matchesSearch = !searchValue ||
-                customerId.includes(searchValue) ||
-                firstName.includes(searchValue) ||
-                middleName.includes(searchValue) ||
-                lastName.includes(searchValue);
-
-            const matchesBlock = !blockValue || block.includes(`block ${blockValue}`);
-            const matchesStatus = !statusValue || status === statusValue;
-
-            const matches = matchesSearch && matchesBlock && matchesStatus;
-            row.style.display = matches ? '' : 'none';
-            if (matches) hasMatches = true;
-        }
-    });
-
-    if (!hasMatches) {
-        showEmptyState(tbody);
+    } catch (error) {
+        console.error('Failed to filter applications:', error);
     }
 }
 
@@ -141,11 +165,9 @@ function updateTableRow(customerId, amountPaid) {
 function printReceipt(customerId) {
     const printWindow = window.open(`/print-application-receipt/${customerId}`, '_blank');
     printWindow.addEventListener('load', () => {
-        // Add the html2pdf script dynamically
         const script = document.createElement('script');
         script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
         script.onload = () => {
-            // Define the print and download functions in the new window
             printWindow.printApplicationReceipt = function (customerId) {
                 printWindow.print();
             };
@@ -160,13 +182,10 @@ function printReceipt(customerId) {
                     jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
                 };
 
-                // Hide the buttons before generating PDF
                 const buttons = element.querySelector('.print-buttons');
                 buttons.style.display = 'none';
 
-                // Generate PDF
                 printWindow.html2pdf().set(opt).from(element).save().then(() => {
-                    // Show the buttons again after PDF generation
                     buttons.style.display = 'block';
                 });
             };
@@ -234,7 +253,6 @@ function handlePayment(event) {
             } else if (data.success) {
                 closeModal('paymentModal');
                 showPaymentResultModal(true, data.message);
-                // Remove updateTableRow since we'll reload the page instead
             }
         })
         .catch(error => {
@@ -246,8 +264,7 @@ function handlePayment(event) {
     return false;
 }
 
-// Add window click event handler at the end of the file
-window.onclick = function(event) {
+window.onclick = function (event) {
     if (event.target.classList.contains('modal')) {
         if (event.target.id === 'paymentResultModal') {
             closePaymentResultModal();

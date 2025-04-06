@@ -1,36 +1,66 @@
-function filterMeterReaderTable() {
-    const searchInput = document.getElementById('meterReaderSearchInput').value.toLowerCase();
-    const rows = document.querySelectorAll('.uni-table tbody tr:not(.empty-state-row)');
-    let visibleRows = 0;
+async function filterMeterReaders() {
+    const searchInput = document.getElementById('meterReaderSearchInput').value.trim();
+    const tbody = document.querySelector('.uni-table tbody');
+    const paginationContainer = document.querySelector('.pagination-wrapper');
 
-    rows.forEach(row => {
-        const textContent = row.textContent.toLowerCase();
-        const matches = textContent.includes(searchInput);
+    try {
+        const response = await fetch(`/meter-readers/blocks/search?query=${encodeURIComponent(searchInput)}`, {
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            }
+        });
 
-        if (matches) {
-            row.style.display = '';
-            visibleRows++;
-        } else {
-            row.style.display = 'none';
+        const data = await response.json();
+
+        if (data.success) {
+            tbody.innerHTML = '';
+
+            if (data.readers.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="empty-state">
+                            <i class="fas fa-user-slash"></i>
+                            <p>No meter readers found</p>
+                        </td>
+                    </tr>
+                `;
+            } else {
+                data.readers.forEach(reader => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${reader.user_id}</td>
+                        <td>${reader.firstname} ${reader.lastname}</td>
+                        <td>${reader.contactnum}</td>
+                        <td>${reader.email}</td>
+                        <td>${reader.assigned_blocks.length ? reader.assigned_blocks.join(', ') : '<span class="text-muted">No blocks assigned</span>'}</td>
+                        <td>
+                            <span class="status-badge ${reader.status === 'activate' ? 'status-active' : 'status-inactive'}">
+                                ${reader.status === 'activate' ? 'Active' : 'Inactive'}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="btn_uni btn-view" title="Assign Blocks" onclick="showAssignBlockModal('${reader.user_id}')">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    Assign Block
+                                </button>
+                                <button class="btn_uni btn-substitute" title="Create Substitution" onclick="showSubstitutionModal('${reader.user_id}')">
+                                    <i class="fas fa-user-clock"></i>
+                                    Add Substitute
+                                </button>
+                            </div>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            }
+
+            if (paginationContainer) {
+                paginationContainer.style.display = searchInput ? 'none' : 'flex';
+            }
         }
-    });
-
-    const existingEmptyRow = document.querySelector('.empty-state-row');
-    if (existingEmptyRow) {
-        existingEmptyRow.remove();
-    }
-
-    if (visibleRows === 0) {
-        const tbody = document.querySelector('.uni-table tbody');
-        const emptyRow = document.createElement('tr');
-        emptyRow.className = 'empty-state-row';
-        emptyRow.innerHTML = `
-            <td colspan="7" class="empty-state">
-                <i class="fas fa-user-slash"></i>
-                <p>No meter readers found</p>
-            </td>
-        `;
-        tbody.appendChild(emptyRow);
+    } catch (error) {
+        console.error('Failed to search meter readers:', error);
     }
 }
 

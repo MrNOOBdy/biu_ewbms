@@ -178,4 +178,43 @@ class BlockController extends Controller
             ]);
         }
     }
+
+    public function search(Request $request)
+    {
+        try {
+            $query = $request->get('query');
+            $blockFilter = $request->get('block_id');
+            
+            $blocks = Block::query();
+
+            if (!empty($blockFilter)) {
+                $blocks->where('block_id', $blockFilter);
+            }
+
+            if (!empty($query)) {
+                $blocks->where(function($q) use ($query) {
+                    $q->where('block_id', 'LIKE', "%{$query}%")
+                      ->orWhereJsonContains('barangays', $query);
+                });
+            }
+
+            $blocks = $blocks->orderBy('block_id')->get();
+
+            return response()->json([
+                'success' => true,
+                'blocks' => $blocks->map(function($block) {
+                    return [
+                        'block_id' => $block->block_id,
+                        'barangays' => is_array($block->barangays) ? implode(', ', $block->barangays) : $block->barangays
+                    ];
+                })
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to search blocks: ' . $e->getMessage()
+            ]);
+        }
+    }
 }

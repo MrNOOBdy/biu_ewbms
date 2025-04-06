@@ -111,6 +111,41 @@
     background-color: #218838;
 }
 
+.btn-search {
+    margin-left: 10px;
+    background-color: var(--primary-color);
+    color: var(--text-color-light);
+    padding: 8px 16px;
+    border: none;
+    border-radius: var(--border-radius-sm);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: background-color var(--transition-fast);
+}
+
+.btn-search:hover {
+    background-color: var(--primary-color-hover);
+}
+
+.btn-filter {
+    background-color: var(--primary-color);
+    color: var(--text-color-light);
+    padding: 8px 16px;
+    border: none;
+    border-radius: var(--border-radius-sm);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: background-color var(--transition-fast);
+}
+
+.btn-filter:hover {
+    background-color: var(--primary-color-hover);
+}
+
 .dark-mode .filter-section select {
     background-color: var(--dark-bg);
     border-color: var(--border-color-dark);

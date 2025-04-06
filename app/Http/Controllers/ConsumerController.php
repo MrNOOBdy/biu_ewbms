@@ -616,4 +616,68 @@ class ConsumerController extends Controller
                 ->with('error', 'Error loading billing history');
         }
     }
+
+    public function search(Request $request)
+    {
+        try {
+            $query = Consumer::query();
+            
+            if ($request->has('query')) {
+                $searchTerm = $request->get('query');
+                $query->where(function($q) use ($searchTerm) {
+                    $q->where('customer_id', 'LIKE', "%{$searchTerm}%")
+                      ->orWhere('firstname', 'LIKE', "%{$searchTerm}%")
+                      ->orWhere('middlename', 'LIKE', "%{$searchTerm}%")
+                      ->orWhere('lastname', 'LIKE', "%{$searchTerm}%")
+                      ->orWhere('address', 'LIKE', "%{$searchTerm}%")
+                      ->orWhere('contact_no', 'LIKE', "%{$searchTerm}%")
+                      ->orWhere('consumer_type', 'LIKE', "%{$searchTerm}%");
+                });
+            }
+
+            if ($request->has('block')) {
+                $blockId = $request->get('block');
+                if (!empty($blockId)) {
+                    $query->where('block_id', $blockId);
+                }
+            }
+
+            if ($request->has('status')) {
+                $status = $request->get('status');
+                if (!empty($status)) {
+                    $query->where('status', $status);
+                }
+            }
+
+            $consumers = $query->orderBy('created_at', 'desc')->get();
+            $userRole = Auth::user()->role()->first();
+
+            return response()->json([
+                'success' => true,
+                'consumers' => $consumers->map(function($consumer) use ($userRole) {
+                    return [
+                        'customer_id' => $consumer->customer_id,
+                        'block_id' => $consumer->block_id,
+                        'firstname' => $consumer->firstname,
+                        'middlename' => $consumer->middlename,
+                        'lastname' => $consumer->lastname,
+                        'address' => $consumer->address,
+                        'contact_no' => $consumer->contact_no,
+                        'consumer_type' => $consumer->consumer_type,
+                        'status' => $consumer->status,
+                        'canEdit' => $userRole->hasPermission('edit-consumer'),
+                        'canDelete' => $userRole->hasPermission('delete-consumer'),
+                        'canViewBillings' => $userRole->hasPermission('view-consumer-billings'),
+                        'canReconnect' => $userRole->hasPermission('reconnect-consumer')
+                    ];
+                })
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to search consumers: ' . $e->getMessage()
+            ]);
+        }
+    }
 }

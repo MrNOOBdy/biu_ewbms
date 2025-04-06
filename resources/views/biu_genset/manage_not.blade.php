@@ -9,8 +9,10 @@
     <h3><i class="fas fa-bell"></i> Notification SMS Management</h3>
     <div class="header-controls">
         <div class="search-container">
-            <input type="text" id="noticeSearchInput" placeholder="Search notices..." onkeyup="NoticeModule.filterNoticeTable()">
-            <i class="fas fa-search search-icon"></i>
+            <input type="text" id="noticeSearchInput" placeholder="Search notices...">
+            <button class="btn-search" onclick="NoticeModule.searchNotice()">
+                <i class="fas fa-search"></i> Search
+            </button>
         </div>
         @if($userRole->hasPermission('add-new-notice'))
         <button class="add-btn" onclick="NoticeModule.showNoticeModal()">
@@ -21,6 +23,11 @@
 </div>
 
 <div class="content-wrapper">
+    <div id="userPermissions" 
+        data-can-edit="{{ $userRole->hasPermission('edit-notice') ? 'true' : 'false' }}"
+        data-can-delete="{{ $userRole->hasPermission('delete-notice') ? 'true' : 'false' }}"
+        style="display: none;">
+    </div>
     <div class="table-container">
         <table class="uni-table">
             <thead>

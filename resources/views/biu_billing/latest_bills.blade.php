@@ -61,7 +61,6 @@
         gap: 10px;
     }
 
-    /* Responsive adjustments */
     @media (max-width: 900px) {
         .info-group {
             flex-direction: column;
@@ -86,8 +85,10 @@
             </select>
         </div>
         <div class="search-container">
-            <input type="text" id="searchInput" placeholder="Search bills..." onkeyup="filterBills()">
-            <i class="fas fa-search search-icon"></i>
+            <input type="text" id="searchInput" placeholder="Search bills...">
+            <button class="btn-search" onclick="filterBills()">
+                <i class="fas fa-search"></i> Search
+            </button>
         </div>
     </div>
 </div>

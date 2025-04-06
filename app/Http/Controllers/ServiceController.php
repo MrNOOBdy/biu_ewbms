@@ -127,4 +127,67 @@ class ServiceController extends Controller
             return redirect()->back()->with('error', 'Error generating receipt');
         }
     }
+
+    public function search(Request $request)
+    {
+        try {
+            $query = ServiceFee::with('consumer')
+                ->whereHas('consumer')
+                ->where('reconnection_fee', '>', 0);
+
+            if ($request->has('query')) {
+                $searchTerm = $request->get('query');
+                $query->whereHas('consumer', function($q) use ($searchTerm) {
+                    $q->where('customer_id', 'LIKE', "%{$searchTerm}%")
+                      ->orWhere('firstname', 'LIKE', "%{$searchTerm}%")
+                      ->orWhere('middlename', 'LIKE', "%{$searchTerm}%")
+                      ->orWhere('lastname', 'LIKE', "%{$searchTerm}%");
+                });
+            }
+
+            if ($request->has('block')) {
+                $blockId = $request->get('block');
+                if (!empty($blockId)) {
+                    $query->whereHas('consumer', function($q) use ($blockId) {
+                        $q->where('block_id', $blockId);
+                    });
+                }
+            }
+
+            if ($request->has('status')) {
+                $status = $request->get('status');
+                if (!empty($status)) {
+                    $query->where('service_paid_status', $status);
+                }
+            }
+
+            $payments = $query->orderByRaw("CASE WHEN service_paid_status = 'unpaid' THEN 0 ELSE 1 END")
+                            ->orderBy('created_at', 'desc')
+                            ->get();
+
+            return response()->json([
+                'success' => true,
+                'payments' => $payments->map(function($payment) {
+                    return [
+                        'customer_id' => $payment->customer_id,
+                        'block_id' => $payment->consumer->block_id ?? 'N/A',
+                        'firstname' => $payment->consumer->firstname ?? 'N/A',
+                        'middlename' => $payment->consumer->middlename ?? 'N/A',
+                        'lastname' => $payment->consumer->lastname ?? 'N/A',
+                        'reconnection_fee' => number_format($payment->reconnection_fee, 2),
+                        'amount_paid' => number_format($payment->service_amount_paid, 2),
+                        'status' => $payment->service_paid_status,
+                        'raw_fee' => $payment->reconnection_fee,
+                        'raw_paid' => $payment->service_amount_paid
+                    ];
+                })
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to search payments: ' . $e->getMessage()
+            ]);
+        }
+    }
 }

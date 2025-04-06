@@ -29,8 +29,10 @@
             </select>
         </div>
         <div class="search-container">
-            <input type="text" id="searchInput" placeholder="Search consumers..." onkeyup="filterConsumers()">
-            <i class="fas fa-search search-icon"></i>
+            <input type="text" id="searchInput" placeholder="Search consumers...">
+            <button class="btn-search" onclick="filterConsumers()">
+                <i class="fas fa-search"></i> Search
+            </button>
         </div>
         @if($userRole->hasPermission('add-new-consumer'))
             <button class="add-btn" type="button" onclick="showAddConsumerModal()">

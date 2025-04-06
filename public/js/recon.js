@@ -1,50 +1,79 @@
-function filterServices() {
-    const searchValue = document.getElementById('searchInput').value.toLowerCase().trim();
+async function filterServices() {
+    const searchValue = document.getElementById('searchInput').value.trim();
     const blockValue = document.getElementById('blockFilter').value;
     const statusValue = document.getElementById('statusFilter').value;
     const tbody = document.querySelector('.uni-table tbody');
-    const rows = tbody.querySelectorAll('tr');
-    let hasMatches = false;
+    const paginationContainer = document.querySelector('.pagination-wrapper');
 
-    rows.forEach(row => {
-        if (row.classList.contains('empty-state-row')) {
-            row.remove();
+    try {
+        const response = await fetch(`/service/search?query=${encodeURIComponent(searchValue)}&block=${encodeURIComponent(blockValue)}&status=${encodeURIComponent(statusValue)}`, {
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+            }
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            tbody.innerHTML = '';
+
+            if (data.payments.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="9" class="empty-state">
+                            <i class="fas fa-tools"></i>
+                            <p>No reconnection payments found</p>
+                        </td>
+                    </tr>
+                `;
+            } else {
+                data.payments.forEach(payment => {
+                    const hasPermissions = document.querySelector('th:last-child') !== null;
+                    const row = document.createElement('tr');
+                    row.dataset.customerId = payment.customer_id;
+                    row.classList.toggle('unpaid-row', payment.status === 'unpaid');
+
+                    row.innerHTML = `
+                        <td>Block ${payment.block_id}</td>
+                        <td>${payment.customer_id}</td>
+                        <td>${payment.firstname}</td>
+                        <td>${payment.middlename}</td>
+                        <td>${payment.lastname}</td>
+                        <td>₱${payment.reconnection_fee}</td>
+                        <td>₱${payment.amount_paid}</td>
+                        <td>
+                            <span class="status-badge ${payment.status === 'paid' ? 'status-active' : 'status-inactive'}">
+                                ${payment.status.charAt(0).toUpperCase() + payment.status.slice(1)}
+                            </span>
+                        </td>
+                        ${hasPermissions ? `
+                        <td>
+                            <div class="action-buttons">
+                                ${payment.status === 'unpaid' && payment.raw_fee > 0 ? `
+                                    <button class="btn_uni btn-activate" title="Pay Reconnection Fee" onclick="showServicePaymentModal('${payment.customer_id}')">
+                                        <i class="fas fa-money-bill-wave"></i>Pay
+                                    </button>
+                                ` : payment.status === 'paid' ? `
+                                    <button class="btn_uni btn-billing" title="Print Receipt" onclick="printServiceReceipt('${payment.customer_id}')">
+                                        <i class="fas fa-print"></i>Print
+                                    </button>
+                                ` : ''}
+                            </div>
+                        </td>` : ''}
+                    `;
+                    tbody.appendChild(row);
+                });
+            }
+
+            if (paginationContainer) {
+                paginationContainer.style.display = searchValue || blockValue || statusValue ? 'none' : 'flex';
+            }
+        } else {
+            showServiceResultModal(false, data.message);
         }
-    });
-
-    const dataRows = Array.from(rows).filter(row => !row.querySelector('.empty-state'));
-    if (dataRows.length === 0) {
-        showEmptyState(tbody);
-        return;
-    }
-
-    dataRows.forEach(row => {
-        const cells = row.querySelectorAll('td');
-        if (cells.length > 0) {
-            const block = cells[0].textContent.toLowerCase();
-            const customerId = cells[1].textContent.toLowerCase();
-            const firstName = cells[2].textContent.toLowerCase();
-            const middleName = cells[3].textContent.toLowerCase();
-            const lastName = cells[4].textContent.toLowerCase();
-            const status = row.querySelector('.status-badge')?.textContent.trim().toLowerCase() || '';
-
-            const matchesSearch = !searchValue ||
-                customerId.includes(searchValue) ||
-                firstName.includes(searchValue) ||
-                middleName.includes(searchValue) ||
-                lastName.includes(searchValue);
-
-            const matchesBlock = !blockValue || block.includes(`block ${blockValue}`);
-            const matchesStatus = !statusValue || status === statusValue;
-
-            const matches = matchesSearch && matchesBlock && matchesStatus;
-            row.style.display = matches ? '' : 'none';
-            if (matches) hasMatches = true;
-        }
-    });
-
-    if (!hasMatches) {
-        showEmptyState(tbody);
+    } catch (error) {
+        console.error('Failed to filter services:', error);
+        showServiceResultModal(false, 'Failed to filter services');
     }
 }
 
@@ -76,7 +105,7 @@ function showServicePaymentModal(customerId) {
 function closeServiceResultModal() {
     const modal = document.getElementById('serviceResultModal');
     modal.classList.remove('fade-in');
-    
+
     setTimeout(() => {
         modal.style.display = 'none';
         if (modal.getAttribute('data-refresh') === 'true') {

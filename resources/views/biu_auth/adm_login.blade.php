@@ -12,11 +12,6 @@
         <img src="{{ asset('images/logo/bi-u_logo.png') }}" alt="BI-U Logo" class="unauth-logo_login">
     </div>
     
-    <div class="login-header">
-        <h2>Administrator Login</h2>
-        <div class="login-divider"></div>
-    </div>
-    
     @if (session('status'))
         <div class="alert alert-success" role="alert">
             {{ session('status') }}

@@ -22,8 +22,10 @@
             </select>
         </div>
         <div class="search-container">
-            <input type="text" id="userSearchInput" placeholder="Search users..." onkeyup="filterUserTable()">
-            <i class="fas fa-search search-icon"></i>
+            <input type="text" id="userSearchInput" placeholder="Search users...">
+            <button class="btn-search" onclick="filterUserTable()">
+                <i class="fas fa-search"></i> Search
+            </button>
         </div>
         @if($canAddUser)
             <button class="add-btn" type="button" onclick="showAddUserModal()">
@@ -44,6 +46,11 @@
 @endif
 
 <div class="content-wrapper">
+    <div id="userPermissions" 
+        data-can-update="{{ $userRole->hasPermission('update-user') ? 'true' : 'false' }}"
+        data-can-deactivate="{{ $userRole->hasPermission('deactivate-user') ? 'true' : 'false' }}"
+        style="display: none;">
+    </div>
     <div class="table-container">
         <table class="uni-table">
             <thead>
@@ -399,47 +406,89 @@
 <script src="{{ asset('js/user_access2.js') }}"></script>
 <script>
     function filterUserTable() {
-        const roleFilter = document.getElementById('userRoleFilter').value.toLowerCase();
-        const statusFilter = document.getElementById('userStatusFilter').value.toLowerCase();
-        const searchInput = document.getElementById('userSearchInput').value.toLowerCase();
-        
-        const rows = document.querySelectorAll('.uni-table tbody tr:not(.empty-state-row)');
-        let visibleRows = 0;
-        
-        rows.forEach(row => {
-            const roleCell = row.querySelector('td:nth-child(7)').textContent.toLowerCase();
-            const statusCell = row.querySelector('td:nth-child(8)').textContent.toLowerCase();
-            const textContent = row.textContent.toLowerCase();
-            
-            const matchesRole = !roleFilter || roleCell.includes(roleFilter);
-            const matchesStatus = !statusFilter || statusCell.includes(statusFilter);
-            const matchesSearch = !searchInput || textContent.includes(searchInput);
-            
-            if (matchesRole && matchesStatus && matchesSearch) {
-                row.style.display = '';
-                visibleRows++;
-            } else {
-                row.style.display = 'none';
+        const roleFilter = document.getElementById('userRoleFilter').value;
+        const statusFilter = document.getElementById('userStatusFilter').value;
+        const searchQuery = document.getElementById('userSearchInput').value.trim();
+        const tableBody = document.querySelector('.uni-table tbody');
+        const paginationContainer = document.querySelector('.pagination-wrapper');
+
+        const permissions = document.getElementById('userPermissions');
+        const canUpdate = permissions.dataset.canUpdate === 'true';
+        const canDeactivate = permissions.dataset.canDeactivate === 'true';
+        const hasPermissions = canUpdate || canDeactivate;
+
+        fetch(`/users/search?query=${encodeURIComponent(searchQuery)}&role=${encodeURIComponent(roleFilter)}&status=${encodeURIComponent(statusFilter)}`, {
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
             }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                tableBody.innerHTML = '';
+
+                if (data.users.length === 0) {
+                    const colspan = document.querySelector('.uni-table thead tr').children.length;
+                    tableBody.innerHTML = `
+                        <tr>
+                            <td colspan="${colspan}" class="empty-state">
+                                <i class="fas fa-users-slash"></i>
+                                <p>No user account data found</p>
+                            </td>
+                        </tr>
+                    `;
+                } else {
+                    data.users.forEach(user => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${user.user_id}</td>
+                            <td>${user.firstname}</td>
+                            <td>${user.lastname}</td>
+                            <td>${user.contactnum}</td>
+                            <td>${user.email}</td>
+                            <td>${user.username}</td>
+                            <td>${user.role || 'N/A'}</td>
+                            <td>
+                                <span class="status-badge ${user.status === 'activate' ? 'status-active' : 'status-inactive'}">
+                                    ${user.status === 'activate' ? 'Active' : 'Inactive'}
+                                </span>
+                            </td>
+                            ${hasPermissions ? `
+                            <td>
+                                <div class="action-buttons">
+                                    ${canUpdate ? `
+                                        <button class="btn_uni btn-view" title="Update" onclick="viewUser('${user.user_id}')">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                    ` : ''}
+                                    ${canDeactivate ? `
+                                        ${user.status === 'activate' ? `
+                                            <button class="btn_uni btn-deactivate" title="Deactivate" onclick="toggleUserStatus('${user.user_id}', 'deactivate')">
+                                                <i class="fas fa-user-times"></i>
+                                            </button>
+                                        ` : `
+                                            <button class="btn_uni btn-activate" title="Activate" onclick="toggleUserStatus('${user.user_id}', 'activate')">
+                                                <i class="fas fa-user-check"></i>
+                                            </button>
+                                        `}
+                                    ` : ''}
+                                </div>
+                            </td>` : ''}
+                        `;
+                        tableBody.appendChild(row);
+                    });
+                }
+
+                if (paginationContainer) {
+                    paginationContainer.style.display = searchQuery || roleFilter || statusFilter ? 'none' : 'flex';
+                }
+            } else {
+                showUserResultModal(false, 'Error', data.message);
+            }
+        })
+        .catch(error => {
+            showUserResultModal(false, 'Error', 'Failed to search users');
         });
-
-        const existingEmptyRow = document.querySelector('.empty-state-row');
-        if (existingEmptyRow) {
-            existingEmptyRow.remove();
-        }
-
-        if (visibleRows === 0) {
-            const tbody = document.querySelector('.uni-table tbody');
-            const emptyRow = document.createElement('tr');
-            emptyRow.className = 'empty-state-row';
-            emptyRow.innerHTML = `
-                <td colspan="${document.querySelector('[data-permissions]')?.getAttribute('data-permissions') === 'true' ? 9 : 8}" class="empty-state">
-                    <i class="fas fa-users-slash"></i>
-                    <p>No user account data found</p>
-                </td>
-            `;
-            tbody.appendChild(emptyRow);
-        }
     }
 </script>
 @endsection

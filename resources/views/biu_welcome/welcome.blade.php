@@ -25,32 +25,6 @@
                 for both administrators and customers.
             </p>
         </div>
-        
-        <!-- <div class="features-container">
-            <div class="feature-item">
-                <div class="feature-icon">
-                    <i class="fas fa-file-invoice-dollar"></i>
-                </div>
-                <h3>Efficient Billing</h3>
-                <p>Simplified billing process with automated calculations and notifications</p>
-            </div>
-            
-            <div class="feature-item">
-                <div class="feature-icon">
-                    <i class="fas fa-users"></i>
-                </div>
-                <h3>Account Management</h3>
-                <p>Comprehensive tools for customer account tracking and management</p>
-            </div>
-            
-            <div class="feature-item">
-                <div class="feature-icon">
-                    <i class="fas fa-chart-line"></i>
-                </div>
-                <h3>Data Analytics</h3>
-                <p>Insightful reports and analytics to monitor water consumption patterns</p>
-            </div>
-        </div> -->
     </div>
     
     <div class="action-container">

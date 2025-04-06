@@ -130,11 +130,11 @@ function printBill(consreadId) {
         const script = document.createElement('script');
         script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
         script.onload = () => {
-            printWindow.printBillReceipt = function() {
+            printWindow.printBillReceipt = function () {
                 printWindow.print();
             };
 
-            printWindow.downloadBillReceipt = function() {
+            printWindow.downloadBillReceipt = function () {
                 const element = printWindow.document.querySelector('#bill-receipt');
                 const opt = {
                     margin: 1,
@@ -201,54 +201,77 @@ function closeModal(modalId) {
     setTimeout(() => modal.style.display = 'none', 300);
 }
 
-function filterBills() {
-    const searchValue = document.getElementById('searchInput').value.toLowerCase().trim();
+async function filterBills() {
+    const searchValue = document.getElementById('searchInput').value.trim();
     const statusValue = document.getElementById('statusFilter').value.toLowerCase();
     const tbody = document.querySelector('.uni-table tbody');
-    const rows = tbody.querySelectorAll('tr');
-    let hasMatches = false;
+    const paginationContainer = document.querySelector('.pagination-container');
 
-    rows.forEach(row => {
-        if (row.classList.contains('empty-state-row')) {
-            row.remove();
-            return;
+    try {
+        const response = await fetch(`/billing/payments/search?query=${encodeURIComponent(searchValue)}&status=${encodeURIComponent(statusValue)}`, {
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+            }
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            tbody.innerHTML = '';
+
+            if (data.bills.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="9" class="empty-state">
+                            <i class="fas fa-file-invoice"></i>
+                            <p>No bills found</p>
+                        </td>
+                    </tr>
+                `;
+            } else {
+                data.bills.forEach(bill => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${bill.customer_id}</td>
+                        <td>${bill.consumer_name}</td>
+                        <td>${bill.due_date}</td>
+                        <td>${bill.previous_reading}</td>
+                        <td>${bill.present_reading}</td>
+                        <td>${bill.consumption}</td>
+                        <td>₱${bill.total_amount}</td>
+                        <td>
+                            <span class="status-badge ${bill.status.toLowerCase() === 'paid' ? 'status-active' : 'status-pending'}">
+                                ${bill.status.charAt(0).toUpperCase() + bill.status.slice(1)}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                ${bill.status.toLowerCase() === 'unpaid' ? `
+                                    <button class="btn_uni btn-billing" onclick="handlePayment('${bill.consread_id}')">
+                                        <i class="fas fa-money-bill-wave"></i> Pay
+                                    </button>
+                                ` : `
+                                    <button class="btn_uni btn-billing" title="Print Bill" onclick="printBill('${bill.consread_id}')">
+                                        <i class="fas fa-print"></i>Print
+                                    </button>
+                                `}
+                            </div>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            }
+
+            if (paginationContainer) {
+                paginationContainer.style.display = searchValue || statusValue ? 'none' : 'flex';
+            }
+        } else {
+            showPaymentResultModal(false, data.message);
         }
-
-        const cells = row.querySelectorAll('td');
-        if (cells.length > 0) {
-            const consumerId = cells[0].textContent.toLowerCase();
-            const name = cells[1].textContent.toLowerCase();
-            const dueDate = cells[2].textContent.toLowerCase();
-            const statusBadge = row.querySelector('.status-badge');
-            const status = statusBadge ? statusBadge.textContent.trim().toLowerCase() : '';
-
-            const matchesSearch = !searchValue ||
-                consumerId.includes(searchValue) ||
-                name.includes(searchValue) ||
-                dueDate.includes(searchValue);
-
-            const matchesStatus = !statusValue || status === statusValue;
-
-            const matches = matchesSearch && matchesStatus;
-            row.style.display = matches ? '' : 'none';
-            if (matches) hasMatches = true;
-        }
-    });
-
-    if (!hasMatches) {
-        showEmptyState(tbody);
+    } catch (error) {
+        console.error('Failed to filter bills:', error);
+        showPaymentResultModal(false, 'Failed to filter bills');
     }
-}
-
-function showEmptyState(tbody) {
-    const colspan = document.querySelector('.uni-table thead th:last-child').cellIndex + 1;
-    tbody.innerHTML = `
-        <tr class="empty-state-row">
-            <td colspan="${colspan}" class="empty-state">
-                <i class="fas fa-search"></i>
-                <p>No bills found for your search criteria</p>
-            </td>
-        </tr>`;
 }
 
 document.addEventListener('DOMContentLoaded', function () {

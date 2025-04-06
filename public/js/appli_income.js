@@ -1,107 +1,95 @@
-function filterIncome() {
-    const searchValue = document.getElementById('searchInput').value.toLowerCase().trim();
-    const blockValue = document.getElementById('blockFilter').value;
-    const monthValue = document.getElementById('monthFilter').value;
-    const yearValue = document.getElementById('yearFilter').value;
-    const tbody = document.querySelector('.uni-table tbody');
-    const rows = tbody.querySelectorAll('tr');
-    let hasMatches = false;
-    
-    let filteredApplicationFee = 0;
-    let filteredAmountPaid = 0;
-    let filteredBalance = 0;
+const AppIncome = {
+    async filterIncome() {
+        const searchValue = document.getElementById('searchInput').value.trim();
+        const blockValue = document.getElementById('blockFilter').value;
+        const monthValue = document.getElementById('monthFilter').value;
+        const yearValue = document.getElementById('yearFilter').value;
+        const tbody = document.querySelector('.uni-table tbody');
+        const paginationContainer = document.querySelector('.pagination-container');
 
-    rows.forEach(row => {
-        if (row.classList.contains('empty-state-row')) {
-            row.remove();
-        }
-    });
-
-    const dataRows = Array.from(rows).filter(row => !row.querySelector('.empty-state'));
-    if (dataRows.length === 0) {
-        showEmptyState(tbody, monthValue, yearValue);
-        return;
-    }
-
-    dataRows.forEach(row => {
-        const block = row.cells[0].textContent.toLowerCase();
-        const name = row.cells[1].textContent.toLowerCase();
-        const paymentDate = row.cells[5].textContent;
-        
-        let dateMatch = true;
-        if (monthValue || yearValue) {
-            if (paymentDate === 'Not paid yet') {
-                dateMatch = false;
-            } else {
-                const date = new Date(paymentDate);
-                const month = (date.getMonth() + 1).toString();
-                const year = date.getFullYear().toString();
-                
-                dateMatch = (!monthValue || month === monthValue) && 
-                           (!yearValue || year === yearValue);
+        // Only make the API call if at least one filter has a value
+        if (!searchValue && !blockValue && !monthValue && !yearValue) {
+            if (paginationContainer) {
+                paginationContainer.style.display = 'flex';
             }
+            return;
         }
-        
-        const matchesSearch = !searchValue || name.includes(searchValue);
-        const matchesBlock = !blockValue || block.includes(`block ${blockValue}`);
-        
-        const matches = matchesSearch && matchesBlock && dateMatch;
-        row.style.display = matches ? '' : 'none';
-        
-        if (matches) {
-            hasMatches = true;
-            filteredApplicationFee += parseFloat(row.cells[2].textContent.replace('₱', '').replace(/,/g, ''));
-            filteredAmountPaid += parseFloat(row.cells[3].textContent.replace('₱', '').replace(/,/g, ''));
-            filteredBalance += parseFloat(row.cells[4].textContent.replace('₱', '').replace(/,/g, ''));
+
+        try {
+            const response = await fetch(`/appli_income/search?query=${encodeURIComponent(searchValue)}&block=${encodeURIComponent(blockValue)}&month=${encodeURIComponent(monthValue)}&year=${encodeURIComponent(yearValue)}`, {
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                }
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                tbody.innerHTML = '';
+
+                if (data.payments.length === 0) {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="6" class="empty-state">
+                                <i class="fas fa-chart-bar"></i>
+                                <p>No application income data found</p>
+                            </td>
+                        </tr>
+                    `;
+                } else {
+                    data.payments.forEach(payment => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${payment.block}</td>
+                            <td>${payment.consumer_name}</td>
+                            <td>₱${payment.application_fee}</td>
+                            <td>₱${payment.amount_paid}</td>
+                            <td>₱${payment.balance}</td>
+                            <td>${payment.payment_date}</td>
+                        `;
+                        tbody.appendChild(row);
+                    });
+                }
+
+                if (data.totals) {
+                    this.updateTotals(
+                        data.totals.application_fee,
+                        data.totals.amount_paid,
+                        data.totals.balance
+                    );
+                }
+
+                if (paginationContainer) {
+                    paginationContainer.style.display = 'none';
+                }
+            }
+        } catch (error) {
+            console.error('Failed to filter payments:', error);
         }
-    });
+    },
 
-    updateTotals(filteredApplicationFee, filteredAmountPaid, filteredBalance);
-
-    if (!hasMatches) {
-        showEmptyState(tbody, monthValue, yearValue);
+    updateTotals(applicationFee, amountPaid, balance) {
+        const tfoot = document.querySelector('.uni-table tfoot');
+        if (tfoot) {
+            const totalRow = tfoot.querySelector('.total-row');
+            totalRow.cells[2].innerHTML = `<strong>₱${applicationFee.toFixed(2)}</strong>`;
+            totalRow.cells[3].innerHTML = `<strong>₱${amountPaid.toFixed(2)}</strong>`;
+            totalRow.cells[4].innerHTML = `<strong>₱${balance.toFixed(2)}</strong>`;
+        }
     }
-}
+};
 
-function updateTotals(applicationFee, amountPaid, balance) {
-    const tfoot = document.querySelector('.uni-table tfoot');
-    if (tfoot) {
-        const totalRow = tfoot.querySelector('.total-row');
-        totalRow.cells[2].innerHTML = `<strong>₱${applicationFee.toFixed(2)}</strong>`;
-        totalRow.cells[3].innerHTML = `<strong>₱${amountPaid.toFixed(2)}</strong>`;
-        totalRow.cells[4].innerHTML = `<strong>₱${balance.toFixed(2)}</strong>`;
-    }
-}
-
-function showEmptyState(tbody, monthValue, yearValue) {
-    const emptyRow = document.createElement('tr');
-    emptyRow.classList.add('empty-state-row');
-    
-    let message = 'No matching records found';
-    if (monthValue || yearValue) {
-        const month = monthValue ? document.getElementById('monthFilter').options[monthValue].text : '';
-        const year = yearValue || '';
-        message = `No paid application fee found for ${month} ${year}`.trim();
-    }
-
-    emptyRow.innerHTML = `
-        <td colspan="6" class="empty-state">
-            <i class="fas fa-search"></i>
-            <p>${message}</p>
-        </td>`;
-    tbody.appendChild(emptyRow);
-}
-
-document.addEventListener('DOMContentLoaded', function() {
+// Initialize event listeners
+document.addEventListener('DOMContentLoaded', function () {
     const searchInput = document.getElementById('searchInput');
     const blockFilter = document.getElementById('blockFilter');
     const monthFilter = document.getElementById('monthFilter');
     const yearFilter = document.getElementById('yearFilter');
-    
-    if (searchInput) searchInput.addEventListener('keyup', filterIncome);
-    if (blockFilter) blockFilter.addEventListener('change', filterIncome);
-    if (monthFilter) monthFilter.addEventListener('change', filterIncome);
-    if (yearFilter) yearFilter.addEventListener('change', filterIncome);
-    
-    filterIncome();
+
+    // Remove all keyup/change event listeners - only use button click
+    const searchButton = document.querySelector('.btn-search');
+    const filterButton = document.querySelector('.btn-filter');
+
+    if (searchButton) searchButton.addEventListener('click', () => AppIncome.filterIncome());
+    if (filterButton) filterButton.addEventListener('click', () => AppIncome.filterIncome());
 });

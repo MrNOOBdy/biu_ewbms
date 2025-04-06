@@ -21,8 +21,10 @@
             </select>
         </div>
         <div class="search-container">
-            <input type="text" id="searchInput" placeholder="Search reconnections..." onkeyup="filterServices()">
-            <i class="fas fa-search search-icon"></i>
+            <input type="text" id="searchInput" placeholder="Search reconnections...">
+            <button class="btn-search" onclick="filterServices()">
+                <i class="fas fa-search"></i> Search
+            </button>
         </div>
     </div>
 </div>

@@ -131,4 +131,35 @@ class NoticeController extends Controller
             ]);
         }
     }
+
+    public function search(Request $request)
+    {
+        try {
+            $query = $request->get('query');
+            
+            $notifications = ManageNotice::where('type', 'LIKE', "%{$query}%")
+                ->orWhere('announcement', 'LIKE', "%{$query}%")
+                ->orderBy('created_at', 'desc')
+                ->get();
+
+            return response()->json([
+                'success' => true,
+                'notifications' => $notifications->map(function($notice) {
+                    return [
+                        'notice_id' => $notice->notice_id,
+                        'type' => $notice->type,
+                        'announcement' => $notice->announcement,
+                        'created_at' => $notice->created_at->format('M d, Y'),
+                        'updated_at' => $notice->updated_at->format('M d, Y')
+                    ];
+                })
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to search notifications: ' . $e->getMessage()
+            ]);
+        }
+    }
 }

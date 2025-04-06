@@ -137,4 +137,66 @@ class BillingController extends Controller
             ], 500);
         }
     }
+
+    public function search(Request $request)
+    {
+        try {
+            $query = ConsumerReading::with(['consumer', 'billPayments']);
+
+            if ($request->has('query')) {
+                $searchTerm = $request->get('query');
+                $query->whereHas('consumer', function($q) use ($searchTerm) {
+                    $q->where('customer_id', 'LIKE', "%{$searchTerm}%")
+                      ->orWhere('firstname', 'LIKE', "%{$searchTerm}%")
+                      ->orWhere('lastname', 'LIKE', "%{$searchTerm}%")
+                      ->orWhere('contact_no', 'LIKE', "%{$searchTerm}%");
+                });
+            }
+
+            if ($request->has('status')) {
+                $status = $request->get('status');
+                if ($status === 'Pending') {
+                    $query->whereDoesntHave('billPayments');
+                } elseif ($status === 'unpaid') {
+                    $query->whereHas('billPayments', function($q) {
+                        $q->where('bill_status', 'unpaid');
+                    });
+                }
+            } else {
+                $query->where(function($q) {
+                    $q->whereDoesntHave('billPayments')
+                      ->orWhereHas('billPayments', function($sq) {
+                          $sq->where('bill_status', 'unpaid');
+                      });
+                });
+            }
+
+            $bills = $query->orderBy('reading_date', 'desc')->get();
+
+            return response()->json([
+                'success' => true,
+                'bills' => $bills->map(function($bill) {
+                    $billPayment = $bill->billPayments()->first();
+                    return [
+                        'consread_id' => $bill->consread_id,
+                        'customer_id' => $bill->consumer->customer_id,
+                        'contact_no' => $bill->consumer->contact_no,
+                        'consumer_name' => $bill->consumer->firstname . ' ' . $bill->consumer->lastname,
+                        'reading_date' => date('M d, Y', strtotime($bill->reading_date)),
+                        'due_date' => date('M d, Y', strtotime($bill->due_date)),
+                        'previous_reading' => $bill->previous_reading,
+                        'present_reading' => $bill->present_reading,
+                        'consumption' => $bill->consumption,
+                        'bill_status' => !$billPayment ? 'Pending' : $billPayment->bill_status
+                    ];
+                })
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to search bills: ' . $e->getMessage()
+            ]);
+        }
+    }
 }

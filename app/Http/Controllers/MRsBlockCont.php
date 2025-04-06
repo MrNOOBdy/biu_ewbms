@@ -235,4 +235,41 @@ class MRsBlockCont extends Controller
             ], 500);
         }
     }
+
+    public function search(Request $request)
+    {
+        try {
+            $query = User::where('role', 'Meter Reader');
+            
+            if ($request->has('query')) {
+                $searchTerm = $request->get('query');
+                $query->where(function($q) use ($searchTerm) {
+                    $q->where('firstname', 'LIKE', "%{$searchTerm}%")
+                      ->orWhere('lastname', 'LIKE', "%{$searchTerm}%")
+                      ->orWhere('contactnum', 'LIKE', "%{$searchTerm}%")
+                      ->orWhere('email', 'LIKE', "%{$searchTerm}%");
+                });
+            }
+
+            $meterReaders = $query->orderBy('created_at', 'desc')->get();
+
+            foreach($meterReaders as $reader) {
+                $reader->assigned_blocks = DB::table('meter_reader_blocks')
+                    ->where('user_id', $reader->user_id)
+                    ->pluck('block_id')
+                    ->toArray();
+            }
+
+            return response()->json([
+                'success' => true,
+                'readers' => $meterReaders
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to search meter readers: ' . $e->getMessage()
+            ]);
+        }
+    }
 }

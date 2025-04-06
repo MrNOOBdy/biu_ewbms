@@ -3,36 +3,44 @@
 @section('title', 'BI-U: Application Fee Income')
 
 @section('tab-content')
+<link rel="stylesheet" href="{{ asset('css/tbl_pagination.css') }}">
 <div class="table-header">
     <h3><i class="fas fa-chart-line"></i> Application Fee Income</h3>
     <div class="header-controls">
         <div class="filter-section">
-            <select id="monthFilter" onchange="filterIncome()">
+            <select id="monthFilter">
                 <option value="">All Months</option>
-                @foreach(['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'] as $month)
-                    <option value="{{ $loop->iteration }}" {{ date('n') == $loop->iteration ? 'selected' : '' }}>
-                        {{ $month }}
+                @foreach($availableMonths as $month)
+                    <option value="{{ $month['number'] }}" {{ date('n') == $month['number'] ? 'selected' : '' }}>
+                        {{ $month['name'] }}
                     </option>
                 @endforeach
             </select>
-            <select id="yearFilter" onchange="filterIncome()">
+            <select id="yearFilter">
                 <option value="">All Years</option>
-                @foreach(range(date('Y'), 2020) as $year)
+                @foreach($availableYears as $year)
                     <option value="{{ $year }}" {{ date('Y') == $year ? 'selected' : '' }}>
                         {{ $year }}
                     </option>
                 @endforeach
             </select>
-            <select id="blockFilter" onchange="filterIncome()">
+            <select id="blockFilter">
                 <option value="">All Blocks</option>
-                @foreach($blocks as $block)
-                    <option value="{{ $block->block_id }}">Block {{ $block->block_id }}</option>
+                @foreach($blocks as $blockId)
+                    @if($blockId)
+                        <option value="{{ $blockId }}">Block {{ $blockId }}</option>
+                    @endif
                 @endforeach
             </select>
+            <button class="btn-filter" onclick="AppIncome.filterIncome()">
+                <i class="fas fa-filter"></i> Filter
+            </button>
         </div>
         <div class="search-container">
-            <input type="text" id="searchInput" placeholder="Search..." onkeyup="filterIncome()">
-            <i class="fas fa-search search-icon"></i>
+            <input type="text" id="searchInput" placeholder="Generate...">
+            <button class="btn-search" onclick="AppIncome.filterIncome()">
+                <i class="fas fa-file-alt"></i> Generate
+            </button>
         </div>
     </div>
 </div>
@@ -102,6 +110,11 @@
                 </tr>
             </tfoot>
         </table>
+        <div class="pagination-container">
+            {{ $connPayments->links('pagination.custom') }}
+        </div>
     </div>
 </div>
+
+<script src="{{ asset('js/appli_income.js') }}"></script>
 @endsection

@@ -96,68 +96,96 @@ function closeConsumerResultModal() {
     }, 300);
 }
 
-function filterConsumers() {
-    const searchValue = document.getElementById('searchInput').value.toLowerCase().trim();
+async function filterConsumers() {
+    const searchValue = document.getElementById('searchInput').value.trim();
     const blockValue = document.getElementById('blockFilter').value;
     const statusValue = document.getElementById('statusFilter').value;
     const tbody = document.querySelector('.uni-table tbody');
     const paginationWrapper = document.querySelector('.pagination-wrapper');
-    
-    // Hide pagination while filtering
-    if (paginationWrapper) {
-        paginationWrapper.style.display = 'none';
-    }
 
-    const rows = tbody.querySelectorAll('tr');
-    let hasMatches = false;
+    try {
+        const response = await fetch(`/consumers/filter?query=${encodeURIComponent(searchValue)}&block=${encodeURIComponent(blockValue)}&status=${encodeURIComponent(statusValue)}`, {
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+            }
+        });
 
-    rows.forEach(row => {
-        if (row.classList.contains('empty-state-row') || !row.querySelector('td')) {
-            row.remove();
+        const data = await response.json();
+
+        if (data.success) {
+            tbody.innerHTML = '';
+
+            if (data.consumers.length === 0) {
+                const colspan = document.querySelector('.uni-table thead tr').children.length;
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="${colspan}" class="empty-state">
+                            <i class="fas fa-users-slash"></i>
+                            <p>No consumers found</p>
+                        </td>
+                    </tr>
+                `;
+            } else {
+                data.consumers.forEach(consumer => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>Block ${consumer.block_id}</td>
+                        <td>${consumer.customer_id}</td>
+                        <td>${consumer.firstname}</td>
+                        <td>${consumer.middlename || ''}</td>
+                        <td>${consumer.lastname}</td>
+                        <td>${consumer.address}</td>
+                        <td>${consumer.contact_no}</td>
+                        <td>${consumer.consumer_type}</td>
+                        <td>
+                            <span class="status-badge ${consumer.status === 'Active' ? 'status-active' :
+                            (consumer.status === 'Inactive' ? 'status-inactive' : 'status-pending')
+                        }">
+                                ${consumer.status}
+                            </span>
+                        </td>
+                        ${(consumer.canEdit || consumer.canViewBillings || consumer.canDelete || consumer.canReconnect) ? `
+                        <td>
+                            <div class="action-buttons">
+                                ${consumer.canEdit ? `
+                                    <button class="btn_uni btn-view" title="View/Edit Consumer" onclick="viewConsumer('${consumer.customer_id}')">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                ` : ''}
+
+                                ${consumer.status === 'Active' && consumer.canViewBillings ? `
+                                    <button class="btn_uni btn-billing" title="View Billings" onclick="viewBillings('${consumer.customer_id}')">
+                                        <i class="fas fa-file-invoice"></i>
+                                    </button>
+                                ` : ''}
+
+                                ${consumer.status === 'Inactive' && consumer.canReconnect ? `
+                                    <button class="btn_uni btn-activate" title="Reconnect Consumer" onclick="showReconnectConfirmationModal('${consumer.customer_id}')">
+                                        <i class="fas fa-plug"></i>
+                                    </button>
+                                ` : ''}
+
+                                ${(consumer.status === 'Pending' || consumer.status === 'Inactive') && consumer.canDelete ? `
+                                    <button class="btn_uni btn-deactivate" title="Delete Consumer" onclick="showDeleteConfirmationModal('${consumer.customer_id}')">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                ` : ''}
+                            </div>
+                        </td>` : ''}
+                    `;
+                    tbody.appendChild(row);
+                });
+            }
+
+            if (paginationWrapper) {
+                paginationWrapper.style.display = searchValue || blockValue || statusValue ? 'none' : 'flex';
+            }
+        } else {
+            showConsumerResultModal(false, data.message);
         }
-    });
-
-    const dataRows = tbody.querySelectorAll('tr');
-    if (dataRows.length === 0) {
-        showEmptyState(tbody);
-        return;
-    }
-
-    dataRows.forEach(row => {
-        const cells = row.querySelectorAll('td');
-        if (cells.length > 0) {
-            const block = cells[0].textContent.split(' ')[1];
-            const customerId = cells[1].textContent.toLowerCase();
-            const name = cells[2].textContent.toLowerCase();
-            const address = cells[3].textContent.toLowerCase();
-            const contact = cells[4].textContent.toLowerCase();
-            const consumerType = cells[5].textContent.toLowerCase();
-            const statusBadge = row.querySelector('.status-badge');
-            const status = statusBadge ? statusBadge.textContent.trim() : '';
-
-            const matchesSearch = !searchValue ||
-                customerId.includes(searchValue) ||
-                name.includes(searchValue) ||
-                address.includes(searchValue) ||
-                contact.includes(searchValue) ||
-                consumerType.includes(searchValue);
-
-            const matchesBlock = !blockValue || block === blockValue;
-            const matchesStatus = !statusValue || status === statusValue;
-
-            const matches = matchesSearch && matchesBlock && matchesStatus;
-            row.style.display = matches ? '' : 'none';
-            if (matches) hasMatches = true;
-        }
-    });
-
-    if (!hasMatches) {
-        showEmptyState(tbody);
-    }
-
-    // Show pagination if not filtering
-    if (!searchValue && !blockValue && !statusValue && paginationWrapper) {
-        paginationWrapper.style.display = 'flex';
+    } catch (error) {
+        console.error('Failed to filter consumers:', error);
+        showConsumerResultModal(false, 'Failed to filter consumers');
     }
 }
 

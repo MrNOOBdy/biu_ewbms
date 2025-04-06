@@ -18,8 +18,10 @@
             </select>
         </div>
         <div class="search-container">
-            <input type="text" id="searchInput" placeholder="Search barangays..." onkeyup="BlockModule.filterBlocks()">
-            <i class="fas fa-search search-icon"></i>
+            <input type="text" id="searchInput" placeholder="Search barangays...">
+            <button class="btn-search" onclick="BlockModule.filterBlocks()">
+                <i class="fas fa-search"></i> Search
+            </button>
         </div>
         @if($userRole->hasPermission('add-new-block'))
             <button class="add-btn" onclick="BlockModule.showNewBlockModal()">
@@ -30,6 +32,11 @@
 </div>
 
 <div class="content-wrapper">
+    <div id="blockPermissions" 
+        data-can-edit="{{ $userRole->hasPermission('edit-block') ? 'true' : 'false' }}"
+        data-can-delete="{{ $userRole->hasPermission('delete-block') ? 'true' : 'false' }}"
+        style="display: none;">
+    </div>
     <div class="table-container">
         <table class="uni-table">
             <thead>

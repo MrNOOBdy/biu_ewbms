@@ -36,7 +36,7 @@
     justify-content: center;
     align-items: center;
     gap: var(--spacing-xl);
-    margin: 10px 0 20px 0;
+    margin: 10px 0 50px 0;
     animation: fadeIn 1.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -57,32 +57,6 @@
 .unauth-logo-cont:hover .unauth-logo_login,
 .unauth-logo-cont:hover .unauth-logo2 {
     transform: scale(1.05);
-}
-
-.login-header {
-    margin-bottom: 20px;
-    text-align: center;
-}
-
-.login-header h2 {
-    color: var(--primary-color);
-    font-size: 1.6rem;
-    font-weight: 600;
-    margin-bottom: 8px;
-    animation: fadeInUp 0.8s ease-out;
-}
-
-.login-divider {
-    width: 80px;
-    height: 3px;
-    background: var(--primary-color);
-    margin: 0 auto;
-    margin-bottom: 15px;
-    animation: widthGrow 1s ease-out;
-}
-
-.dark-mode .login-header h2 {
-    color: #ffffff;
 }
 
 .unauth-form-group {
