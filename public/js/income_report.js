@@ -3,10 +3,11 @@ const IncomeReport = {
         const searchValue = document.getElementById('searchInput').value.trim();
         const monthValue = document.getElementById('monthFilter').value;
         const yearValue = document.getElementById('yearFilter').value;
+        const blockValue = document.getElementById('blockFilter').value;
         const tbody = document.querySelector('.uni-table tbody');
         const paginationContainer = document.querySelector('.pagination-container');
 
-        if (!searchValue && !monthValue && !yearValue) {
+        if (!searchValue && !monthValue && !yearValue && !blockValue) {
             if (paginationContainer) {
                 paginationContainer.style.display = 'flex';
             }
@@ -14,7 +15,7 @@ const IncomeReport = {
         }
 
         try {
-            const response = await fetch(`/income_rep/search?query=${encodeURIComponent(searchValue)}&month=${encodeURIComponent(monthValue)}&year=${encodeURIComponent(yearValue)}`, {
+            const response = await fetch(`/income_rep/search?query=${encodeURIComponent(searchValue)}&month=${encodeURIComponent(monthValue)}&year=${encodeURIComponent(yearValue)}&block=${encodeURIComponent(blockValue)}`, {
                 headers: {
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
                 }
@@ -67,5 +68,42 @@ const IncomeReport = {
                 totalCell.textContent = `₱${Number(total).toFixed(2)}`;
             }
         }
+    },
+
+    async printReport() {
+        const searchValue = document.getElementById('searchInput').value.trim();
+        const monthValue = document.getElementById('monthFilter').value;
+        const yearValue = document.getElementById('yearFilter').value;
+
+        const printWindow = window.open(`/income_rep/print-report?query=${encodeURIComponent(searchValue)}&month=${encodeURIComponent(monthValue)}&year=${encodeURIComponent(yearValue)}`, '_blank');
+
+        printWindow.addEventListener('load', () => {
+            const script = document.createElement('script');
+            script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
+            script.onload = () => {
+                printWindow.printIncomeReport = function () {
+                    printWindow.print();
+                };
+
+                printWindow.downloadIncomeReport = function () {
+                    const element = printWindow.document.querySelector('#income-report');
+                    const opt = {
+                        margin: 1,
+                        filename: 'income-report.pdf',
+                        image: { type: 'jpeg', quality: 0.98 },
+                        html2canvas: { scale: 2 },
+                        jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+                    };
+
+                    const buttons = element.querySelector('.print-buttons');
+                    buttons.style.display = 'none';
+
+                    printWindow.html2pdf().set(opt).from(element).save().then(() => {
+                        buttons.style.display = 'block';
+                    });
+                };
+            };
+            printWindow.document.head.appendChild(script);
+        });
     }
 };

@@ -172,7 +172,16 @@
                         <select id="role" name="role" class="form-control" required>
                             <option value="">Select Role</option>
                             @foreach($roles as $role)
-                                <option value="{{ $role->name }}">{{ $role->name }}</option>
+                                @if($role->name === 'Administrator')
+                                    @php
+                                        $adminExists = \App\Models\User::where('role', 'Administrator')->exists();
+                                    @endphp
+                                    <option value="{{ $role->name }}" {{ $adminExists ? 'disabled' : '' }}>
+                                        {{ $role->name }} {{ $adminExists ? '(Already Exists)' : '' }}
+                                    </option>
+                                @else
+                                    <option value="{{ $role->name }}">{{ $role->name }}</option>
+                                @endif
                             @endforeach
                         </select>
                         <div class="invalid-feedback"></div>
@@ -275,7 +284,16 @@
                         <label for="edit_role">Role</label>
                         <select id="edit_role" name="role" class="form-control" required>
                             @foreach($roles as $role)
-                                <option value="{{ $role->name }}">{{ $role->name }}</option>
+                                @if($role->name === 'Administrator')
+                                    @php
+                                        $adminExists = \App\Models\User::where('role', 'Administrator')->exists();
+                                    @endphp
+                                    <option value="{{ $role->name }}" {{ $adminExists && !isset($user) ? 'disabled' : '' }}>
+                                        {{ $role->name }} {{ $adminExists && !isset($user) ? '(Already Exists)' : '' }}
+                                    </option>
+                                @else
+                                    <option value="{{ $role->name }}">{{ $role->name }}</option>
+                                @endif
                             @endforeach
                         </select>
                         <div class="invalid-feedback"></div>

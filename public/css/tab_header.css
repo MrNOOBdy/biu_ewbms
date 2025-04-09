@@ -146,6 +146,23 @@
     background-color: var(--primary-color-hover);
 }
 
+.btn-print {
+    background-color: var(--primary-color);
+    color: var(--text-color-light);
+    padding: 8px 16px;
+    border: none;
+    border-radius: var(--border-radius-sm);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: background-color var(--transition-fast);
+}
+
+.btn-print:hover {
+    background-color: var(--primary-color-hover);
+}
+
 .dark-mode .filter-section select {
     background-color: var(--dark-bg);
     border-color: var(--border-color-dark);

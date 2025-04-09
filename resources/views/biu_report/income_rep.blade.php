@@ -10,24 +10,31 @@
         <div class="filter-section">
             <select id="monthFilter">
                 <option value="">All Months</option>
-                @php
-                    $currentMonth = date('n');
-                    foreach(range(1, 12) as $month) {
-                        $selected = $month == $currentMonth ? 'selected' : '';
-                        echo "<option value='{$month}' {$selected}>" . date('F', mktime(0, 0, 0, $month, 1)) . "</option>";
-                    }
-                @endphp
+                @foreach($availableMonths as $month)
+                    <option value="{{ $month['number'] }}" {{ date('n') == $month['number'] ? 'selected' : '' }}>
+                        {{ $month['name'] }}
+                    </option>
+                @endforeach
             </select>
             <select id="yearFilter">
                 <option value="">All Years</option>
-                @foreach(range(date('Y'), 2021) as $year)
+                @foreach($availableYears as $year)
                     <option value="{{ $year }}" {{ date('Y') == $year ? 'selected' : '' }}>
                         {{ $year }}
                     </option>
                 @endforeach
             </select>
+            <select id="blockFilter">
+                <option value="">All Blocks</option>
+                @foreach($blocks as $blockId)
+                    <option value="{{ $blockId }}">Block {{ $blockId }}</option>
+                @endforeach
+            </select>
             <button class="btn-filter" onclick="IncomeReport.filterIncome()">
                 <i class="fas fa-filter"></i> Filter
+            </button>
+            <button class="btn-print" onclick="IncomeReport.printReport()">
+                <i class="fas fa-print"></i> Print
             </button>
         </div>
         <div class="search-container">

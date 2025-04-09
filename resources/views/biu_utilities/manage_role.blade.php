@@ -47,7 +47,7 @@
                             </button>
                             @endif
                             
-                            @if($userRole->permissions->contains('slug', 'delete-role'))
+                            @if($userRole->permissions->contains('slug', 'delete-role') && $role->name != 'Administrator')
                             <button class="btn_uni btn-deactivate" onclick="deleteRole({{ $role->role_id }})">
                                 <i class="fas fa-trash"></i> Delete
                             </button>

@@ -40,6 +40,21 @@ class UserController extends Controller
 
     public function store(Request $request)
     {
+        if ($request->role === 'Administrator') {
+            $existingAdmin = User::where('role', 'Administrator')->exists();
+            if ($existingAdmin) {
+                if ($request->ajax()) {
+                    return response()->json([
+                        'success' => false,
+                        'errors' => ['role' => ['An Administrator account already exists. Only one Administrator is allowed.']]
+                    ], 422);
+                }
+                return redirect()->back()
+                    ->withErrors(['role' => 'An Administrator account already exists. Only one Administrator is allowed.'])
+                    ->withInput();
+            }
+        }
+
         $validator = Validator::make($request->all(), [
             'firstname' => 'required|string|max:255',
             'lastname' => 'required|string|max:255',
@@ -161,6 +176,35 @@ class UserController extends Controller
         try {
             $user = User::findOrFail($id);
             
+            // Only check for existing admin if trying to change to Administrator role
+            if ($request->role === 'Administrator' && $user->role !== 'Administrator') {
+                $existingAdmin = User::where('role', 'Administrator')
+                                    ->where('user_id', '!=', $id)
+                                    ->exists();
+                if ($existingAdmin) {
+                    return response()->json([
+                        'success' => false,
+                        'errors' => [
+                            'role' => ['An Administrator account already exists. Only one Administrator is allowed.']
+                        ]
+                    ], 422);
+                }
+            }
+
+            // Add role to allowed updates if user is Administrator
+            $allowedUpdates = [
+                'firstname',
+                'lastname',
+                'contactnum',
+                'username',
+                'email'
+            ];
+
+            // Include role in updates if user is Administrator or not changing to Administrator
+            if ($user->role === 'Administrator' || $request->role !== 'Administrator') {
+                $allowedUpdates[] = 'role';
+            }
+
             $validator = Validator::make($request->all(), [
                 'firstname' => 'required|string|max:255',
                 'lastname' => 'required|string|max:255',
@@ -178,18 +222,13 @@ class UserController extends Controller
             }
 
             $currentTimestamp = now()->setTimezone('Asia/Manila');
-
-            $user->update(array_merge(
-                $request->only([
-                    'firstname',
-                    'lastname',
-                    'contactnum',
-                    'username',
-                    'email',
-                    'role'
-                ]),
+            
+            $updateData = array_merge(
+                $request->only($allowedUpdates),
                 ['updated_at' => $currentTimestamp]
-            ));
+            );
+
+            $user->update($updateData);
             
             return response()->json([
                 'success' => true,

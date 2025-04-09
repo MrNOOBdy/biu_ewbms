@@ -35,6 +35,9 @@
             <button class="btn-filter" onclick="AppIncome.filterIncome()">
                 <i class="fas fa-filter"></i> Filter
             </button>
+            <button class="btn-print" onclick="AppIncome.printReport()">
+                <i class="fas fa-print"></i> Print
+            </button>
         </div>
         <div class="search-container">
             <input type="text" id="searchInput" placeholder="Generate...">
@@ -51,7 +54,6 @@
 
 <div class="appli-balance" style="margin-top: -20px;">
     <p><strong>Total Application Income:</strong> ₱{{ number_format($totalAmountPaid, 2) }}</p>
-    
 </div>
 
 <div class="content-wrapper">
@@ -100,7 +102,7 @@
                     </tr>
                 @endforelse
             </tbody>
-            <tfoot style="position: sticky; bottom: 0; z-index: 1;">
+            <tfoot style="position: sticky; bottom: 0; z-index: 1; background-color: #f8f9fa;">
                 <tr class="total-row">
                     <td colspan="2"><strong>Total</strong></td>
                     <td><strong>₱{{ number_format($totalApplicationFee, 2) }}</strong></td>

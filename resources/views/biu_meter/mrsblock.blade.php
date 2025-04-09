@@ -66,10 +66,12 @@
                                     <i class="fas fa-map-marker-alt"></i>
                                     Assign Block
                                 </button>
+                                <!--
                                 <button class="btn_uni btn-substitute" title="Create Substitution" onclick="showSubstitutionModal('{{ $reader->user_id }}')">
                                     <i class="fas fa-user-clock"></i>
                                     Add Substitute
                                 </button>
+                                -->
                             </div>
                         </td>
                     </tr>

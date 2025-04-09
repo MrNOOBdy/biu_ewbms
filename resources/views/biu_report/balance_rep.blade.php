@@ -8,6 +8,22 @@
     <h3><i class="fas fa-balance-scale"></i> Balance Report</h3>
     <div class="header-controls">
         <div class="filter-section">
+            <select id="monthFilter">
+                <option value="">All Months</option>
+                @foreach($availableMonths as $month)
+                    <option value="{{ $month['number'] }}" {{ date('n') == $month['number'] ? 'selected' : '' }}>
+                        {{ $month['name'] }}
+                    </option>
+                @endforeach
+            </select>
+            <select id="yearFilter">
+                <option value="">All Years</option>
+                @foreach($availableYears as $year)
+                    <option value="{{ $year }}" {{ date('Y') == $year ? 'selected' : '' }}>
+                        {{ $year }}
+                    </option>
+                @endforeach
+            </select>
             <select id="blockFilter">
                 <option value="">All Blocks</option>
                 @foreach($unpaidBills->pluck('block_id')->unique() as $blockId)
@@ -16,6 +32,9 @@
             </select>
             <button class="btn-filter" onclick="BalanceReport.filterBalance()">
                 <i class="fas fa-filter"></i> Filter
+            </button>
+            <button class="btn-print" onclick="BalanceReport.printReport()">
+                <i class="fas fa-print"></i> Print
             </button>
         </div>
         <div class="search-container">

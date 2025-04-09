@@ -2,10 +2,12 @@ const BalanceReport = {
     async filterBalance() {
         const searchValue = document.getElementById('searchInput').value.trim();
         const blockValue = document.getElementById('blockFilter').value;
+        const monthValue = document.getElementById('monthFilter').value;
+        const yearValue = document.getElementById('yearFilter').value;
         const tbody = document.querySelector('.uni-table tbody');
         const paginationContainer = document.querySelector('.pagination-container');
 
-        if (!searchValue && !blockValue) {
+        if (!searchValue && !blockValue && !monthValue && !yearValue) {
             if (paginationContainer) {
                 paginationContainer.style.display = 'flex';
             }
@@ -13,7 +15,7 @@ const BalanceReport = {
         }
 
         try {
-            const response = await fetch(`/balance_rep/search?query=${encodeURIComponent(searchValue)}&block=${encodeURIComponent(blockValue)}`, {
+            const response = await fetch(`/balance_rep/search?query=${encodeURIComponent(searchValue)}&block=${encodeURIComponent(blockValue)}&month=${encodeURIComponent(monthValue)}&year=${encodeURIComponent(yearValue)}`, {
                 headers: {
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
                 }
@@ -56,6 +58,44 @@ const BalanceReport = {
         } catch (error) {
             console.error('Failed to filter balances:', error);
         }
+    },
+
+    async printReport() {
+        const searchValue = document.getElementById('searchInput').value.trim();
+        const blockValue = document.getElementById('blockFilter').value;
+        const monthValue = document.getElementById('monthFilter').value;
+        const yearValue = document.getElementById('yearFilter').value;
+
+        const printWindow = window.open(`/balance_rep/print-report?query=${encodeURIComponent(searchValue)}&block=${encodeURIComponent(blockValue)}&month=${encodeURIComponent(monthValue)}&year=${encodeURIComponent(yearValue)}`, '_blank');
+
+        printWindow.addEventListener('load', () => {
+            const script = document.createElement('script');
+            script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
+            script.onload = () => {
+                printWindow.printBalanceReport = function () {
+                    printWindow.print();
+                };
+
+                printWindow.downloadBalanceReport = function () {
+                    const element = printWindow.document.querySelector('#balance-report');
+                    const opt = {
+                        margin: 1,
+                        filename: 'balance-report.pdf',
+                        image: { type: 'jpeg', quality: 0.98 },
+                        html2canvas: { scale: 2 },
+                        jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+                    };
+
+                    const buttons = element.querySelector('.print-buttons');
+                    buttons.style.display = 'none';
+
+                    printWindow.html2pdf().set(opt).from(element).save().then(() => {
+                        buttons.style.display = 'block';
+                    });
+                };
+            };
+            printWindow.document.head.appendChild(script);
+        });
     }
 };
 

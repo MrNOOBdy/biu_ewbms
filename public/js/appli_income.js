@@ -7,7 +7,6 @@ const AppIncome = {
         const tbody = document.querySelector('.uni-table tbody');
         const paginationContainer = document.querySelector('.pagination-container');
 
-        // Only make the API call if at least one filter has a value
         if (!searchValue && !blockValue && !monthValue && !yearValue) {
             if (paginationContainer) {
                 paginationContainer.style.display = 'flex';
@@ -70,23 +69,70 @@ const AppIncome = {
 
     updateTotals(applicationFee, amountPaid, balance) {
         const tfoot = document.querySelector('.uni-table tfoot');
+        const appliBalance = document.querySelector('.appli-balance p strong:last-child');
+
         if (tfoot) {
             const totalRow = tfoot.querySelector('.total-row');
-            totalRow.cells[2].innerHTML = `<strong>₱${applicationFee.toFixed(2)}</strong>`;
-            totalRow.cells[3].innerHTML = `<strong>₱${amountPaid.toFixed(2)}</strong>`;
-            totalRow.cells[4].innerHTML = `<strong>₱${balance.toFixed(2)}</strong>`;
+            totalRow.innerHTML = `
+                <td colspan="2"><strong>Total</strong></td>
+                <td><strong>₱${Number(applicationFee).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong></td>
+                <td><strong>₱${Number(amountPaid).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong></td>
+                <td><strong>₱${Number(balance).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong></td>
+                <td></td>
+            `;
         }
+
+        // Update the total application income at the top
+        if (appliBalance) {
+            appliBalance.textContent = `₱${Number(amountPaid).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        }
+    },
+
+    async printReport() {
+        const searchValue = document.getElementById('searchInput').value.trim();
+        const blockValue = document.getElementById('blockFilter').value;
+        const monthValue = document.getElementById('monthFilter').value;
+        const yearValue = document.getElementById('yearFilter').value;
+
+        const printWindow = window.open(`/appli_income/print-report?query=${encodeURIComponent(searchValue)}&block=${encodeURIComponent(blockValue)}&month=${encodeURIComponent(monthValue)}&year=${encodeURIComponent(yearValue)}`, '_blank');
+
+        printWindow.addEventListener('load', () => {
+            const script = document.createElement('script');
+            script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
+            script.onload = () => {
+                printWindow.printApplicationReport = function () {
+                    printWindow.print();
+                };
+
+                printWindow.downloadApplicationReport = function () {
+                    const element = printWindow.document.querySelector('#application-income-report');
+                    const opt = {
+                        margin: 1,
+                        filename: 'application-income-report.pdf',
+                        image: { type: 'jpeg', quality: 0.98 },
+                        html2canvas: { scale: 2 },
+                        jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+                    };
+
+                    const buttons = element.querySelector('.print-buttons');
+                    buttons.style.display = 'none';
+
+                    printWindow.html2pdf().set(opt).from(element).save().then(() => {
+                        buttons.style.display = 'block';
+                    });
+                };
+            };
+            printWindow.document.head.appendChild(script);
+        });
     }
 };
 
-// Initialize event listeners
 document.addEventListener('DOMContentLoaded', function () {
     const searchInput = document.getElementById('searchInput');
     const blockFilter = document.getElementById('blockFilter');
     const monthFilter = document.getElementById('monthFilter');
     const yearFilter = document.getElementById('yearFilter');
 
-    // Remove all keyup/change event listeners - only use button click
     const searchButton = document.querySelector('.btn-search');
     const filterButton = document.querySelector('.btn-filter');
 

@@ -133,4 +133,56 @@ class ApplicationIncomeController extends Controller
             ]);
         }
     }
+
+    public function printReport(Request $request)
+    {
+        try {
+            $query = $request->get('query');
+            $blockFilter = $request->get('block');
+            $monthFilter = $request->get('month');
+            $yearFilter = $request->get('year');
+            
+            $connPayments = ConnPayment::with(['consumer' => function($query) {
+                $query->with('block');
+            }]);
+
+            if (!empty($query)) {
+                $connPayments->whereHas('consumer', function($q) use ($query) {
+                    $q->where('firstname', 'LIKE', "%{$query}%")
+                      ->orWhere('middlename', 'LIKE', "%{$query}%")
+                      ->orWhere('lastname', 'LIKE', "%{$query}%");
+                });
+            }
+
+            if (!empty($blockFilter)) {
+                $connPayments->whereHas('consumer', function($q) use ($blockFilter) {
+                    $q->where('block_id', $blockFilter);
+                });
+            }
+
+            if (!empty($monthFilter) || !empty($yearFilter)) {
+                $connPayments->where(function($q) use ($monthFilter, $yearFilter) {
+                    if (!empty($monthFilter)) {
+                        $q->whereMonth('updated_at', $monthFilter);
+                    }
+                    if (!empty($yearFilter)) {
+                        $q->whereYear('updated_at', $yearFilter);
+                    }
+                });
+            }
+
+            $payments = $connPayments->orderBy('updated_at', 'desc')->get();
+
+            $totals = [
+                'application_fee' => $payments->sum('application_fee'),
+                'amount_paid' => $payments->sum('conn_amount_paid'),
+                'balance' => $payments->sum('application_fee') - $payments->sum('conn_amount_paid')
+            ];
+
+            return view('receipts.application_income_report', compact('payments', 'totals', 'monthFilter', 'yearFilter'));
+        } catch (\Exception $e) {
+            \Log::error('Error in ApplicationIncomeController@printReport: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Error generating report');
+        }
+    }
 }

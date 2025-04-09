@@ -164,10 +164,13 @@ Route::middleware(['web'])->group(function () {
         // Report routes
         Route::get('/appli_income', [ApplicationIncomeController::class, 'index'])->name('appli_income');
         Route::get('/appli_income/search', [ApplicationIncomeController::class, 'search'])->name('appli_income.search');
+        Route::get('/appli_income/print-report', [ApplicationIncomeController::class, 'printReport'])->name('appli_income.print');
         Route::get('/income_rep', [ReportBillController::class, 'income_index'])->name('income_index');
         Route::get('/income_rep/search', [ReportBillController::class, 'searchIncome'])->name('income.search');
+        Route::get('/income_rep/print-report', [ReportBillController::class, 'printIncomeReport'])->name('income_rep.print');
         Route::get('/balance_rep', [ReportBillController::class, 'balance_index'])->name('balance_index');
         Route::get('/balance_rep/search', [ReportBillController::class, 'searchBalance'])->name('balance.search');
+        Route::get('/balance_rep/print-report', [ReportBillController::class, 'printBalanceReport'])->name('balance_rep.print');
 
         // Meter reader reading routes
         Route::get('/meter_read', [MRController::class, 'index'])->name('meter-readings');
@@ -193,9 +196,9 @@ Route::middleware(['web'])->group(function () {
         Route::get('/billing/search', [BillingController::class, 'search'])->name('billing.search');
 
         // Bill Notice routes
-       Route::get('/notice-bill', [Bill_NoticeController::class, 'noticeBill'])->name('notice-bill');
-       Route::get('/billing/notice/{id}/details', [Bill_NoticeController::class, 'getBillDetails']);
-       Route::post('/billing/notice/send-sms', [Bill_NoticeController::class, 'sendNoticeSMS'])->name('billing.notice.send-sms');
+        Route::get('/notice-bill', [Bill_NoticeController::class, 'noticeBill'])->name('notice-bill');
+        Route::get('/billing/notice/{id}/details', [Bill_NoticeController::class, 'getBillDetails']);
+        Route::post('/billing/notice/send-sms', [Bill_NoticeController::class, 'sendNoticeSMS'])->name('billing.notice.send-sms');
 
         // Meter reader block assignment routes
         Route::get('/meter-readers/blocks', [MRsBlockCont::class, 'index'])->name('meter-readers.blocks');
