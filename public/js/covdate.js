@@ -138,11 +138,9 @@ function validateCoverageDates(formData) {
     const dateData = {
         coverage_date_from: formData.get('coverage_date_from'),
         coverage_date_to: formData.get('coverage_date_to'),
-        reading_date: formData.get('reading_date'),
         due_date: formData.get('due_date')
     };
 
-    const readingDate = new Date(dateData.reading_date);
     const coverageFrom = new Date(dateData.coverage_date_from);
     const coverageTo = new Date(dateData.coverage_date_to);
     const dueDate = new Date(dateData.due_date);
@@ -154,24 +152,10 @@ function validateCoverageDates(formData) {
         });
     }
 
-    if (readingDate < coverageFrom) {
+    if (dueDate <= coverageTo) {
         return Promise.resolve({
             success: false,
-            message: 'Reading Date must be after or equal to Coverage Date From'
-        });
-    }
-
-    if (readingDate > coverageTo) {
-        return Promise.resolve({
-            success: false,
-            message: 'Reading Date must be before or equal to Coverage Date To'
-        });
-    }
-
-    if (dueDate <= readingDate) {
-        return Promise.resolve({
-            success: false,
-            message: 'Due Date must be after Reading Date'
+            message: 'Due Date must be after Coverage Date To'
         });
     }
 

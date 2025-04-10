@@ -41,6 +41,7 @@ const MeterReadings = {
                             <td>${reading.customer_id}</td>
                             <td>${reading.consumer_name}</td>
                             <td>${reading.consumer_type}</td>
+                            <td>${reading.previous_reading}</td>
                             <td>${reading.present_reading}</td>
                             <td>${reading.consumption}</td>
                             <td>${reading.meter_reader}</td>

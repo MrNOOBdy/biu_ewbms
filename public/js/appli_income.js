@@ -82,7 +82,6 @@ const AppIncome = {
             `;
         }
 
-        // Update the total application income at the top
         if (appliBalance) {
             appliBalance.textContent = `₱${Number(amountPaid).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
         }

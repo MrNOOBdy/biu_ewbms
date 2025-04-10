@@ -176,7 +176,6 @@ class UserController extends Controller
         try {
             $user = User::findOrFail($id);
             
-            // Only check for existing admin if trying to change to Administrator role
             if ($request->role === 'Administrator' && $user->role !== 'Administrator') {
                 $existingAdmin = User::where('role', 'Administrator')
                                     ->where('user_id', '!=', $id)
@@ -191,7 +190,6 @@ class UserController extends Controller
                 }
             }
 
-            // Add role to allowed updates if user is Administrator
             $allowedUpdates = [
                 'firstname',
                 'lastname',
@@ -200,7 +198,6 @@ class UserController extends Controller
                 'email'
             ];
 
-            // Include role in updates if user is Administrator or not changing to Administrator
             if ($user->role === 'Administrator' || $request->role !== 'Administrator') {
                 $allowedUpdates[] = 'role';
             }

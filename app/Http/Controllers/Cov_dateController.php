@@ -50,8 +50,7 @@ class Cov_dateController extends Controller
             $validated = $request->validate([
                 'coverage_date_from' => 'required|date',
                 'coverage_date_to' => 'required|date|after:coverage_date_from',
-                'reading_date' => 'required|date',
-                'due_date' => 'required|date|after:reading_date',
+                'due_date' => 'required|date',
                 'status' => 'required|in:Open,Close'
             ]);
 
@@ -122,8 +121,7 @@ class Cov_dateController extends Controller
             $validated = $request->validate([
                 'coverage_date_from' => 'required|date',
                 'coverage_date_to' => 'required|date|after:coverage_date_from',
-                'reading_date' => 'required|date',
-                'due_date' => 'required|date|after:reading_date',
+                'due_date' => 'required|date',
                 'status' => 'required|in:Open,Close'
             ]);
 
@@ -239,29 +237,14 @@ class Cov_dateController extends Controller
 
     private function validateDates(array $data, $excludeId = null): array
     {
-        $readingDate = strtotime($data['reading_date']);
         $coverageFrom = strtotime($data['coverage_date_from']);
         $coverageTo = strtotime($data['coverage_date_to']);
         $dueDate = strtotime($data['due_date']);
 
-        if ($readingDate < $coverageFrom) {
+        if ($dueDate <= $coverageTo) {
             return [
                 'valid' => false,
-                'message' => 'Reading Date must be after or equal to Coverage Date From'
-            ];
-        }
-
-        if ($readingDate > $coverageTo) {
-            return [
-                'valid' => false,
-                'message' => 'Reading Date must be before or equal to Coverage Date To'
-            ];
-        }
-
-        if ($dueDate <= $readingDate) {
-            return [
-                'valid' => false,
-                'message' => 'Due Date must be after Reading Date'
+                'message' => 'Due Date must be after Coverage Date To'
             ];
         }
 

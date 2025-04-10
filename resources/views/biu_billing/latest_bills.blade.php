@@ -106,6 +106,7 @@
                     <th>Prev. Reading</th>
                     <th>Pres. Reading</th>
                     <th>Consumption m<sup>3</sup></th>
+                    <th>Amount</th>
                     <th>Bill Status</th>
                     <th>Action</th>
                 </tr>
@@ -114,6 +115,8 @@
                 @forelse($bills as $bill)
                     @php
                         $billPayment = \App\Models\ConsBillPay::where('consread_id', $bill->consread_id)->first();
+                        $consumption = $bill->calculateConsumption();
+                        $totalAmount = $bill->calculateBill();
                     @endphp
                     <tr>
                         <td>{{ $bill->consumer->customer_id }}</td>
@@ -123,7 +126,8 @@
                         <td>{{ date('M d, Y', strtotime($bill->due_date)) }}</td>
                         <td>{{ $bill->previous_reading }}</td>
                         <td>{{ $bill->present_reading }}</td>
-                        <td>{{ $bill->consumption }}</td>
+                        <td>{{ $consumption }}</td>
+                        <td>₱{{ number_format($totalAmount, 2) }}</td>
                         <td>
                             <span class="status-badge {{ !$billPayment ? 'status-pending' : ($billPayment->bill_status == 'paid' ? 'status-active' : 'status-inactive') }}">
                                 {{ !$billPayment ? 'Pending' : $billPayment->bill_status }}
@@ -145,7 +149,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="8" class="empty-state">
+                        <td colspan="11" class="empty-state">
                             <i class="fas fa-file-invoice"></i>
                             <p>No bills found</p>
                         </td>

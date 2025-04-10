@@ -36,18 +36,25 @@ class BillingController extends Controller
 
     public function getReadingDetails($consreadId)
     {
-        $reading = ConsumerReading::with(['consumer', 'consumer.block'])->findOrFail($consreadId);
-        
-        $coverageDate = Cov_date::where('status', Cov_date::STATUS_OPEN)->first();
-        $reading->coverage_date = $coverageDate;
+        try {
+            $reading = ConsumerReading::with(['consumer', 'coverageDate'])->findOrFail($consreadId);
+            
+            $data = [
+                'consumer' => $reading->consumer,
+                'coverage_date' => $reading->coverageDate,
+                'reading_date' => $reading->reading_date,
+                'due_date' => $reading->due_date,
+                'previous_reading' => $reading->previous_reading,
+                'present_reading' => $reading->present_reading,
+                'consumption' => $reading->calculateConsumption(),
+                'total_amount' => $reading->calculateBill(),
+                'meter_reader' => $reading->meter_reader
+            ];
 
-        $meterReader = MeterReaderBlock::with('user')
-            ->where('block_id', $reading->consumer->block_id)
-            ->first();
-        
-        $reading->meter_reader = $meterReader ? "{$meterReader->user->firstname} {$meterReader->user->lastname}" : 'Not Assigned';
-        
-        return response()->json($reading);
+            return response()->json($data);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to fetch reading details'], 500);
+        }
     }
 
     public function addBill(Request $request)

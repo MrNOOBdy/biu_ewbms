@@ -4,26 +4,27 @@ function showAddBillModal(consreadId) {
         .then(data => {
             document.getElementById('consread_id').value = consreadId;
 
+            // Consumer Info
             document.getElementById('customerId').textContent = data.consumer.customer_id;
             document.getElementById('consumerName').textContent = `${data.consumer.firstname} ${data.consumer.lastname}`;
             document.getElementById('contactNo').textContent = data.consumer.contact_no;
             document.getElementById('consumerType').textContent = data.consumer.consumer_type;
+            document.getElementById('prevBillStatus').textContent = data.consumer.previous_bill_status || 'No previous bill';
 
-            const prevBillStatus = data.consumer.previous_bill_status || 'No previous bill';
-            document.getElementById('prevBillStatus').textContent = prevBillStatus;
+            // Coverage Dates
+            document.getElementById('coverageDateFrom').textContent = data.coverage_date ? formatDate(data.coverage_date.coverage_date_from) : 'Not set';
+            document.getElementById('coverageDateTo').textContent = data.coverage_date ? formatDate(data.coverage_date.coverage_date_to) : 'Not set';
 
-            const coverageDateFrom = data.coverage_date ? formatDate(data.coverage_date.coverage_date_from) : 'Not set';
-            const coverageDateTo = data.coverage_date ? formatDate(data.coverage_date.coverage_date_to) : 'Not set';
-
-            document.getElementById('coverageDateFrom').textContent = coverageDateFrom;
-            document.getElementById('coverageDateTo').textContent = coverageDateTo;
-
+            // Bill Details
             document.getElementById('readingDate').textContent = formatDate(data.reading_date);
             document.getElementById('dueDate').textContent = formatDate(data.due_date);
             document.getElementById('previousReading').textContent = data.previous_reading;
             document.getElementById('presentReading').textContent = data.present_reading;
             document.getElementById('consumption').textContent = data.consumption;
-            document.getElementById('totalAmount').textContent = data.present_reading;
+            document.getElementById('totalAmount').textContent = Number(data.total_amount).toLocaleString('en-US', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
 
             const modal = document.getElementById('addBillModal');
             modal.style.display = 'block';
@@ -135,12 +136,12 @@ Coverage Date To: ${formatDate(data.coverage_date.coverage_date_to)}
 Previous Reading: ${data.previous_reading}
 Present Reading: ${data.present_reading}
 Consumed: ${data.consumption} m³
-Amount Due: ₱${data.present_reading}
+Amount Due: ₱${Number(data.total_amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
 Due Date: ${formatDate(data.due_date)}
 Meter Reader: ${data.meter_reader}
 
 Reminder: 
-Please pay your bill on or before due date to avoid penalty. 5 working day to settle your due/delinquent after due date to avoid water service cut-off.
+Please pay your bill on or before due date to avoid penalty. 5 working days to settle your due/delinquent after due date to avoid water service cut-off.
 
 Thank you,
 BI-U: eWBS`;
@@ -235,10 +236,10 @@ async function filterBills() {
                         <td>${bill.previous_reading}</td>
                         <td>${bill.present_reading}</td>
                         <td>${bill.consumption}</td>
+                        <td>₱${Number(bill.total_amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                         <td>
                             <span class="status-badge ${bill.bill_status === 'Pending' ? 'status-pending' :
-                            (bill.bill_status === 'paid' ? 'status-active' : 'status-inactive')
-                        }">
+                            (bill.bill_status === 'paid' ? 'status-active' : 'status-inactive')}">
                                 ${bill.bill_status}
                             </span>
                         </td>

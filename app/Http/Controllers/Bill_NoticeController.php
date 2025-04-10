@@ -44,9 +44,21 @@ class Bill_NoticeController extends Controller
                 'consumer.block'
             ])->findOrFail($consreadId);
 
+            $consumption = $bill->calculateConsumption();
+            $billRate = $bill->getBillRate();
+            $baseCharge = $consumption <= ConsumerReading::BASE_CUBIC_LIMIT ? $billRate->value : $billRate->value;
+            $excessCharges = $consumption > ConsumerReading::BASE_CUBIC_LIMIT ? 
+                ($consumption - ConsumerReading::BASE_CUBIC_LIMIT) * $billRate->excess_value_per_cubic : 0;
+            $totalAmount = $baseCharge + $excessCharges;
+
             return response()->json([
                 'success' => true,
-                'data' => $bill
+                'data' => array_merge($bill->toArray(), [
+                    'consumption' => $consumption,
+                    'base_rate' => $baseCharge,
+                    'excess_charges' => $excessCharges,
+                    'total_amount' => $totalAmount
+                ])
             ]);
         } catch (\Exception $e) {
             Log::error('Error fetching bill details: ' . $e->getMessage());

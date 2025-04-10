@@ -125,7 +125,6 @@
                 <tr>
                     <th>Coverage From</th>
                     <th>Coverage To</th>
-                    <th>Reading Date</th>
                     <th>Due Date</th>
                     <th>Status</th>
                     @if(Auth::user()->hasPermission('edit-coverage-date'))
@@ -138,7 +137,6 @@
                     <tr data-covdate-id="{{ $active_coverage->covdate_id }}" data-status="{{ $active_coverage->status }}">
                         <td>{{ date('M d, Y', strtotime($active_coverage->coverage_date_from)) }}</td>
                         <td>{{ date('M d, Y', strtotime($active_coverage->coverage_date_to)) }}</td>
-                        <td>{{ date('M d, Y', strtotime($active_coverage->reading_date)) }}</td>
                         <td>{{ date('M d, Y', strtotime($active_coverage->due_date)) }}</td>
                         <td>
                             <span class="status-badge status-active">
@@ -157,7 +155,7 @@
                     </tr>
                 @else
                     <tr>
-                        <td colspan="{{ Auth::user()->hasPermission('edit-coverage-date') ? '6' : '5' }}" class="empty-state">
+                        <td colspan="{{ Auth::user()->hasPermission('edit-coverage-date') ? '5' : '4' }}" class="empty-state">
                             <i class="fas fa-calendar-times empty-calendar"></i>
                             <p>No active coverage period</p>
                         </td>
@@ -190,7 +188,6 @@
                 <tr>
                     <th>Coverage From</th>
                     <th>Coverage To</th>
-                    <th>Reading Date</th>
                     <th>Due Date</th>
                     <th>Status</th>
                     @if(Auth::user()->hasPermission('edit-coverage-date') || Auth::user()->hasPermission('delete-coverage-date'))
@@ -203,7 +200,6 @@
                     <tr data-covdate-id="{{ $date->covdate_id }}" data-status="{{ $date->status }}">
                         <td>{{ date('M d, Y', strtotime($date->coverage_date_from)) }}</td>
                         <td>{{ date('M d, Y', strtotime($date->coverage_date_to)) }}</td>
-                        <td>{{ date('M d, Y', strtotime($date->reading_date)) }}</td>
                         <td>{{ date('M d, Y', strtotime($date->due_date)) }}</td>
                         <td>
                             <span class="status-badge status-inactive">
@@ -229,7 +225,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="{{ (Auth::user()->hasPermission('edit-coverage-date') || Auth::user()->hasPermission('delete-coverage-date')) ? '6' : '5' }}" class="empty-state">
+                        <td colspan="{{ (Auth::user()->hasPermission('edit-coverage-date') || Auth::user()->hasPermission('delete-coverage-date')) ? '5' : '4' }}" class="empty-state">
                             <i class="fas fa-calendar-times empty-calendar"></i>
                             <p>No closed coverage dates found</p>
                         </td>
@@ -259,11 +255,6 @@
             <div class="inline-form-group">
                 <label for="coverage_date_to">Coverage Date To:</label>
                 <input type="text" id="coverage_date_to" name="coverage_date_to" class="form-control date-picker" placeholder="Select date" required>
-                <div class="invalid-feedback"></div>
-            </div>
-            <div class="inline-form-group">
-                <label for="reading_date">Reading Date:</label>
-                <input type="text" id="reading_date" name="reading_date" class="form-control date-picker" placeholder="Select date" required>
                 <div class="invalid-feedback"></div>
             </div>
             <div class="inline-form-group">
@@ -303,11 +294,6 @@
             <div class="inline-form-group">
                 <label for="edit_coverage_date_to">Coverage Date To:</label>
                 <input type="text" id="edit_coverage_date_to" name="coverage_date_to" class="form-control date-picker" placeholder="Select date" required>
-                <div class="invalid-feedback"></div>
-            </div>
-            <div class="inline-form-group">
-                <label for="edit_reading_date">Reading Date:</label>
-                <input type="text" id="edit_reading_date" name="reading_date" class="form-control date-picker" placeholder="Select date" required>
                 <div class="invalid-feedback"></div>
             </div>
             <div class="inline-form-group">

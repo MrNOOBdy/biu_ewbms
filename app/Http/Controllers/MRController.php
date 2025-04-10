@@ -55,8 +55,9 @@ class MRController extends Controller
                         'customer_id' => $reading->customer_id,
                         'consumer_name' => $reading->consumer->firstname . ' ' . $reading->consumer->lastname,
                         'consumer_type' => $reading->consumer->consumer_type,
+                        'previous_reading' => $reading->previous_reading,
                         'present_reading' => $reading->present_reading,
-                        'consumption' => $reading->consumption,
+                        'consumption' => $reading->calculateConsumption(),
                         'meter_reader' => $reading->meter_reader
                     ];
                 })

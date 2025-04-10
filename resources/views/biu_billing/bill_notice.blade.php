@@ -49,6 +49,10 @@
                 </tr>
             @else
                 @foreach($bills as $bill)
+                    @php
+                        $consumption = $bill->calculateConsumption();
+                        $billAmount = $bill->calculateBill();
+                    @endphp
                     <tr>
                         <td>
                             <label class="checkbox-container">
@@ -61,8 +65,8 @@
                         <td>{{ $bill->consumer->contact_no }}</td>
                         <td>{{ date('M d, Y', strtotime($bill->due_date)) }}</td>
                         <td>{{ $bill->present_reading }}</td>
-                        <td>{{ $bill->consumption }}</td>
-                        <td>₱{{ number_format($bill->billPayments->total_amount ?? 0, 2) }}</td>
+                        <td>{{ $consumption }}</td>
+                        <td>₱{{ number_format($billAmount, 2) }}</td>
                         <td>
                             <span class="badge {{ ($bill->billPayments && $bill->billPayments->bill_status == 'paid') ? 'bg-success' : 'bg-danger' }}">
                                 {{ $bill->billPayments ? ucfirst($bill->billPayments->bill_status) : 'Pending' }}
@@ -241,8 +245,10 @@
                     <p style="margin: 5px 0; display: flex; justify-content: space-between;"><strong style="color: var(--text-muted);">Previous Reading:</strong> <span id="detail_previousReading"></span></p>
                     <p style="margin: 5px 0; display: flex; justify-content: space-between;"><strong style="color: var(--text-muted);">Present Reading:</strong> <span id="detail_presentReading"></span></p>
                     <p style="margin: 5px 0; display: flex; justify-content: space-between;"><strong style="color: var(--text-muted);">Consumption:</strong> <span id="detail_consumption"></span> m³</p>
-                    <p style="margin: 5px 0; display: flex; justify-content: space-between;"><strong style="color: var(--text-muted);">Bill Amount:</strong> ₱<span id="detail_billAmount"></span></p>
-                    <p style="margin: 5px 0; display: flex; justify-content: space-between;"><strong style="color: var (--text-muted);">Bill Status:</strong> <span id="detail_billStatus"></span></p>
+                    <p style="margin: 5px 0; display: flex; justify-content: space-between;"><strong style="color: var(--text-muted);">Base Rate:</strong> ₱<span id="detail_baseRate"></span></p>
+                    <p style="margin: 5px 0; display: flex; justify-content: space-between;"><strong style="color: var(--text-muted);">Excess Charges:</strong> ₱<span id="detail_excessCharges"></span></p>
+                    <p style="margin: 5px 0; display: flex; justify-content: space-between;"><strong style="color: var(--text-muted);">Total Amount:</strong> ₱<span id="detail_billAmount"></span></p>
+                    <p style="margin: 5px 0; display: flex; justify-content: space-between;"><strong style="color: var(--text-muted);">Bill Status:</strong> <span id="detail_billStatus"></span></p>
                 </div>
             </div>
         </div>

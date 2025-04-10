@@ -23,13 +23,8 @@ class DatabaseSeeder extends Seeder
         ]);
 
         $this->call([
-            AddNewUserPermissionSeeder::class,
-            UserPermissionsSeeder::class,
-            NoticePermissionsSeeder::class,
-            BillRatePermissionSeeder::class,
-            ServiceFee::class,
-            NoticeSeeder::class,
-            MySeeder::class,
+            TabPermissionsSeeder::class,
+            MySeeder::class
         ]);
     }
 }

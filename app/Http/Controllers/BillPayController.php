@@ -62,10 +62,13 @@ class BillPayController extends Controller
     public function getBillDetails($billId)
     {
         try {
-            $bill = ConsumerReading::with('billPayments')->findOrFail($billId);
+            $bill = ConsumerReading::with(['billPayments', 'consumer'])->findOrFail($billId);
+            $totalAmount = $bill->calculateBill();
+            
             return response()->json([
                 'present_reading' => $bill->present_reading,
-                'total_amount' => $bill->present_reading,
+                'consumption' => $bill->calculateConsumption(),
+                'total_amount' => $totalAmount,
                 'success' => true
             ]);
         } catch (\Exception $e) {
@@ -90,7 +93,8 @@ class BillPayController extends Controller
 
             $amountTendered = (float)$request->bill_tendered_amount;
             $penaltyAmount = (float)$request->penalty_amount;
-            $totalAmount = $bill->present_reading + $penaltyAmount;
+            $billAmount = $bill->calculateBill();
+            $totalAmount = $billAmount + $penaltyAmount;
 
             if ($amountTendered !== $totalAmount) {
                 return response()->json([

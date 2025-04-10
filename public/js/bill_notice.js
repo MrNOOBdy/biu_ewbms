@@ -251,25 +251,24 @@ function viewDetails(billId) {
             if (data.success) {
                 const bill = data.data;
 
+                // Set consumer details
                 document.getElementById('detail_customerId').textContent = bill.consumer.customer_id;
                 document.getElementById('detail_consumerName').textContent = `${bill.consumer.firstname} ${bill.consumer.lastname}`;
                 document.getElementById('detail_contactNo').textContent = bill.consumer.contact_no;
                 document.getElementById('detail_address').textContent = bill.consumer.address;
                 document.getElementById('detail_consumerType').textContent = bill.consumer.consumer_type;
 
+                // Set bill details with calculations
                 document.getElementById('detail_readingDate').textContent = formatDate(bill.reading_date);
                 document.getElementById('detail_dueDate').textContent = formatDate(bill.due_date);
                 document.getElementById('detail_previousReading').textContent = bill.previous_reading;
                 document.getElementById('detail_presentReading').textContent = bill.present_reading;
                 document.getElementById('detail_consumption').textContent = bill.consumption;
-                document.getElementById('detail_billAmount').textContent =
-                    bill.bill_payments ?
-                        formatAmount(bill.bill_payments.total_amount) :
-                        'Pending';
+                document.getElementById('detail_baseRate').textContent = formatAmount(bill.base_rate);
+                document.getElementById('detail_excessCharges').textContent = formatAmount(bill.excess_charges);
+                document.getElementById('detail_billAmount').textContent = formatAmount(bill.total_amount);
                 document.getElementById('detail_billStatus').textContent =
-                    bill.bill_payments ?
-                        bill.bill_payments.bill_status.toUpperCase() :
-                        'Pending';
+                    bill.bill_payments ? bill.bill_payments.bill_status.toUpperCase() : 'Pending';
 
                 openViewDetailsModal();
             } else {

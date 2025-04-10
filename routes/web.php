@@ -66,7 +66,6 @@ Route::middleware(['web'])->group(function () {
         Route::post('/users/{id}/activate', [UserController::class, 'activate'])->name('users.activate');
         Route::post('/users/{id}/deactivate', [UserController::class, 'deactivate'])->name('users.deactivate');
         Route::put('/users/{id}', [UserController::class, 'update'])->name('users.update');
-        Route::post('/users/{id}', [UserController::class, 'update'])->name('users.update');
         Route::post('/users/{id}/verify-password', [UserController::class, 'verifyUserPassword'])->name('users.verifyPassword');
         Route::post('/users/{id}/reset-password', [UserController::class, 'resetPassword'])->name('users.resetPassword');
         Route::post('/users/{user}/verify-delete-password', [UserController::class, 'verifyDeletePassword'])->name('users.verifyDeletePassword');
@@ -194,7 +193,8 @@ Route::middleware(['web'])->group(function () {
         Route::post('/billing/add-bill', [BillingController::class, 'addBill']);
         Route::post('/billing/send-bill-sms', [BillingController::class, 'sendBillSMS']);
         Route::get('/billing/search', [BillingController::class, 'search'])->name('billing.search');
-
+        Route::get('/billing/get-reading-details/{consreadId}', 'BillingController@getReadingDetails');
+        
         // Bill Notice routes
         Route::get('/notice-bill', [Bill_NoticeController::class, 'noticeBill'])->name('notice-bill');
         Route::get('/billing/notice/{id}/details', [Bill_NoticeController::class, 'getBillDetails']);
@@ -206,7 +206,7 @@ Route::middleware(['web'])->group(function () {
         Route::post('/meter-readers/assign-blocks', [MRsBlockCont::class, 'assignBlocks'])->name('meter-readers.assign-blocks');
         Route::get('/meter-readers/{id}/blocks', [MRsBlockCont::class, 'getAssignedBlocks'])->name('meter-readers.get-blocks');
 
-        // Meter Reader substitution routes
+        // Meter Reader substitution routes (Remove Teporarily)
         Route::post('/meter-readers/substitutions', [MRsBlockCont::class, 'createSubstitution'])->name('meter-readers.substitutions.create');
         Route::get('/meter-readers/substitutions', [MRsBlockCont::class, 'getSubstitutions'])->name('meter-readers.substitutions');
         Route::put('/meter-readers/substitutions/{id}', [MRsBlockCont::class, 'updateSubstitution'])->name('meter-readers.substitutions.update');

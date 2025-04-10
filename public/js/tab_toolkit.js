@@ -186,6 +186,5 @@ class TabToolkit {
     }
 }
 
-// Initialize on DOM load
 document.addEventListener('DOMContentLoaded', () => new TabToolkit());
 

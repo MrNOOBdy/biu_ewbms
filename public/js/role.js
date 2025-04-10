@@ -376,7 +376,6 @@ function showPermissionResultModal(type, message) {
     modal.style.display = 'block';
     setTimeout(() => modal.classList.add('fade-in'), 10);
 
-    // Close modal when clicking outside
     modal.onclick = function(event) {
         if (event.target === modal) {
             closePermissionResultModal();

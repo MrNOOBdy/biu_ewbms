@@ -177,7 +177,6 @@ const BillRateModule = {
             if (data.success) {
                 this.showResultModal(true, data.message);
             } else {
-                // Show error in result modal instead of warning modal if it's a consumer usage error
                 if (data.isUsedByConsumers) {
                     this.showResultModal(false, data.message);
                 } else {
@@ -233,7 +232,6 @@ const BillRateModule = {
     }
 };
 
-// Handle clicking outside modals
 window.addEventListener('click', function(event) {
     const modals = {
         'addBillRateModal': BillRateModule.closeAddModal,

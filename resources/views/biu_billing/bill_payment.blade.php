@@ -41,14 +41,17 @@
             </thead>
             <tbody>
                 @forelse($bills as $bill)
+                    @php
+                        $totalAmount = $bill->calculateBill();
+                    @endphp
                     <tr>
                         <td>{{ $bill->consumer->customer_id }}</td>
                         <td>{{ $bill->consumer->firstname }} {{ $bill->consumer->lastname }}</td>
                         <td>{{ date('M d, Y', strtotime($bill->due_date)) }}</td>
                         <td>{{ $bill->previous_reading }}</td>
                         <td>{{ $bill->present_reading }}</td>
-                        <td>{{ $bill->consumption }}</td>
-                        <td>₱{{ number_format($bill->billPayments->total_amount, 2) }}</td>
+                        <td>{{ $bill->calculateConsumption() }}</td>
+                        <td>₱{{ number_format($totalAmount, 2) }}</td>
                         <td>
                             <span class="status-badge {{ $bill->billPayments->bill_status == 'paid' ? 'status-active' : 'status-pending' }}">
                                 {{ ucfirst($bill->billPayments->bill_status) }}

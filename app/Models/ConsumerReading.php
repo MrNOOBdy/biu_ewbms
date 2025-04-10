@@ -53,14 +53,16 @@ class ConsumerReading extends Model
             return 0;
         }
 
+        $baseCharge = $billRate->value;
+
         if ($consumption <= self::BASE_CUBIC_LIMIT) {
-            return $billRate->value;
+            return $baseCharge;
         }
 
         $excessCubic = $consumption - self::BASE_CUBIC_LIMIT;
         $excessCharge = $excessCubic * $billRate->excess_value_per_cubic;
 
-        return $billRate->value + $excessCharge;
+        return $baseCharge + $excessCharge;
     }
 
     public function billPayments()
@@ -70,6 +72,6 @@ class ConsumerReading extends Model
 
     public function getBillAmount()
     {
-        return $this->billPayments ? $this->billPayments->total_amount : $this->present_reading;
+        return $this->calculateBill();
     }
 }

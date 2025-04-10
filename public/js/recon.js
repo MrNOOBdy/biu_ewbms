@@ -251,11 +251,9 @@ window.onclick = function (event) {
 function printServiceReceipt(customerId) {
     const printWindow = window.open(`/service/print-receipt/${customerId}`, '_blank');
     printWindow.addEventListener('load', () => {
-        // Add the html2pdf script dynamically
         const script = document.createElement('script');
         script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
         script.onload = () => {
-            // Define the print and download functions in the new window
             printWindow.printServiceReceipt = function (customerId) {
                 printWindow.print();
             };
@@ -270,13 +268,10 @@ function printServiceReceipt(customerId) {
                     jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
                 };
 
-                // Hide the buttons before generating PDF
                 const buttons = element.querySelector('.print-buttons');
                 buttons.style.display = 'none';
 
-                // Generate PDF
                 printWindow.html2pdf().set(opt).from(element).save().then(() => {
-                    // Show the buttons again after PDF generation
                     buttons.style.display = 'block';
                 });
             };

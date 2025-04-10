@@ -3,12 +3,12 @@ function handlePayment(consreadId) {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                const presentReading = parseFloat(data.present_reading) || 0;
+                const billAmount = parseFloat(data.total_amount) || 0;
 
                 document.getElementById('billId').value = consreadId;
-                document.getElementById('present_reading').value = `₱${presentReading.toFixed(2)}`;
+                document.getElementById('present_reading').value = `₱${billAmount.toFixed(2)}`;
                 document.getElementById('penalty_amount').value = '0';
-                document.getElementById('total_amount').value = `₱${presentReading.toFixed(2)}`;
+                document.getElementById('total_amount').value = `₱${billAmount.toFixed(2)}`;
                 document.getElementById('bill_tendered_amount').value = '';
 
                 const modal = document.getElementById('paymentModal');
@@ -26,9 +26,9 @@ function handlePayment(consreadId) {
 }
 
 function updateTotalAmount() {
-    const presentReading = parseFloat(document.getElementById('present_reading').value.replace('₱', '')) || 0;
+    const baseAmount = parseFloat(document.getElementById('present_reading').value.replace('₱', '')) || 0;
     const penaltyAmount = parseFloat(document.getElementById('penalty_amount').value) || 0;
-    const totalAmount = presentReading + penaltyAmount;
+    const totalAmount = baseAmount + penaltyAmount;
     document.getElementById('total_amount').value = `₱${totalAmount.toFixed(2)}`;
 
     const tenderedInput = document.getElementById('bill_tendered_amount');
@@ -159,11 +159,9 @@ function printBill(consreadId) {
 function printBillReceipt(billId) {
     const printWindow = window.open(`/billing/print-receipt/${billId}`, '_blank');
     printWindow.addEventListener('load', () => {
-        // Add the html2pdf script dynamically
         const script = document.createElement('script');
         script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
         script.onload = () => {
-            // Define the print and download functions in the new window
             printWindow.printBillReceipt = function (billId) {
                 printWindow.print();
             };
@@ -178,13 +176,10 @@ function printBillReceipt(billId) {
                     jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
                 };
 
-                // Hide the buttons before generating PDF
                 const buttons = element.querySelector('.print-buttons');
                 buttons.style.display = 'none';
 
-                // Generate PDF
                 printWindow.html2pdf().set(opt).from(element).save().then(() => {
-                    // Show the buttons again after PDF generation
                     buttons.style.display = 'block';
                 });
             };

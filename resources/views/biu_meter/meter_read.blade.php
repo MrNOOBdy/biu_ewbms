@@ -44,6 +44,7 @@
                     <th>Consumer ID</th>
                     <th>Consumer Name</th>
                     <th>Consumer Type</th>
+                    <th>Previous Reading</th>
                     <th>Present Reading</th>
                     <th>Consumption</th>
                     <th>Meter Reader</th>
@@ -56,13 +57,14 @@
                         <td>{{ $reading->customer_id }}</td>
                         <td>{{ $reading->consumer->firstname }} {{ $reading->consumer->lastname }}</td>
                         <td>{{ $reading->consumer->consumer_type }}</td>
+                        <td>{{ $reading->previous_reading }}</td>
                         <td>{{ $reading->present_reading }}</td>
-                        <td>{{ $reading->consumption }}</td>
+                        <td>{{ $reading->calculateConsumption() }}</td>
                         <td>{{ $reading->meter_reader }}</td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="7" class="empty-state">
+                        <td colspan="8" class="empty-state">
                             <i class="fas fa-tachometer-alt"></i>
                             <p>No readings found</p>
                         </td>
