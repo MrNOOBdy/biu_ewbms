@@ -306,7 +306,7 @@
             <div class="modal-actions">
                 <button type="button" class="btn_modal btn_cancel" onclick="closeModal()">Cancel</button>
                 <button type="button" class="btn_modal btn_warning" onclick="initiatePasswordReset()">Reset Password</button>
-                <button type="button" class="btn_modal btn_delete" onclick="deleteUser()">Delete User</button>
+                <button type="button" class="btn_modal btn_delete" onclick="deleteUser()" id="deleteUserBtn" style="display: none;">Delete User</button>
                 <button type="submit" class="btn_modal btn_verify">Update User</button>
             </div>
         </form>

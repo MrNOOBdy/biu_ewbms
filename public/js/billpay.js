@@ -4,11 +4,29 @@ function handlePayment(consreadId) {
         .then(data => {
             if (data.success) {
                 const billAmount = parseFloat(data.total_amount) || 0;
+                const lastUnpaidAmount = parseFloat(data.last_unpaid_amount) || 0;
+                const totalWithUnpaid = billAmount + lastUnpaidAmount;
 
                 document.getElementById('billId').value = consreadId;
                 document.getElementById('present_reading').value = `₱${billAmount.toFixed(2)}`;
                 document.getElementById('penalty_amount').value = '0';
-                document.getElementById('total_amount').value = `₱${billAmount.toFixed(2)}`;
+
+                const existingLastUnpaid = document.getElementById('last_unpaid_amount');
+                if (existingLastUnpaid) {
+                    existingLastUnpaid.closest('.form-group').remove();
+                }
+
+                if (lastUnpaidAmount > 0) {
+                    const lastUnpaidElement = document.createElement('div');
+                    lastUnpaidElement.className = 'form-group';
+                    lastUnpaidElement.innerHTML = `
+                        <label>Last Month Unpaid Amount</label>
+                        <input type="text" id="last_unpaid_amount" class="form-control" readonly value="₱${lastUnpaidAmount.toFixed(2)}">
+                    `;
+                    document.getElementById('present_reading').parentElement.after(lastUnpaidElement);
+                }
+
+                document.getElementById('total_amount').value = `₱${totalWithUnpaid.toFixed(2)}`;
                 document.getElementById('bill_tendered_amount').value = '';
 
                 const modal = document.getElementById('paymentModal');
@@ -27,8 +45,9 @@ function handlePayment(consreadId) {
 
 function updateTotalAmount() {
     const baseAmount = parseFloat(document.getElementById('present_reading').value.replace('₱', '')) || 0;
+    const lastUnpaidAmount = parseFloat(document.getElementById('last_unpaid_amount')?.value?.replace('₱', '') || 0);
     const penaltyAmount = parseFloat(document.getElementById('penalty_amount').value) || 0;
-    const totalAmount = baseAmount + penaltyAmount;
+    const totalAmount = baseAmount + lastUnpaidAmount + penaltyAmount;
     document.getElementById('total_amount').value = `₱${totalAmount.toFixed(2)}`;
 
     const tenderedInput = document.getElementById('bill_tendered_amount');
@@ -49,10 +68,6 @@ function validateTendered() {
         input.classList.add('is-invalid');
         feedback.textContent = `Amount tendered is insufficient. Required amount is ₱${totalAmount.toFixed(2)}`;
         submitButton.disabled = true;
-    } else if (tendered > totalAmount) {
-        input.classList.add('is-invalid');
-        feedback.textContent = `Amount tendered is too high. Required amount is ₱${totalAmount.toFixed(2)}`;
-        submitButton.disabled = true;
     } else {
         input.classList.remove('is-invalid');
         feedback.textContent = '';
@@ -68,7 +83,7 @@ async function processPayment(event) {
     const tendered = parseFloat(document.getElementById('bill_tendered_amount').value);
     const penalty = parseFloat(document.getElementById('penalty_amount').value) || 0;
 
-    if (tendered !== totalAmount) {
+    if (tendered < totalAmount) {
         return;
     }
 
@@ -89,7 +104,6 @@ async function processPayment(event) {
             if (result.success) {
                 closeModal('paymentModal');
                 showPaymentResultModal(true, 'Payment processed successfully');
-                setTimeout(() => location.reload(), 1500);
             } else {
                 showPaymentResultModal(false, result.message);
             }
@@ -105,6 +119,7 @@ function showPaymentResultModal(success, message) {
     const icon = document.getElementById('paymentResultIcon');
     const title = document.getElementById('paymentResultTitle');
     const messageEl = document.getElementById('paymentResultMessage');
+    const okButton = modal.querySelector('.btn_verify');
 
     icon.className = success ? 'success' : 'error';
     icon.innerHTML = success ?
@@ -112,6 +127,18 @@ function showPaymentResultModal(success, message) {
         '<i class="fas fa-exclamation-triangle"></i>';
     title.textContent = success ? 'Success' : 'Error';
     messageEl.textContent = message;
+
+    okButton.onclick = () => {
+        closeModal('paymentResultModal');
+        if (success) location.reload();
+    };
+
+    modal.onclick = (event) => {
+        if (event.target === modal) {
+            closeModal('paymentResultModal');
+            if (success) location.reload();
+        }
+    };
 
     modal.style.display = 'block';
     setTimeout(() => modal.classList.add('fade-in'), 10);
@@ -199,11 +226,13 @@ function closeModal(modalId) {
 async function filterBills() {
     const searchValue = document.getElementById('searchInput').value.trim();
     const statusValue = document.getElementById('statusFilter').value.toLowerCase();
+    const monthValue = document.getElementById('monthFilter').value;
+    const yearValue = document.getElementById('yearFilter').value;
     const tbody = document.querySelector('.uni-table tbody');
     const paginationContainer = document.querySelector('.pagination-container');
 
     try {
-        const response = await fetch(`/billing/payments/search?query=${encodeURIComponent(searchValue)}&status=${encodeURIComponent(statusValue)}`, {
+        const response = await fetch(`/billing/payments/search?query=${encodeURIComponent(searchValue)}&status=${encodeURIComponent(statusValue)}&month=${encodeURIComponent(monthValue)}&year=${encodeURIComponent(yearValue)}`, {
             headers: {
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
             }

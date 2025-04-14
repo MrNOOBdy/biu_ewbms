@@ -100,6 +100,12 @@ async function filterConsumers() {
     const searchValue = document.getElementById('searchInput').value.trim();
     const blockValue = document.getElementById('blockFilter').value;
     const statusValue = document.getElementById('statusFilter').value;
+
+    if (!blockValue && !searchValue && !statusValue) {
+        window.location.reload();
+        return;
+    }
+
     const tbody = document.querySelector('.uni-table tbody');
     const paginationWrapper = document.querySelector('.pagination-wrapper');
 

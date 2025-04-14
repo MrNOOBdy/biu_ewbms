@@ -20,6 +20,12 @@ class ApplicationIncomeController extends Controller
                 $query->with('block');
             }])->orderBy('updated_at', 'desc')->paginate(20);
             
+            $totalAmounts = ConnPayment::selectRaw('
+                SUM(application_fee) as total_application_fee,
+                SUM(conn_amount_paid) as total_amount_paid,
+                SUM(application_fee - conn_amount_paid) as total_balance
+            ')->first();
+            
             $blocks = $connPayments->pluck('consumer.block_id')->unique()->sort();
 
             $dates = ConnPayment::whereNotNull('updated_at')
@@ -49,7 +55,8 @@ class ApplicationIncomeController extends Controller
                 'blocks', 
                 'availableMonths',
                 'availableYears',
-                'userRole'
+                'userRole',
+                'totalAmounts'
             ));
         } catch (\Exception $e) {
             \Log::error('Error in ApplicationIncomeController@index: ' . $e->getMessage());

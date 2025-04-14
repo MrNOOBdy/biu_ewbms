@@ -24,7 +24,7 @@ class MySeeder extends Seeder
         $blocks = Block::all();
         $consumerTypes = DB::table('bill_rate')->pluck('consumer_type')->toArray();
 
-        for ($i = 0; $i < 100; $i++) {
+        for ($i = 0; $i < 48; $i++) {
             try {
                 DB::beginTransaction();
 
@@ -49,6 +49,10 @@ class MySeeder extends Seeder
                     $customerId = sprintf("B%02d-%02d", $blockId, $number);
                 }
 
+                $currentTimestamp = $faker->dateTimeBetween('2025-03-02', '2025-04-01')
+                    ->setTimezone(new \DateTimeZone('Asia/Manila'));
+
+                // Create consumer with Active status and no application fee
                 $consumer = Consumer::create([
                     'block_id' => $blockId,
                     'customer_id' => $customerId,
@@ -58,18 +62,21 @@ class MySeeder extends Seeder
                     'address' => $address,
                     'contact_no' => '09' . $faker->numberBetween(100000000, 999999999),
                     'consumer_type' => $faker->randomElement($consumerTypes),
-                    'status' => 'Pending',
-                    'application_fee' => $applicationFee->amount,
-                    'service_fee' => 0
+                    'status' => 'Active', // Changed from 'Pending' to 'Active'
+                    'application_fee' => $applicationFee->amount, // Set to 0 since it's paid
+                    'service_fee' => 0,
+                    'created_at' => $currentTimestamp,
+                    'updated_at' => $currentTimestamp
                 ]);
 
+                // Create paid connection payment record
                 DB::table('conn_payment')->insert([
                     'customer_id' => $customerId,
                     'application_fee' => $applicationFee->amount,
-                    'conn_amount_paid' => 0,
-                    'conn_pay_status' => 'unpaid',
-                    'created_at' => now(),
-                    'updated_at' => now()
+                    'conn_amount_paid' => $applicationFee->amount, // Set amount paid equal to fee
+                    'conn_pay_status' => 'paid', // Set status to paid
+                    'created_at' => $currentTimestamp,
+                    'updated_at' => $currentTimestamp
                 ]);
 
                 DB::commit();
@@ -79,6 +86,6 @@ class MySeeder extends Seeder
             }
         }
 
-        $this->command->info('Successfully seeded 100 consumers with their application fees!');
+        $this->command->info('Successfully seeded 100 active consumers with paid application fees!');
     }
 }

@@ -23,26 +23,28 @@ class MRController extends Controller
         try {
             $query = ConsumerReading::with('consumer');
             
-            if ($request->has('query')) {
-                $searchTerm = $request->get('query');
-                $query->whereHas('consumer', function($q) use ($searchTerm) {
-                    $q->where('firstname', 'LIKE', "%{$searchTerm}%")
-                      ->orWhere('lastname', 'LIKE', "%{$searchTerm}%")
-                      ->orWhere('customer_id', 'LIKE', "%{$searchTerm}%")
-                      ->orWhere('consumer_type', 'LIKE', "%{$searchTerm}%");
-                })
-                ->orWhere('meter_reader', 'LIKE', "%{$searchTerm}%")
-                ->orWhere('present_reading', 'LIKE', "%{$searchTerm}%")
-                ->orWhere('consumption', 'LIKE', "%{$searchTerm}%");
+            // Block filter - apply first
+            if ($request->has('block') && !empty($request->get('block'))) {
+                $blockFilter = $request->get('block');
+                $query->whereHas('consumer', function($q) use ($blockFilter) {
+                    $q->where('block_id', '=', $blockFilter);
+                });
             }
 
-            if ($request->has('block')) {
-                $blockFilter = $request->get('block');
-                if (!empty($blockFilter)) {
-                    $query->whereHas('consumer', function($q) use ($blockFilter) {
-                        $q->where('block_id', $blockFilter);
-                    });
-                }
+            // Search filter
+            if ($request->has('query') && !empty($request->get('query'))) {
+                $searchTerm = $request->get('query');
+                $query->where(function($q) use ($searchTerm) {
+                    $q->whereHas('consumer', function($subQ) use ($searchTerm) {
+                        $subQ->where('firstname', 'LIKE', "%{$searchTerm}%")
+                            ->orWhere('lastname', 'LIKE', "%{$searchTerm}%")
+                            ->orWhere('customer_id', 'LIKE', "%{$searchTerm}%")
+                            ->orWhere('consumer_type', 'LIKE', "%{$searchTerm}%");
+                    })
+                    ->orWhere('meter_reader', 'LIKE', "%{$searchTerm}%")
+                    ->orWhere('present_reading', 'LIKE', "%{$searchTerm}%")
+                    ->orWhere('consumption', 'LIKE', "%{$searchTerm}%");
+                });
             }
 
             $readings = $query->orderBy('created_at', 'desc')->get();

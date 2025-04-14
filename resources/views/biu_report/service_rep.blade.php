@@ -1,11 +1,11 @@
 @extends('biu_layout.admin')
 
-@section('title', 'BI-U: Application Fee Income')
+@section('title', 'BI-U: Service Fee Report')
 
 @section('tab-content')
 <link rel="stylesheet" href="{{ asset('css/tbl_pagination.css') }}">
 <div class="table-header">
-    <h3><i class="fas fa-chart-line"></i> Application Fee Income</h3>
+    <h3><i class="fas fa-chart-line"></i> Service Fee Report</h3>
     <div class="header-controls">
         <div class="filter-section">
             <select id="monthFilter">
@@ -32,16 +32,13 @@
                     @endif
                 @endforeach
             </select>
-            <button class="btn-filter" onclick="AppIncome.filterIncome()">
+            <button class="btn-filter" onclick="ServiceReport.filterReport()">
                 <i class="fas fa-filter"></i> Filter
-            </button>
-            <button class="btn-print" onclick="AppIncome.printReport()">
-                <i class="fas fa-print"></i> Print
             </button>
         </div>
         <div class="search-container">
             <input type="text" id="searchInput" placeholder="Generate...">
-            <button class="btn-search" onclick="AppIncome.filterIncome()">
+            <button class="btn-search" onclick="ServiceReport.filterReport()">
                 <i class="fas fa-file-alt"></i> Generate
             </button>
         </div>
@@ -49,11 +46,12 @@
 </div>
 
 @php
-    $totalAmountPaid = $totalAmounts->total_amount_paid ?? 0;
+    $totalServiceAmount = $totalAmounts->total_service_amount ?? 0;
+    $totalReconnectionFee = $totalAmounts->total_reconnection_fee ?? 0;
 @endphp
 
-<div class="appli-balance" style="margin-top: -20px;">
-    <p><strong>Total Application Income:</strong> ₱{{ number_format($totalAmountPaid, 2) }}</p>
+<div class="service-totals" style="margin-top: -20px;">
+    <p><strong>Total Service Fee:</strong> ₱{{ number_format($totalServiceAmount + $totalReconnectionFee, 2) }}</p>
 </div>
 
 <div class="content-wrapper">
@@ -63,41 +61,29 @@
                 <tr>
                     <th>Block</th>
                     <th>Consumer Name</th>
-                    <th>Application Fee</th>
-                    <th>Amount Paid</th>
-                    <th>Balance</th>
+                    <th>Service Amount</th>
+                    <th>Reconnection Fee</th>
+                    <th>Status</th>
                     <th>Payment Date</th>
                 </tr>
             </thead>
             <tbody>
-                @php
-                    $totalApplicationFee = 0;
-                    $totalAmountPaid = 0;
-                    $totalBalance = 0;
-                @endphp
-                
-                @forelse ($connPayments as $payment)
-                    @if($payment->consumer)
-                        @php
-                            $balance = $payment->application_fee - $payment->conn_amount_paid;
-                            $totalApplicationFee += $payment->application_fee;
-                            $totalAmountPaid += $payment->conn_amount_paid;
-                            $totalBalance += $balance;
-                        @endphp
+                @forelse ($serviceFees as $fee)
+                    @if($fee->consumer)
                         <tr>
-                            <td>Block {{ $payment->consumer->block_id ?? 'N/A' }}</td>
-                            <td>{{ $payment->consumer->firstname }} {{ $payment->consumer->middlename }} {{ $payment->consumer->lastname }}</td>
-                            <td>₱{{ number_format($payment->application_fee, 2) }}</td>
-                            <td>₱{{ number_format($payment->conn_amount_paid, 2) }}</td>
-                            <td>₱{{ number_format($balance, 2) }}</td>
-                            <td>{{ $payment->conn_pay_status == 'unpaid' ? 'Not paid yet' : ($payment->updated_at ? $payment->updated_at->format('M d, Y h:i A') : 'Not yet paid') }}</td>
+                            <td>Block {{ $fee->consumer->block_id ?? 'N/A' }}</td>
+                            <td>{{ $fee->consumer->firstname }} {{ $fee->consumer->middlename }} {{ $fee->consumer->lastname }}</td>
+                            <td>₱{{ number_format($fee->service_amount_paid, 2) }}</td>
+                            <td>₱{{ number_format($fee->reconnection_fee, 2) }}</td>
+                            <td>{{ $fee->service_paid_status }}</td>
+                            <td>{{ $fee->updated_at ? $fee->updated_at->format('M d, Y h:i A') : 'N/A' }}</td>
                         </tr>
                     @endif
                 @empty
                     <tr>
                         <td colspan="6" class="empty-state">
                             <i class="fas fa-chart-bar"></i>
-                            <p>No application income data found</p>
+                            <p>No service fee data found</p>
                         </td>
                     </tr>
                 @endforelse
@@ -105,18 +91,17 @@
             <tfoot style="position: sticky; bottom: 0; z-index: 1; background-color: #f8f9fa;">
                 <tr class="total-row">
                     <td colspan="2"><strong>Total</strong></td>
-                    <td><strong>₱{{ number_format($totalAmounts->total_application_fee ?? 0, 2) }}</strong></td>
-                    <td><strong>₱{{ number_format($totalAmounts->total_amount_paid ?? 0, 2) }}</strong></td>
-                    <td><strong>₱{{ number_format($totalAmounts->total_balance ?? 0, 2) }}</strong></td>
-                    <td></td>
+                    <td><strong>₱{{ number_format($totalAmounts->total_service_amount ?? 0, 2) }}</strong></td>
+                    <td><strong>₱{{ number_format($totalAmounts->total_reconnection_fee ?? 0, 2) }}</strong></td>
+                    <td colspan="2"></td>
                 </tr>
             </tfoot>
         </table>
         <div class="pagination-container">
-            {{ $connPayments->links('pagination.custom') }}
+            {{ $serviceFees->links('pagination.custom') }}
         </div>
     </div>
 </div>
 
-<script src="{{ asset('js/appli_income.js') }}"></script>
+<script src="{{ asset('js/service_rep.js') }}"></script>
 @endsection

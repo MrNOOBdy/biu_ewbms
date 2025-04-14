@@ -7,70 +7,12 @@
 <style>
     .modal-content {
         padding: 15px;
-        max-height: none;
+        min-height: 85vh;
         overflow-y: visible;
         max-width: 800px;
         width: 90%;
         display: flex;
         flex-direction: column;
-    }
-
-    .modal-body {
-        padding: 0;
-        flex-grow: 1;
-    }
-
-    .info-group {
-        font-size: 0.9rem;
-        display: flex;
-        flex-wrap: wrap;
-        gap: 20px;
-        justify-content: space-between;
-    }
-
-    .consumer-info,
-    .coverage-info,
-    .bill-details {
-        flex: 1;
-        min-width: 300px;
-        background: var(--light-bg);
-        border-radius: var(--border-radius-md);
-        padding: var(--spacing-md);
-    }
-
-    .consumer-info p,
-    .coverage-info p,
-    .bill-details p {
-        display: flex;
-        justify-content: space-between;
-        margin: 8px 0;
-        padding: 4px 0;
-        border-bottom: 1px solid var(--border-color-light);
-    }
-
-    .consumer-info p:last-child,
-    .coverage-info p:last-child,
-    .bill-details p:last-child {
-        border-bottom: none;
-    }
-
-    .modal-actions {
-        margin-top: 20px;
-        display: flex;
-        justify-content: flex-end;
-        gap: 10px;
-    }
-
-    @media (max-width: 900px) {
-        .info-group {
-            flex-direction: column;
-        }
-        
-        .consumer-info,
-        .coverage-info,
-        .bill-details {
-            min-width: 100%;
-        }
     }
 </style>
 
@@ -190,7 +132,7 @@
                     <p><strong>Due Date:</strong> <span id="dueDate"></span></p>
                     <p><strong>Previous Reading:</strong> <span id="previousReading"></span></p>
                     <p><strong>Present Reading:</strong> <span id="presentReading"></span></p>
-                    <p><strong>Consumption:</strong> <span id="consumption"></span></p>
+                    <p><strong>Consumption:</strong> <span id="consumption"></span>m³</p>
                     <p><strong>Total Amount:</strong> ₱<span id="totalAmount"></span></p>
                 </div>
             </div>
@@ -213,7 +155,7 @@
             <div class="consumer-info">
                 <p><strong>Consumer Name:</strong> <span id="sms_consumerName"></span></p>
                 <p><strong>Contact No:</strong> <span id="sms_contactNo"></span></p>
-                <p><strong>Present Reading:</strong> <span id="sms_presentReading"></span> m³</p>
+                <p><strong>Present Reading:</strong> <span id="sms_presentReading"></span></p>
                 <p><strong>Consumption:</strong> <span id="sms_consumption"></span>m³</p>
                 <div class="form-group">    
                     <label for="sms_message">Message Preview:</label>

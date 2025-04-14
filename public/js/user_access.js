@@ -3,7 +3,7 @@ function showAddUserModal() {
     const form = modal.querySelector('form');
     form.reset();
     clearValidationErrors();
-    
+
     modal.style.display = 'block';
     setTimeout(() => {
         modal.classList.add('fade-in');
@@ -17,7 +17,7 @@ function closeModal(modalId) {
         window.location.reload();
         return;
     }
-    
+
     if (modalId === 'noreload' || !modalId) {
         document.querySelectorAll('.modal').forEach(modal => {
             modal.classList.remove('fade-in');
@@ -27,7 +27,7 @@ function closeModal(modalId) {
         });
         return;
     }
-    
+
     const modal = document.getElementById(modalId);
     if (modal) {
         modal.classList.remove('fade-in');
@@ -37,7 +37,7 @@ function closeModal(modalId) {
     }
 }
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     const addUserForm = document.querySelector('#addUserModal form');
     if (addUserForm) {
         const inputs = addUserForm.querySelectorAll('input, select');
@@ -46,14 +46,13 @@ document.addEventListener('DOMContentLoaded', function() {
             input.addEventListener('change', () => handleInputChange(input));
         });
 
-        addUserForm.addEventListener('submit', function(e) {
+        addUserForm.addEventListener('submit', function (e) {
             e.preventDefault();
-            
+
             const submitButton = this.querySelector('button[type="submit"]');
             const originalText = submitButton.textContent;
-            submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i>   Processing...';
             submitButton.disabled = true;
-            
+
             clearValidationErrors();
 
             const formData = new FormData(this);
@@ -65,62 +64,60 @@ document.addEventListener('DOMContentLoaded', function() {
                     'X-Requested-With': 'XMLHttpRequest'
                 }
             })
-            .then(response => response.json())
-            .then(data => {
-                submitButton.innerHTML = originalText;
-                submitButton.disabled = false;
-                
-                if (data.success) {
-                    closeModal('addUserModal');
-                    showUserResultModal(
-                        true,
-                        'Success',
-                        `User "${formData.get('username')}" has been successfully created with the role of ${formData.get('role')}.`
-                    );
-                    window.location.reload();
-                } else if (data.errors) {
-                    Object.keys(data.errors).forEach(field => {
-                        const input = document.getElementById(field);
-                        if (input) {
-                            input.classList.add('is-invalid');
-                            const feedback = input.nextElementSibling;
-                            if (feedback && feedback.classList.contains('invalid-feedback')) {
-                                feedback.textContent = data.errors[field][0];
-                                feedback.style.display = 'block';
+                .then(response => response.json())
+                .then(data => {
+                    submitButton.disabled = false;
+
+                    if (data.success) {
+                        closeModal('addUserModal');
+                        showUserResultModal(
+                            true,
+                            'Success',
+                            `User "${formData.get('username')}" has been successfully created with the role of ${formData.get('role')}.`
+                        );
+                        window.location.reload();
+                    } else if (data.errors) {
+                        Object.keys(data.errors).forEach(field => {
+                            const input = document.getElementById(field);
+                            if (input) {
+                                input.classList.add('is-invalid');
+                                const feedback = input.nextElementSibling;
+                                if (feedback && feedback.classList.contains('invalid-feedback')) {
+                                    feedback.textContent = data.errors[field][0];
+                                    feedback.style.display = 'block';
+                                }
                             }
+                        });
+
+                        const firstInvalid = addUserForm.querySelector('.is-invalid');
+                        if (firstInvalid) {
+                            firstInvalid.focus();
+                            firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
                         }
-                    });
-                    
-                    const firstInvalid = addUserForm.querySelector('.is-invalid');
-                    if (firstInvalid) {
-                        firstInvalid.focus();
-                        firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     }
-                }
-            })
-            .catch(error => {
-                submitButton.innerHTML = originalText;
-                submitButton.disabled = false;
-                showUserResultModal(
-                    false,
-                    'Error',
-                    'An error occurred while creating the user. Please try again.'
-                );
-            });
+                })
+                .catch(error => {
+                    submitButton.disabled = false;
+                    showUserResultModal(
+                        false,
+                        'Error',
+                        'An error occurred while creating the user. Please try again.'
+                    );
+                });
         });
     }
 
     const modals = document.querySelectorAll('.modal');
-    
+
     modals.forEach(modal => {
-        modal.addEventListener('click', function(e) {
+        modal.addEventListener('click', function (e) {
             if (e.target === modal) {
                 closeModal(modal.id);
             }
         });
     });
-    
-    document.addEventListener('keydown', function(e) {
+
+    document.addEventListener('keydown', function (e) {
         if (e.key === 'Escape') {
             const visibleModal = document.querySelector('.modal[style*="display: block"]');
             if (visibleModal) {
@@ -137,40 +134,32 @@ function showUserResultModal(success, title, message) {
     const messageEl = document.getElementById('userResultMessage');
     const okButton = modal.querySelector('.btn_verify');
 
-    iconDiv.innerHTML = success ? 
-        '<i class="fas fa-check-circle success-icon"></i>' : 
+    iconDiv.innerHTML = success ?
+        '<i class="fas fa-check-circle success-icon"></i>' :
         '<i class="fas fa-times-circle error-icon"></i>';
     titleEl.textContent = title || (success ? 'Success' : 'Error');
     messageEl.textContent = message || (success ? 'Operation completed successfully.' : 'An error occurred.');
-    
-    if (success && title === 'Success' && !message.includes('details')) {
-        messageEl.textContent = 'User has been successfully created. They can now log in with the provided credentials.';
-    }
-    
+
     modal.style.display = 'block';
     setTimeout(() => modal.classList.add('fade-in'), 50);
 
+    const handleClose = () => {
+        modal.classList.remove('fade-in');
+        setTimeout(() => {
+            modal.style.display = 'none';
+            if (success) {
+                window.location.reload();
+            }
+        }, 300);
+    };
+
     if (okButton) {
-        okButton.onclick = function() {
-            modal.classList.remove('fade-in');
-            setTimeout(() => {
-                modal.style.display = 'none';
-                if (success) {
-                    window.location.reload();
-                }
-            }, 300);
-        };
+        okButton.onclick = handleClose;
     }
 
-    modal.onclick = function(e) {
+    modal.onclick = function (e) {
         if (e.target === modal) {
-            modal.classList.remove('fade-in');
-            setTimeout(() => {
-                modal.style.display = 'none';
-                if (success) {
-                    window.location.reload();
-                }
-            }, 300);
+            handleClose();
         }
     };
 }
@@ -190,7 +179,7 @@ function clearValidationErrors() {
 
 function displayValidationErrors(errors) {
     clearValidationErrors();
-    
+
     if (errors.generic) {
         const firstInput = document.querySelector('.form-control');
         if (firstInput) {
@@ -231,19 +220,19 @@ function handleInputChange(input) {
     }
 }
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     const contactInput = document.getElementById('contactnum');
     if (contactInput) {
-        contactInput.addEventListener('input', function(e) {
+        contactInput.addEventListener('input', function (e) {
             this.value = this.value.replace(/[^0-9]/g, '');
-            
+
             if (this.value.length > 11) {
                 this.value = this.value.slice(0, 11);
             }
-            
+
             const maxLength = 11;
             const currentLength = this.value.length;
-            
+
             if (currentLength > 0) {
                 if (currentLength < maxLength) {
                     this.classList.add('is-warning');
@@ -257,19 +246,19 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
-    
+
     const editContactInput = document.getElementById('edit_contactnum');
     if (editContactInput) {
-        editContactInput.addEventListener('input', function(e) {
+        editContactInput.addEventListener('input', function (e) {
             this.value = this.value.replace(/[^0-9]/g, '');
-            
+
             if (this.value.length > 11) {
                 this.value = this.value.slice(0, 11);
             }
-            
+
             const maxLength = 11;
             const currentLength = this.value.length;
-            
+
             if (currentLength > 0) {
                 if (currentLength < maxLength) {
                     this.classList.add('is-warning');
@@ -295,9 +284,9 @@ function toggleUserStatus(userId, action) {
     message.textContent = `Are you sure you want to ${action} this user?`;
     confirmBtn.textContent = action === 'activate' ? 'Activate' : 'Deactivate';
     confirmBtn.className = `btn_modal ${action === 'activate' ? 'btn_verify' : 'btn_delete'}`;
-    
+
     confirmBtn.onclick = () => confirmStatusChange(userId, action);
-    
+
     modal.style.display = 'block';
     setTimeout(() => modal.classList.add('fade-in'), 50);
 }
@@ -310,28 +299,28 @@ function confirmStatusChange(userId, action) {
             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
         }
     })
-    .then(response => response.json())
-    .then(data => {
-        closeModal('statusChangeModal');
-        if (data.success) {
-            showStatusResultModal(true, 
-                `User ${action}d Successfully`, 
-                `The user has been ${action}d.`
+        .then(response => response.json())
+        .then(data => {
+            closeModal('statusChangeModal');
+            if (data.success) {
+                showStatusResultModal(true,
+                    `User ${action}d Successfully`,
+                    `The user has been ${action}d.`
+                );
+            } else {
+                showStatusResultModal(false,
+                    'Operation Failed',
+                    data.message || `Failed to ${action} user.`
+                );
+            }
+        })
+        .catch(error => {
+            closeModal('statusChangeModal');
+            showStatusResultModal(false,
+                'Error',
+                `An error occurred while trying to ${action} the user.`
             );
-        } else {
-            showStatusResultModal(false, 
-                'Operation Failed', 
-                data.message || `Failed to ${action} user.`
-            );
-        }
-    })
-    .catch(error => {
-        closeModal('statusChangeModal');
-        showStatusResultModal(false, 
-            'Error', 
-            `An error occurred while trying to ${action} the user.`
-        );
-    });
+        });
 }
 
 function showStatusResultModal(success, title, message) {
@@ -341,17 +330,17 @@ function showStatusResultModal(success, title, message) {
     const messageEl = document.getElementById('statusResultMessage');
     const okButton = modal.querySelector('.btn_verify');
 
-    iconDiv.innerHTML = success ? 
-        '<i class="fas fa-check-circle success-icon"></i>' : 
+    iconDiv.innerHTML = success ?
+        '<i class="fas fa-check-circle success-icon"></i>' :
         '<i class="fas fa-times-circle error-icon"></i>';
     titleEl.textContent = title;
     messageEl.textContent = message;
-    
+
     modal.style.display = 'block';
     setTimeout(() => modal.classList.add('fade-in'), 50);
 
     if (okButton) {
-        okButton.onclick = function() {
+        okButton.onclick = function () {
             modal.classList.remove('fade-in');
             setTimeout(() => {
                 modal.style.display = 'none';
@@ -362,7 +351,7 @@ function showStatusResultModal(success, title, message) {
         };
     }
 
-    modal.onclick = function(e) {
+    modal.onclick = function (e) {
         if (e.target === modal) {
             modal.classList.remove('fade-in');
             setTimeout(() => {

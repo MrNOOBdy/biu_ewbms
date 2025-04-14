@@ -241,10 +241,24 @@ class Cov_dateController extends Controller
         $coverageTo = strtotime($data['coverage_date_to']);
         $dueDate = strtotime($data['due_date']);
 
+        if ($coverageTo <= $coverageFrom) {
+            return [
+                'valid' => false,
+                'message' => 'Coverage Date To must be after Coverage Date From'
+            ];
+        }
+
         if ($dueDate <= $coverageTo) {
             return [
                 'valid' => false,
                 'message' => 'Due Date must be after Coverage Date To'
+            ];
+        }
+
+        if ($dueDate <= $coverageFrom) {
+            return [
+                'valid' => false,
+                'message' => 'Due Date must be after Coverage Date From'
             ];
         }
 

@@ -6,14 +6,16 @@ const MeterReadings = {
         const paginationContainer = document.querySelector('.pagination-container');
 
         if (!searchValue && !blockValue) {
-            if (paginationContainer) {
-                paginationContainer.style.display = 'flex';
-            }
+            window.location.reload();
             return;
         }
 
         try {
-            const response = await fetch(`/meter-readings/search?query=${encodeURIComponent(searchValue)}&block=${encodeURIComponent(blockValue)}`, {
+            const queryParams = new URLSearchParams();
+            if (searchValue) queryParams.append('query', searchValue);
+            if (blockValue) queryParams.append('block', blockValue);
+
+            const response = await fetch(`/meter-readings/search?${queryParams.toString()}`, {
                 headers: {
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
                 }

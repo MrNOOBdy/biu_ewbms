@@ -37,23 +37,59 @@ class BillingController extends Controller
     public function getReadingDetails($consreadId)
     {
         try {
-            $reading = ConsumerReading::with(['consumer', 'coverageDate'])->findOrFail($consreadId);
+            $reading = ConsumerReading::with(['consumer'])->findOrFail($consreadId);
             
+            if (!$reading || !$reading->consumer) {
+                throw new \Exception('Reading or consumer details not found');
+            }
+
+            $coverageDate = Cov_date::where('covdate_id', $reading->covdate_id)->first();
+            if (!$coverageDate) {
+                throw new \Exception('Coverage date not found');
+            }
+
+            $previousBill = ConsumerReading::with('billPayments')
+                ->where('customer_id', $reading->customer_id)
+                ->where('consread_id', '<', $reading->consread_id)
+                ->orderBy('consread_id', 'desc')
+                ->first();
+
+            $previousBillStatus = 'No previous bill';
+            if ($previousBill && $previousBill->billPayments) {
+                $previousBillStatus = $previousBill->billPayments->bill_status;
+            }
+
+            $consumption = $reading->calculateConsumption();
+            $billAmount = $reading->calculateBill();
+
             $data = [
-                'consumer' => $reading->consumer,
-                'coverage_date' => $reading->coverageDate,
+                'consumer' => [
+                    'customer_id' => $reading->consumer->customer_id,
+                    'firstname' => $reading->consumer->firstname,
+                    'lastname' => $reading->consumer->lastname,
+                    'contact_no' => $reading->consumer->contact_no,
+                    'consumer_type' => $reading->consumer->consumer_type,
+                    'previous_bill_status' => $previousBillStatus
+                ],
+                'coverage_date' => [
+                    'coverage_date_from' => $coverageDate->coverage_date_from,
+                    'coverage_date_to' => $coverageDate->coverage_date_to
+                ],
                 'reading_date' => $reading->reading_date,
                 'due_date' => $reading->due_date,
                 'previous_reading' => $reading->previous_reading,
                 'present_reading' => $reading->present_reading,
-                'consumption' => $reading->calculateConsumption(),
-                'total_amount' => $reading->calculateBill(),
+                'consumption' => $consumption,
+                'total_amount' => $billAmount,
                 'meter_reader' => $reading->meter_reader
             ];
 
             return response()->json($data);
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Failed to fetch reading details'], 500);
+            \Log::error('Error in getReadingDetails: ' . $e->getMessage());
+            return response()->json([
+                'error' => 'Failed to fetch reading details: ' . $e->getMessage()
+            ], 500);
         }
     }
 
@@ -84,7 +120,7 @@ class BillingController extends Controller
     {
         try {
             $reading = ConsumerReading::with(['consumer', 'billPayments'])->findOrFail($consreadId);
-            
+
             if (!$reading->consumer) {
                 throw new \Exception('Consumer details not found');
             }
@@ -123,9 +159,9 @@ class BillingController extends Controller
                 $phoneNumber = '+63' . substr($phoneNumber, 1);
             }
 
+            $pushbullet = new PushbulletService();
             $message = preg_replace('/^BI-U Water:?\s*\n?/i', '', $request->message);
 
-            $pushbullet = new PushbulletService();
             $result = $pushbullet->sendSMS($phoneNumber, $message);
 
             if (!$result) {
@@ -184,6 +220,9 @@ class BillingController extends Controller
                 'success' => true,
                 'bills' => $bills->map(function($bill) {
                     $billPayment = $bill->billPayments()->first();
+                    $consumption = $bill->calculateConsumption();
+                    $totalAmount = $bill->calculateBill();
+                    
                     return [
                         'consread_id' => $bill->consread_id,
                         'customer_id' => $bill->consumer->customer_id,
@@ -193,13 +232,14 @@ class BillingController extends Controller
                         'due_date' => date('M d, Y', strtotime($bill->due_date)),
                         'previous_reading' => $bill->previous_reading,
                         'present_reading' => $bill->present_reading,
-                        'consumption' => $bill->consumption,
+                        'consumption' => $consumption,
+                        'total_amount' => number_format($totalAmount, 2, '.', ''),
                         'bill_status' => !$billPayment ? 'Pending' : $billPayment->bill_status
                     ];
                 })
             ]);
-
         } catch (\Exception $e) {
+            \Log::error('Search error: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to search bills: ' . $e->getMessage()

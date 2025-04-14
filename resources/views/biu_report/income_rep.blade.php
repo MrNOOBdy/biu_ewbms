@@ -5,7 +5,7 @@
 @section('tab-content')
 <link rel="stylesheet" href="{{ asset('css/tbl_pagination.css') }}">
 <div class="table-header">
-    <h3><i class="fas fa-coins"></i> Monthly Income Report</h3>
+    <h3><i class="fas fa-coins"></i>Income Billing Report</h3>
     <div class="header-controls">
         <div class="filter-section">
             <select id="monthFilter">

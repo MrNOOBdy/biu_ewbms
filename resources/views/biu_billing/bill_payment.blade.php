@@ -8,6 +8,22 @@
     <h3><i class="fas fa-money-bill-wave"></i> Bill Payment</h3>
     <div class="header-controls">
         <div class="filter-section">
+            <select id="monthFilter" onchange="filterBills()">
+                <option value="">All Months</option>
+                @foreach($availableMonths as $month)
+                    <option value="{{ $month['number'] }}" {{ date('n') == $month['number'] ? 'selected' : '' }}>
+                        {{ $month['name'] }}
+                    </option>
+                @endforeach
+            </select>
+            <select id="yearFilter" onchange="filterBills()">
+                <option value="">All Years</option>
+                @foreach($availableYears as $year)
+                    <option value="{{ $year }}" {{ date('Y') == $year ? 'selected' : '' }}>
+                        {{ $year }}
+                    </option>
+                @endforeach
+            </select>
             <select id="statusFilter" onchange="filterBills()">
                 <option value="">All Bills</option>
                 <option value="paid">Paid Bills</option>
@@ -94,16 +110,17 @@
             @csrf
             <input type="hidden" id="billId" name="bill_id">
             <div class="form-group">
-                <label>Present Reading</label>
+                <label>Current Bill Amount</label>
                 <input type="text" id="present_reading" class="form-control" readonly>
             </div>
+            <!-- Last unpaid amount will be dynamically inserted here -->
             <div class="form-group">
                 <label>Penalty After Due Date (Optional)</label>
                 <input type="number" id="penalty_amount" name="penalty_amount" class="form-control" step="0.01" min="0" value="0">
                 <div class="invalid-feedback"></div>
             </div>
             <div class="form-group">
-                <label>Total Amount</label>
+                <label>Total Amount to Pay</label>
                 <input type="text" id="total_amount" class="form-control" readonly>
             </div>
             <div class="form-group">
