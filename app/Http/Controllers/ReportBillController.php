@@ -34,7 +34,6 @@ class ReportBillController extends Controller
                               return $bill;
                           });
 
-        // Get unique months and years from paid bills
         $dates = ConsBillPay::where('bill_status', 'Paid')
             ->whereNotNull('created_at')
             ->get()
@@ -77,6 +76,7 @@ class ReportBillController extends Controller
                 'water_consumers.firstname',
                 'water_consumers.lastname',
                 'consumer_bill_pay.total_amount',
+                'consumer_reading.reading_date',
                 'consumer_reading.due_date'
             )
             ->join('consumer_reading', 'consumer_bill_pay.consread_id', '=', 'consumer_reading.consread_id')
@@ -92,7 +92,6 @@ class ReportBillController extends Controller
                                 return $bill;
                             });
 
-        // Get unique months and years from due dates
         $dates = ConsBillPay::where('bill_status', 'Unpaid')
             ->whereNotNull('consumer_reading.due_date')
             ->join('consumer_reading', 'consumer_bill_pay.consread_id', '=', 'consumer_reading.consread_id')
@@ -129,6 +128,7 @@ class ReportBillController extends Controller
                     'water_consumers.firstname',
                     'water_consumers.lastname',
                     'consumer_bill_pay.total_amount',
+                    'consumer_reading.reading_date',
                     'consumer_reading.due_date'
                 )
                 ->join('consumer_reading', 'consumer_bill_pay.consread_id', '=', 'consumer_reading.consread_id')
@@ -174,6 +174,7 @@ class ReportBillController extends Controller
                         'block_id' => $bill->block_id,
                         'consumer_name' => $bill->firstname . ' ' . $bill->lastname,
                         'total_amount' => number_format($bill->total_amount, 2),
+                        'reading_date' => $bill->reading_date ? Carbon::parse($bill->reading_date)->format('M d, Y') : 'N/A',
                         'due_date' => $bill->due_date ? Carbon::parse($bill->due_date)->format('M d, Y') : 'N/A',
                         'raw_amount' => $bill->total_amount
                     ];

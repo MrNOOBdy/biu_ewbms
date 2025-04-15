@@ -20,18 +20,23 @@ class BillingController extends Controller
     {
         $blocks = Block::all();
         $consumer = Consumer::all();
+        $currentCoverage = Cov_date::getCurrentCoverage();
         
-        $bills = ConsumerReading::with(['consumer'])
-            ->where(function($query) {
-                $query->whereDoesntHave('billPayments')
-                      ->orWhereHas('billPayments', function($q) {
-                          $q->where('bill_status', 'unpaid');
-                      });
-            })
-            ->orderBy('reading_date', 'desc')
-            ->paginate(20);
+        $bills = collect([]);
+        if ($currentCoverage) {
+            $bills = ConsumerReading::with(['consumer'])
+                ->where('covdate_id', $currentCoverage->covdate_id)
+                ->where(function($query) {
+                    $query->whereDoesntHave('billPayments')
+                        ->orWhereHas('billPayments', function($q) {
+                            $q->where('bill_status', 'unpaid');
+                        });
+                })
+                ->orderBy('reading_date', 'desc')
+                ->paginate(20);
+        }
 
-        return view('biu_billing.latest_bills', compact('bills', 'blocks', 'consumer'));
+        return view('biu_billing.latest_bills', compact('bills', 'blocks', 'consumer', 'currentCoverage'));
     }
 
     public function getReadingDetails($consreadId)
@@ -184,7 +189,16 @@ class BillingController extends Controller
     public function search(Request $request)
     {
         try {
-            $query = ConsumerReading::with(['consumer', 'billPayments']);
+            $currentCoverage = Cov_date::getCurrentCoverage();
+            if (!$currentCoverage) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No active coverage period found'
+                ]);
+            }
+
+            $query = ConsumerReading::with(['consumer', 'billPayments'])
+                ->where('covdate_id', $currentCoverage->covdate_id);
 
             if ($request->has('query')) {
                 $searchTerm = $request->get('query');

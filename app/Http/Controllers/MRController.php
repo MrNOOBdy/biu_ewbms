@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Block;
 use App\Models\ConsumerReading;
+use App\Models\Cov_date;
 use Illuminate\Http\Request;
 
 class MRController extends Controller
@@ -11,19 +12,33 @@ class MRController extends Controller
     public function index()
     {
         $blocks = Block::all();
-        $readings = ConsumerReading::with('consumer')
-            ->orderBy('created_at', 'desc')
-            ->paginate(20);
+        $currentCoverage = Cov_date::getCurrentCoverage();
+        
+        $readings = collect([]);
+        if ($currentCoverage) {
+            $readings = ConsumerReading::with('consumer')
+                ->where('covdate_id', $currentCoverage->covdate_id)
+                ->orderBy('created_at', 'desc')
+                ->paginate(20);
+        }
 
-        return view('biu_meter.meter_read', compact('readings', 'blocks'));
+        return view('biu_meter.meter_read', compact('readings', 'blocks', 'currentCoverage'));
     }
 
     public function search(Request $request)
     {
         try {
-            $query = ConsumerReading::with('consumer');
+            $currentCoverage = Cov_date::getCurrentCoverage();
+            if (!$currentCoverage) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No active coverage period found'
+                ]);
+            }
+
+            $query = ConsumerReading::with('consumer')
+                ->where('covdate_id', $currentCoverage->covdate_id);
             
-            // Block filter - apply first
             if ($request->has('block') && !empty($request->get('block'))) {
                 $blockFilter = $request->get('block');
                 $query->whereHas('consumer', function($q) use ($blockFilter) {
@@ -31,7 +46,6 @@ class MRController extends Controller
                 });
             }
 
-            // Search filter
             if ($request->has('query') && !empty($request->get('query'))) {
                 $searchTerm = $request->get('query');
                 $query->where(function($q) use ($searchTerm) {

@@ -18,6 +18,12 @@
 
 <div class="table-header">
     <h3><i class="fas fa-file-invoice"></i> Latest Bills</h3>
+    @if($currentCoverage)
+    <div class="coverage-period">
+        <p>Coverage Period: {{ date('M d, Y', strtotime($currentCoverage->coverage_date_from)) }} - {{ date('M d, Y', strtotime($currentCoverage->coverage_date_to)) }}</p>
+    </div>
+    <input type="hidden" id="currentCoverageId" value="{{ $currentCoverage->covdate_id }}">
+    @endif
     <div class="header-controls">
         <div class="filter-section">
             <select id="statusFilter" onchange="filterBills()">
@@ -37,68 +43,75 @@
 
 <div class="content-wrapper">
     <div class="table-container">
-        <table class="uni-table">
-            <thead>
-                <tr>
-                    <th>Consumer ID</th>
-                    <th>Contact No.</th>
-                    <th>Name</th>
-                    <th>Reading Date</th>
-                    <th>Due Date</th>
-                    <th>Prev. Reading</th>
-                    <th>Pres. Reading</th>
-                    <th>Consumption m<sup>3</sup></th>
-                    <th>Amount</th>
-                    <th>Bill Status</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse($bills as $bill)
-                    @php
-                        $billPayment = \App\Models\ConsBillPay::where('consread_id', $bill->consread_id)->first();
-                        $consumption = $bill->calculateConsumption();
-                        $totalAmount = $bill->calculateBill();
-                    @endphp
+        @if(!$currentCoverage)
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i>
+                <p>No active coverage period found. Please set an active coverage period first.</p>
+            </div>
+        @else
+            <table class="uni-table">
+                <thead>
                     <tr>
-                        <td>{{ $bill->consumer->customer_id }}</td>
-                        <td>{{ $bill->consumer->contact_no }}</td>
-                        <td>{{ $bill->consumer->firstname }} {{ $bill->consumer->lastname }}</td>
-                        <td>{{ date('M d, Y', strtotime($bill->reading_date)) }}</td>
-                        <td>{{ date('M d, Y', strtotime($bill->due_date)) }}</td>
-                        <td>{{ $bill->previous_reading }}</td>
-                        <td>{{ $bill->present_reading }}</td>
-                        <td>{{ $consumption }}</td>
-                        <td>₱{{ number_format($totalAmount, 2) }}</td>
-                        <td>
-                            <span class="status-badge {{ !$billPayment ? 'status-pending' : ($billPayment->bill_status == 'paid' ? 'status-active' : 'status-inactive') }}">
-                                {{ !$billPayment ? 'Pending' : $billPayment->bill_status }}
-                            </span>
-                        </td>
-                        <td>
-                            <div class="action-buttons">
-                                @if(!$billPayment)
-                                    <button class="btn_uni btn-view" onclick="showAddBillModal({{ $bill->consread_id }})">
-                                        <i class="fas fa-plus-circle"></i> Add Bill
-                                    </button>
-                                @else
-                                    <button class="btn_uni btn-billing" onclick="sendBill({{ $bill->consread_id }})">
-                                        <i class="fas fa-paper-plane"></i> Send Bill SMS
-                                    </button>
-                                @endif
-                            </div>
-                        </td>
+                        <th>Consumer ID</th>
+                        <th>Contact No.</th>
+                        <th>Name</th>
+                        <th>Reading Date</th>
+                        <th>Due Date</th>
+                        <th>Prev. Reading</th>
+                        <th>Pres. Reading</th>
+                        <th>Consumption m<sup>3</sup></th>
+                        <th>Amount</th>
+                        <th>Bill Status</th>
+                        <th>Action</th>
                     </tr>
-                @empty
-                    <tr>
-                        <td colspan="11" class="empty-state">
-                            <i class="fas fa-file-invoice"></i>
-                            <p>No bills found</p>
-                        </td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    @forelse($bills as $bill)
+                        @php
+                            $billPayment = \App\Models\ConsBillPay::where('consread_id', $bill->consread_id)->first();
+                            $consumption = $bill->calculateConsumption();
+                            $totalAmount = $bill->calculateBill();
+                        @endphp
+                        <tr>
+                            <td>{{ $bill->consumer->customer_id }}</td>
+                            <td>{{ $bill->consumer->contact_no }}</td>
+                            <td>{{ $bill->consumer->firstname }} {{ $bill->consumer->lastname }}</td>
+                            <td>{{ date('M d, Y', strtotime($bill->reading_date)) }}</td>
+                            <td>{{ date('M d, Y', strtotime($bill->due_date)) }}</td>
+                            <td>{{ $bill->previous_reading }}</td>
+                            <td>{{ $bill->present_reading }}</td>
+                            <td>{{ $consumption }}</td>
+                            <td>₱{{ number_format($totalAmount, 2) }}</td>
+                            <td>
+                                <span class="status-badge {{ !$billPayment ? 'status-pending' : ($billPayment->bill_status == 'paid' ? 'status-active' : 'status-inactive') }}">
+                                    {{ !$billPayment ? 'Pending' : $billPayment->bill_status }}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="action-buttons">
+                                    @if(!$billPayment)
+                                        <button class="btn_uni btn-view" onclick="showAddBillModal({{ $bill->consread_id }})">
+                                            <i class="fas fa-plus-circle"></i> Add Bill
+                                        </button>
+                                    @else
+                                        <button class="btn_uni btn-billing" onclick="sendBill({{ $bill->consread_id }})">
+                                            <i class="fas fa-paper-plane"></i> Send Bill SMS
+                                        </button>
+                                    @endif
+                                </div>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="11" class="empty-state">
+                                <i class="fas fa-file-invoice"></i>
+                                <p>No bills found</p>
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        @endif
         {{ $bills->links('pagination.custom') }}
     </div>
 </div>

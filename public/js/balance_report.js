@@ -43,6 +43,7 @@ const BalanceReport = {
                             <td>${bill.block_id}</td>
                             <td>${bill.consumer_name}</td>
                             <td>₱${bill.total_amount}</td>
+                            <td>${bill.reading_date}</td>
                             <td>${bill.due_date}</td>
                         `;
                         tbody.appendChild(row);

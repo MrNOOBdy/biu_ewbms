@@ -18,4 +18,9 @@ class Cov_date extends Model
 
     const STATUS_OPEN = 'Open';
     const STATUS_CLOSE = 'Close';
+
+    public static function getCurrentCoverage()
+    {
+        return self::where('status', self::STATUS_OPEN)->first();
+    }
 }

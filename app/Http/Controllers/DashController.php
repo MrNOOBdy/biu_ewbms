@@ -26,12 +26,13 @@ class DashController extends Controller
         $totalConsumers = Consumer::count();
         $billRates = Bill_rate::all()->groupBy('consumer_type');
         
-        $totalBills = ConsumerReading::when($activeCoverage, function($query) use ($activeCoverage) {
-            return $query->whereBetween('reading_date', [
-                $activeCoverage->coverage_date_from, 
-                $activeCoverage->coverage_date_to
-            ]);
-        })->count();
+        $totalBills = ConsBillPay::join('consumer_reading', 'consumer_bill_pay.consread_id', '=', 'consumer_reading.consread_id')
+            ->when($activeCoverage, function($query) use ($activeCoverage) {
+                return $query->whereBetween('consumer_reading.reading_date', [
+                    $activeCoverage->coverage_date_from, 
+                    $activeCoverage->coverage_date_to
+                ]);
+            })->count();
         
         $unpaidBills = ConsBillPay::join('consumer_reading', 'consumer_bill_pay.consread_id', '=', 'consumer_reading.consread_id')
             ->where('consumer_bill_pay.bill_status', 'Unpaid')
@@ -65,19 +66,23 @@ class DashController extends Controller
                 $activeCoverage->coverage_date_to
             ]); 
         })->where('service_paid_status', 'Paid')
-          ->sum(DB::raw('service_amount_paid + COALESCE(reconnection_fee, 0)'));
+          ->sum('reconnection_fee');
 
         $totalIncome = $waterBillIncome + $applicationFees + $serviceFees;
 
-        $monthlyConsumption = ConsumerReading::selectRaw('MONTH(created_at) as month, SUM(consumption) as total_consumption')
-            ->whereYear('created_at', date('Y'))
+        $monthlyConsumption = ConsumerReading::selectRaw('MONTH(cr.reading_date) as month, SUM(cr.consumption) as total_consumption')
+            ->from('consumer_reading as cr')
+            ->join('coverage_date as cd', 'cr.covdate_id', '=', 'cd.covdate_id')
+            ->whereYear('cd.coverage_date_from', date('Y'))
             ->groupBy('month')
             ->orderBy('month')
             ->get()
             ->pluck('total_consumption', 'month')
             ->toArray();
 
-        $yearlyConsumption = ConsumerReading::selectRaw('YEAR(created_at) as year, SUM(consumption) as total_consumption')
+        $yearlyConsumption = ConsumerReading::selectRaw('YEAR(cd.coverage_date_from) as year, SUM(cr.consumption) as total_consumption')
+            ->from('consumer_reading as cr')
+            ->join('coverage_date as cd', 'cr.covdate_id', '=', 'cd.covdate_id')
             ->groupBy('year')
             ->orderBy('year')
             ->get()

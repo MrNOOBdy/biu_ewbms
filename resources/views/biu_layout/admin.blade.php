@@ -104,7 +104,7 @@
                         <ul class="dropdown-list">
                             <a href="{{ route('income_index') }}" class="dropdown-item {{ request()->is('income_rep') ? 'active' : '' }}">
                                 <span class="item-dot"></span>
-                                Income Report
+                                Income Bill
                             <a href="{{ route('balance_index') }}" class="dropdown-item {{ request()->is('balance_rep') ? 'active' : '' }}">
                                 <span class="item-dot"></span>
                                 Balance Report
@@ -121,7 +121,9 @@
                     </li>
                     @endif
 
+                    @if($userRole->hasPermission('access-settings') || $userRole->hasPermission('access-utilities'))
                     <div class="sidebar-divider">System</div>
+                    @endif
 
                     @if($userRole->hasPermission('access-settings'))
                     <li data-title="General Settings" class="tab-item dropdown {{ request()->routeIs(['coverage-dates.*', 'blocks.*', 'billRates.*', 'notifications.*', 'local-settings.*']) ? 'open' : '' }}">

@@ -2,8 +2,14 @@ const MeterReadings = {
     async filter() {
         const searchValue = document.getElementById('searchInput').value.trim();
         const blockValue = document.getElementById('blockFilter').value;
+        const currentCoverageId = document.getElementById('currentCoverageId')?.value;
         const tbody = document.querySelector('.uni-table tbody');
         const paginationContainer = document.querySelector('.pagination-container');
+
+        if (!currentCoverageId) {
+            console.error('No active coverage period found');
+            return;
+        }
 
         if (!searchValue && !blockValue) {
             window.location.reload();

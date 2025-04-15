@@ -226,13 +226,22 @@ function closeModal(modalId) {
 async function filterBills() {
     const searchValue = document.getElementById('searchInput').value.trim();
     const statusValue = document.getElementById('statusFilter').value.toLowerCase();
-    const monthValue = document.getElementById('monthFilter').value;
-    const yearValue = document.getElementById('yearFilter').value;
+    const currentCoverageId = document.getElementById('currentCoverageId')?.value;
     const tbody = document.querySelector('.uni-table tbody');
     const paginationContainer = document.querySelector('.pagination-container');
 
+    if (!currentCoverageId) {
+        showPaymentResultModal(false, 'No active coverage period found');
+        return;
+    }
+
     try {
-        const response = await fetch(`/billing/payments/search?query=${encodeURIComponent(searchValue)}&status=${encodeURIComponent(statusValue)}&month=${encodeURIComponent(monthValue)}&year=${encodeURIComponent(yearValue)}`, {
+        const queryParams = new URLSearchParams();
+        if (searchValue) queryParams.append('query', searchValue);
+        if (statusValue) queryParams.append('status', statusValue);
+        queryParams.append('covdate_id', currentCoverageId);
+
+        const response = await fetch(`/billing/payments/search?${queryParams.toString()}`, {
             headers: {
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
             }

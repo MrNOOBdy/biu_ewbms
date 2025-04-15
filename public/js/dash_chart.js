@@ -72,12 +72,13 @@ function initChart() {
                         beginAtZero: true,
                         title: {
                             display: true,
-                            text: 'Cubic Meters'
+                            text: 'Consumption by Coverage Period (m³)'
                         }
                     },
                     x: {
                         title: {
                             display: true,
+                            text: currentView === 'monthly' ? 'Coverage Months' : 'Coverage Years'
                         }
                     }
                 },
@@ -89,7 +90,7 @@ function initChart() {
                     tooltip: {
                         callbacks: {
                             label: function (context) {
-                                return context.dataset.label + ': ' + context.raw + ' m³';
+                                return `Coverage Period Consumption: ${context.raw} m³`;
                             }
                         }
                     }

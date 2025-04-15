@@ -51,7 +51,7 @@
 @endphp
 
 <div class="service-totals" style="margin-top: -20px;">
-    <p><strong>Total Service Fee:</strong> ₱{{ number_format($totalServiceAmount + $totalReconnectionFee, 2) }}</p>
+    <p><strong>Total Service Fee:</strong> ₱{{ number_format($totalReconnectionFee, 2) }}</p>
 </div>
 
 <div class="content-wrapper">

@@ -15,34 +15,19 @@ class BillPayController extends Controller
 {
     public function showPayments()
     {
+        $currentCoverage = Cov_date::getCurrentCoverage();
+        
         $bills = ConsumerReading::with(['consumer', 'billPayments'])
-            ->whereHas('billPayments')
-            ->orderBy('reading_date', 'desc')
+            ->whereHas('billPayments');
+
+        if ($currentCoverage) {
+            $bills = $bills->where('covdate_id', $currentCoverage->covdate_id);
+        }
+
+        $bills = $bills->orderBy('reading_date', 'desc')
             ->paginate(20);
         
-        $dates = ConsumerReading::whereHas('billPayments')
-            ->get()
-            ->map(function($reading) {
-                return [
-                    'month' => date('n', strtotime($reading->reading_date)),
-                    'month_name' => date('F', strtotime($reading->reading_date)),
-                    'year' => date('Y', strtotime($reading->reading_date))
-                ];
-            });
-
-        $availableMonths = $dates->unique('month')
-            ->sortBy('month')
-            ->values()
-            ->map(function($date) {
-                return [
-                    'number' => $date['month'],
-                    'name' => $date['month_name']
-                ];
-            });
-
-        $availableYears = $dates->pluck('year')->unique()->sort()->values();
-        
-        return view('biu_billing.bill_payment', compact('bills', 'availableMonths', 'availableYears'));
+        return view('biu_billing.bill_payment', compact('bills', 'currentCoverage'));
     }
 
     public function storeReadings(Request $request)
@@ -209,6 +194,10 @@ class BillPayController extends Controller
             $query = ConsumerReading::with(['consumer', 'billPayments'])
                 ->whereHas('billPayments');
 
+            if ($request->has('covdate_id')) {
+                $query->where('covdate_id', $request->covdate_id);
+            }
+
             if ($request->has('query')) {
                 $searchTerm = $request->get('query');
                 $query->whereHas('consumer', function($q) use ($searchTerm) {
@@ -216,14 +205,6 @@ class BillPayController extends Controller
                       ->orWhere('firstname', 'LIKE', "%{$searchTerm}%")
                       ->orWhere('lastname', 'LIKE', "%{$searchTerm}%");
                 });
-            }
-
-            if ($request->has('month') && !empty($request->month)) {
-                $query->whereMonth('reading_date', $request->month);
-            }
-
-            if ($request->has('year') && !empty($request->year)) {
-                $query->whereYear('reading_date', $request->year);
             }
 
             if ($request->has('status')) {

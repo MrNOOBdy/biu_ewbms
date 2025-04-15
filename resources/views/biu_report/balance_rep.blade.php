@@ -54,6 +54,7 @@
                     <th>Block ID</th>
                     <th>Consumer Name</th>
                     <th>Balance Amount</th>
+                    <th>Reading Date</th>
                     <th>Due Date</th>
                 </tr>
             </thead>
@@ -63,11 +64,12 @@
                     <td>{{ $bill->block_id }}</td>
                     <td>{{ $bill->firstname }} {{ $bill->lastname }}</td>
                     <td>₱{{ number_format($bill->total_amount, 2) }}</td>
+                    <td>{{ $bill->reading_date ? Carbon\Carbon::parse($bill->reading_date)->format('M d, Y') : 'N/A' }}</td>
                     <td>{{ $bill->due_date ? $bill->due_date->format('M d, Y') : 'N/A' }}</td>
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="4" class="empty-state">
+                    <td colspan="5" class="empty-state">
                         <i class="fas fa-receipt"></i>
                         <p>No unpaid bills found</p>
                     </td>
@@ -77,7 +79,7 @@
             <tfoot>
                 <tr class="total-row">
                     <td colspan="2" class="text-right"><strong>Total Balance:</strong></td>
-                    <td colspan="2"><strong>₱{{ number_format($totalBalance, 2) }}</strong></td>
+                    <td colspan="3"><strong>₱{{ number_format($totalBalance, 2) }}</strong></td>
                 </tr>
             </tfoot>
         </table>
