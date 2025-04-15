@@ -32,6 +32,7 @@ class ConsumerReading extends Model
     }
 
     const BASE_CUBIC_LIMIT = 10;
+    const PENALTY_AMOUNT = 20.00;
 
     public function calculateConsumption()
     {
@@ -72,6 +73,11 @@ class ConsumerReading extends Model
         }
     }
 
+    public function calculatePenalty()
+    {
+        return self::PENALTY_AMOUNT;
+    }
+
     public function billPayments()
     {
         return $this->hasOne(ConsBillPay::class, 'consread_id', 'consread_id');
@@ -80,5 +86,62 @@ class ConsumerReading extends Model
     public function getBillAmount()
     {
         return $this->calculateBill();
+    }
+
+    public function getReadingDetails($consreadId)
+    {
+        try {
+            $reading = ConsumerReading::with(['consumer'])->findOrFail($consreadId);
+            
+            if (!$reading || !$reading->consumer) {
+                throw new \Exception('Reading or consumer details not found');
+            }
+
+            $coverageDate = Cov_date::where('covdate_id', $reading->covdate_id)->first();
+            if (!$coverageDate) {
+                throw new \Exception('Coverage date not found');
+            }
+
+            $lastMonthUnpaidBill = ConsumerReading::with(['billPayments'])
+                ->where('customer_id', $reading->customer_id)
+                ->where('consread_id', '<', $reading->consread_id)
+                ->whereHas('billPayments', function($q) {
+                    $q->where('bill_status', 'unpaid');
+                })
+                ->orderBy('reading_date', 'desc')
+                ->first();
+
+            $consumption = $this->calculateConsumption();
+            $currentBillAmount = $this->calculateBill();
+
+            $lastMonthBillData = null;
+            $totalCombinedAmount = $currentBillAmount;
+            $penaltyAmount = 0;
+
+            if ($lastMonthUnpaidBill) {
+                $lastMonthAmount = $lastMonthUnpaidBill->calculateBill();
+                $penaltyAmount = $this->calculatePenalty();
+                $totalCombinedAmount += $lastMonthAmount + $penaltyAmount;
+                
+                $lastMonthBillData = [
+                    'reading_date' => $lastMonthUnpaidBill->reading_date,
+                    'due_date' => $lastMonthUnpaidBill->due_date,
+                    'consumption' => $lastMonthUnpaidBill->calculateConsumption(),
+                    'total_amount' => $lastMonthAmount,
+                    'penalty_amount' => $penaltyAmount,
+                    'bill_status' => $lastMonthUnpaidBill->billPayments->bill_status
+                ];
+            }
+
+            return [
+                'current_bill_amount' => $currentBillAmount,
+                'last_month_unpaid' => $lastMonthBillData,
+                'penalty_amount' => $penaltyAmount,
+                'total_amount' => $totalCombinedAmount
+            ];
+        } catch (\Exception $e) {
+            Log::error('Error in getReadingDetails: ' . $e->getMessage());
+            throw $e;
+        }
     }
 }

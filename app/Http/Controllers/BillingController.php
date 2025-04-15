@@ -53,6 +53,15 @@ class BillingController extends Controller
                 throw new \Exception('Coverage date not found');
             }
 
+            $lastMonthUnpaidBill = ConsumerReading::with(['billPayments'])
+                ->where('customer_id', $reading->customer_id)
+                ->where('consread_id', '<', $reading->consread_id)
+                ->whereHas('billPayments', function($q) {
+                    $q->where('bill_status', 'unpaid');
+                })
+                ->orderBy('reading_date', 'desc')
+                ->first();
+
             $previousBill = ConsumerReading::with('billPayments')
                 ->where('customer_id', $reading->customer_id)
                 ->where('consread_id', '<', $reading->consread_id)
@@ -65,7 +74,26 @@ class BillingController extends Controller
             }
 
             $consumption = $reading->calculateConsumption();
-            $billAmount = $reading->calculateBill();
+            $currentBillAmount = $reading->calculateBill();
+
+            $lastMonthBillData = null;
+            $totalCombinedAmount = $currentBillAmount;
+            $penaltyAmount = 0;
+
+            if ($lastMonthUnpaidBill) {
+                $lastMonthAmount = $lastMonthUnpaidBill->calculateBill();
+                $penaltyAmount = $lastMonthUnpaidBill->calculatePenalty();
+                $totalCombinedAmount += $lastMonthAmount + $penaltyAmount;
+                
+                $lastMonthBillData = [
+                    'reading_date' => $lastMonthUnpaidBill->reading_date,
+                    'due_date' => $lastMonthUnpaidBill->due_date,
+                    'consumption' => $lastMonthUnpaidBill->calculateConsumption(),
+                    'total_amount' => $lastMonthAmount,
+                    'penalty_amount' => $penaltyAmount,
+                    'bill_status' => $lastMonthUnpaidBill->billPayments->bill_status
+                ];
+            }
 
             $data = [
                 'consumer' => [
@@ -85,8 +113,11 @@ class BillingController extends Controller
                 'previous_reading' => $reading->previous_reading,
                 'present_reading' => $reading->present_reading,
                 'consumption' => $consumption,
-                'total_amount' => $billAmount,
-                'meter_reader' => $reading->meter_reader
+                'current_bill_amount' => $currentBillAmount,
+                'total_amount' => $totalCombinedAmount,
+                'meter_reader' => $reading->meter_reader,
+                'last_month_unpaid' => $lastMonthBillData,
+                'penalty_amount' => $penaltyAmount
             ];
 
             return response()->json($data);
@@ -101,9 +132,12 @@ class BillingController extends Controller
     public function addBill(Request $request)
     {
         try {
+            $totalAmount = str_replace(',', '', $request->total_amount);
+            $totalAmount = floatval($totalAmount);
+
             ConsBillPay::create([
                 'consread_id' => $request->consread_id,
-                'total_amount' => $request->total_amount,
+                'total_amount' => $totalAmount,
                 'bill_tendered_amount' => 0,
                 'bill_status' => 'unpaid'
             ]);

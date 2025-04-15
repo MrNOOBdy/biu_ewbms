@@ -4,23 +4,44 @@ function showAddBillModal(consreadId) {
         .then(data => {
             document.getElementById('consread_id').value = consreadId;
 
-            // Consumer Info
             document.getElementById('customerId').textContent = data.consumer.customer_id;
             document.getElementById('consumerName').textContent = `${data.consumer.firstname} ${data.consumer.lastname}`;
             document.getElementById('contactNo').textContent = data.consumer.contact_no;
             document.getElementById('consumerType').textContent = data.consumer.consumer_type;
-            document.getElementById('prevBillStatus').textContent = data.consumer.previous_bill_status || 'No previous bill';
+            document.getElementById('prevBillStatus').textContent = data.consumer.previous_bill_status;
 
-            // Coverage Dates
-            document.getElementById('coverageDateFrom').textContent = data.coverage_date ? formatDate(data.coverage_date.coverage_date_from) : 'Not set';
-            document.getElementById('coverageDateTo').textContent = data.coverage_date ? formatDate(data.coverage_date.coverage_date_to) : 'Not set';
+            document.getElementById('coverageDateFrom').textContent = formatDate(data.coverage_date.coverage_date_from);
+            document.getElementById('coverageDateTo').textContent = formatDate(data.coverage_date.coverage_date_to);
 
-            // Bill Details
             document.getElementById('readingDate').textContent = formatDate(data.reading_date);
             document.getElementById('dueDate').textContent = formatDate(data.due_date);
             document.getElementById('previousReading').textContent = data.previous_reading;
             document.getElementById('presentReading').textContent = data.present_reading;
             document.getElementById('consumption').textContent = data.consumption;
+            document.getElementById('currentBillAmount').textContent = Number(data.current_bill_amount).toLocaleString('en-US', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+
+            const lastMonthSection = document.getElementById('lastMonthUnpaidSection');
+            if (data.last_month_unpaid) {
+                document.getElementById('lastMonthReadingDate').textContent = formatDate(data.last_month_unpaid.reading_date);
+                document.getElementById('lastMonthDueDate').textContent = formatDate(data.last_month_unpaid.due_date);
+                document.getElementById('lastMonthConsumption').textContent = data.last_month_unpaid.consumption;
+                document.getElementById('lastMonthAmount').textContent = Number(data.last_month_unpaid.total_amount).toLocaleString('en-US', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                });
+                document.getElementById('lastMonthPenalty').textContent = Number(data.penalty_amount).toLocaleString('en-US', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                });
+                lastMonthSection.style.display = 'block';
+            } else {
+                lastMonthSection.style.display = 'none';
+            }
+
+            // Total Combined Amount
             document.getElementById('totalAmount').textContent = Number(data.total_amount).toLocaleString('en-US', {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2
@@ -127,20 +148,27 @@ function sendBill(consreadId) {
             document.getElementById('sms_presentReading').textContent = data.present_reading;
             document.getElementById('sms_consumption').textContent = data.consumption;
 
-            const message = `Dear ${data.consumer.firstname},
+            let message = `Dear ${data.consumer.firstname},
 
 Your water bill details:
 Coverage Date From: ${formatDate(data.coverage_date.coverage_date_from)}
 Coverage Date To: ${formatDate(data.coverage_date.coverage_date_to)}
 
-Previous Reading: ${data.previous_reading}
 Present Reading: ${data.present_reading}
+Previous Reading: ${data.previous_reading}
 Consumed: ${data.consumption} m³
-Amount Due: ₱${Number(data.total_amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-Due Date: ${formatDate(data.due_date)}
-Meter Reader: ${data.meter_reader}
+Current Bill Amount: ₱${Number(data.current_bill_amount).toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
 
-Reminder: 
+            if (data.last_month_unpaid) {
+                message += `\n\nIMPORTANT: You have an unpaid bill from last month:
+Reading Date: ${formatDate(data.last_month_unpaid.reading_date)}
+Amount Due: ₱${Number(data.last_month_unpaid.total_amount).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+Penalty: ₱${Number(data.penalty_amount).toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
+            }
+
+            message += `\n\nTotal Amount Due: ₱${Number(data.total_amount).toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
+
+            message += `\n\nReminder: 
 Please pay your bill on or before due date to avoid penalty. 5 working days to settle your due/delinquent after due date to avoid water service cut-off.
 
 Thank you,

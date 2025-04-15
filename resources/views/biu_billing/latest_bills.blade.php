@@ -5,7 +5,7 @@
 @section('tab-content')
 <link rel="stylesheet" href="{{ asset('css/modal.css') }}">
 <style>
-    .modal-content {
+    .lg-modal {
         padding: 15px;
         min-height: 85vh;
         overflow-y: visible;
@@ -118,7 +118,7 @@
 
 <!-- Add Bill Modal -->
 <div id="addBillModal" class="modal">
-    <div class="modal-content" style="max-width: 800px; width: 90%;">
+    <div class="modal-content lg-modal" style="max-width: 800px; width: 90%;">
         <h3><i class="fas fa-file-invoice"></i> Add Bill Details</h3>
         <div class="modal-body">
             <input type="hidden" id="consread_id">
@@ -139,14 +139,32 @@
                     <p><strong>Coverage To:</strong> <span id="coverageDateTo"></span></p>
                 </div>
 
-                <!-- Bill Details -->
+                <!-- Current Bill Details -->
                 <div class="bill-details" style="flex: 1; min-width: 300px;">
+                    <h4>Current Bill</h4>
                     <p><strong>Reading Date:</strong> <span id="readingDate"></span></p>
                     <p><strong>Due Date:</strong> <span id="dueDate"></span></p>
                     <p><strong>Previous Reading:</strong> <span id="previousReading"></span></p>
                     <p><strong>Present Reading:</strong> <span id="presentReading"></span></p>
                     <p><strong>Consumption:</strong> <span id="consumption"></span>m³</p>
-                    <p><strong>Total Amount:</strong> ₱<span id="totalAmount"></span></p>
+                    <p><strong>Current Bill Amount:</strong> ₱<span id="currentBillAmount"></span></p>
+                </div>
+
+                <!-- Last Month's Unpaid Bill -->
+                <div id="lastMonthUnpaidSection" class="last-month-unpaid" style="flex: 1; min-width: 300px; display: none; border-top: 1px solid #ddd; margin-top: 15px; padding-top: 15px;">
+                    <h4 style="color: #dc3545;"><i class="fas fa-exclamation-circle"></i> Last Month's Unpaid Bill</h4>
+                    <p><strong>Reading Date:</strong> <span id="lastMonthReadingDate"></span></p>
+                    <p><strong>Due Date:</strong> <span id="lastMonthDueDate"></span></p>
+                    <p><strong>Consumption:</strong> <span id="lastMonthConsumption"></span>m³</p>
+                    <p><strong>Amount Due:</strong> ₱<span id="lastMonthAmount"></span></p>
+                    <p><strong>Penalty:</strong> ₱<span id="lastMonthPenalty"></span></p>
+                </div>
+
+                <!-- Total Combined Amount -->
+                <div class="total-amount" style="flex: 1 100%; margin-top: 20px; padding-top: 20px; border-top: 2px solid #333;">
+                    <h3 style="color: #333; margin-bottom: 10px;">Total Amount Due</h3>
+                    <p style="font-size: 1.2em;"><strong>Total Amount:</strong> ₱<span id="totalAmount"></span></p>
+                    <p class="text-muted" style="font-size: 0.9em;">(Includes current bill, previous unpaid bill, and penalties if applicable)</p>
                 </div>
             </div>
         </div>
@@ -158,10 +176,9 @@
     </div>
 </div>
 
-
 <!-- Send Bill Modal -->
 <div id="sendBillModal" class="modal">
-    <div class="modal-content">
+    <div class="modal-content lg-modal">
         <h3><i class="fas fa-paper-plane"></i> Send Bill Notification</h3>
         <div class="modal-body">
             <input type="hidden" id="send_consread_id">

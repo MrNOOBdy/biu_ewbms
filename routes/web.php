@@ -209,7 +209,7 @@ Route::middleware(['web'])->group(function () {
         Route::post('/meter-readers/assign-blocks', [MRsBlockCont::class, 'assignBlocks'])->name('meter-readers.assign-blocks');
         Route::get('/meter-readers/{id}/blocks', [MRsBlockCont::class, 'getAssignedBlocks'])->name('meter-readers.get-blocks');
 
-        // Meter Reader substitution routes (Remove Teporarily)
+        // Meter Reader substitution routes (Removed Teporarily)
         Route::post('/meter-readers/substitutions', [MRsBlockCont::class, 'createSubstitution'])->name('meter-readers.substitutions.create');
         Route::get('/meter-readers/substitutions', [MRsBlockCont::class, 'getSubstitutions'])->name('meter-readers.substitutions');
         Route::put('/meter-readers/substitutions/{id}', [MRsBlockCont::class, 'updateSubstitution'])->name('meter-readers.substitutions.update');

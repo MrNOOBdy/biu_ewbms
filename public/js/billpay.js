@@ -5,11 +5,24 @@ function handlePayment(consreadId) {
             if (data.success) {
                 const billAmount = parseFloat(data.total_amount) || 0;
                 const lastUnpaidAmount = parseFloat(data.last_unpaid_amount) || 0;
-                const totalWithUnpaid = billAmount + lastUnpaidAmount;
+                const penaltyAmount = parseFloat(data.penalty_amount) || 0;
+                const totalWithUnpaid = billAmount + lastUnpaidAmount + penaltyAmount;
 
                 document.getElementById('billId').value = consreadId;
                 document.getElementById('present_reading').value = `₱${billAmount.toFixed(2)}`;
-                document.getElementById('penalty_amount').value = '0';
+                document.getElementById('penalty_amount').value = `₱${penaltyAmount.toFixed(2)}`;
+
+                const penaltyInfo = document.querySelector('.penalty-info');
+                if (penaltyAmount > 0) {
+                    penaltyInfo.style.display = 'block';
+                    if (data.is_past_due) {
+                        penaltyInfo.textContent = '₱20 penalty applied due to past due date';
+                    } else {
+                        penaltyInfo.textContent = '₱20 penalty applied due to previous unpaid bill';
+                    }
+                } else {
+                    penaltyInfo.style.display = 'none';
+                }
 
                 const existingLastUnpaid = document.getElementById('last_unpaid_amount');
                 if (existingLastUnpaid) {
@@ -33,7 +46,6 @@ function handlePayment(consreadId) {
                 modal.style.display = 'block';
                 setTimeout(() => modal.classList.add('fade-in'), 10);
 
-                document.getElementById('penalty_amount').addEventListener('input', updateTotalAmount);
                 document.getElementById('bill_tendered_amount').addEventListener('input', validateTendered);
             }
         })
@@ -46,7 +58,7 @@ function handlePayment(consreadId) {
 function updateTotalAmount() {
     const baseAmount = parseFloat(document.getElementById('present_reading').value.replace('₱', '')) || 0;
     const lastUnpaidAmount = parseFloat(document.getElementById('last_unpaid_amount')?.value?.replace('₱', '') || 0);
-    const penaltyAmount = parseFloat(document.getElementById('penalty_amount').value) || 0;
+    const penaltyAmount = parseFloat(document.getElementById('penalty_amount').value.replace('₱', '')) || 0;
     const totalAmount = baseAmount + lastUnpaidAmount + penaltyAmount;
     document.getElementById('total_amount').value = `₱${totalAmount.toFixed(2)}`;
 
@@ -81,7 +93,7 @@ async function processPayment(event) {
     const formData = new FormData(event.target);
     const totalAmount = parseFloat(document.getElementById('total_amount').value.replace('₱', ''));
     const tendered = parseFloat(document.getElementById('bill_tendered_amount').value);
-    const penalty = parseFloat(document.getElementById('penalty_amount').value) || 0;
+    const penalty = parseFloat(document.getElementById('penalty_amount').value.replace('₱', '')) || 0;
 
     if (tendered < totalAmount) {
         return;
@@ -104,6 +116,7 @@ async function processPayment(event) {
             if (result.success) {
                 closeModal('paymentModal');
                 showPaymentResultModal(true, 'Payment processed successfully');
+                setTimeout(() => location.reload(), 1500);
             } else {
                 showPaymentResultModal(false, result.message);
             }

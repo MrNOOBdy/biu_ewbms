@@ -19,10 +19,9 @@
     <div class="welcome-content">
         <div class="welcome-text-container">
             <p class="welcome-text">
-                BI-U: eWBS is a comprehensive electronic water billing system designed to streamline 
-                the water utility management process. Our system provides efficient billing management, 
-                customer account tracking, making water utility management simpler and more effective 
-                for both administrators and customers.
+                BI-U: eWBS is a comprehensive electronic water billing system designed to streamline the water utility management process. Our system provides convenient and efficient way to manage water bills and consumer account tracking, making water utility management simpler and more effective for both administrators and consumers.
+
+     This system will be able to process bill payments, generate billing reports and issues official receipt. The system will also have a feature that notifies registered consumers about their monthly bills, upcoming payment due dates and overdue payments via SMS.
             </p>
         </div>
     </div>

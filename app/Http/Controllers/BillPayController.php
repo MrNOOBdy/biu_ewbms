@@ -71,6 +71,7 @@ class BillPayController extends Controller
         try {
             $bill = ConsumerReading::with(['billPayments', 'consumer'])->findOrFail($billId);
             $totalAmount = $bill->calculateBill();
+            $penaltyAmount = 0;
             
             $lastUnpaidBill = ConsumerReading::with('billPayments')
                 ->where('customer_id', $bill->customer_id)
@@ -83,11 +84,21 @@ class BillPayController extends Controller
 
             $lastUnpaidAmount = $lastUnpaidBill ? $lastUnpaidBill->calculateBill() : 0;
             
+            $today = now();
+            $dueDate = \Carbon\Carbon::parse($bill->due_date);
+            $isPastDue = $today->gt($dueDate);
+
+            if ($lastUnpaidBill || $isPastDue) {
+                $penaltyAmount = 20.00;
+            }
+
             return response()->json([
                 'present_reading' => $bill->present_reading,
                 'consumption' => $bill->calculateConsumption(),
                 'total_amount' => $totalAmount,
                 'last_unpaid_amount' => $lastUnpaidAmount,
+                'penalty_amount' => $penaltyAmount,
+                'is_past_due' => $isPastDue,
                 'success' => true
             ]);
         } catch (\Exception $e) {

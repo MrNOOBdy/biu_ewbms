@@ -112,9 +112,11 @@
             </div>
             <!-- Last unpaid amount will be dynamically inserted here -->
             <div class="form-group">
-                <label>Penalty After Due Date (Optional)</label>
-                <input type="number" id="penalty_amount" name="penalty_amount" class="form-control" step="0.01" min="0" value="0">
-                <div class="invalid-feedback"></div>
+                <label>Penalty Amount</label>
+                <input type="text" id="penalty_amount" name="penalty_amount" class="form-control" readonly>
+                <small class="text-muted penalty-info" style="display: none;">
+                    <i class="fas fa-info-circle"></i> ₱20 penalty applied due to unpaid bill/past due date
+                </small>
             </div>
             <div class="form-group">
                 <label>Total Amount to Pay</label>
