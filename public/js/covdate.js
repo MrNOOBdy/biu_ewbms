@@ -159,6 +159,13 @@ function validateCoverageDates(formData) {
         });
     }
 
+    if (dueDate <= coverageFrom) {
+        return Promise.resolve({
+            success: false,
+            message: 'Due Date must be after Coverage Date From'
+        });
+    }
+
     return Promise.resolve({ success: true });
 }
 
@@ -205,6 +212,7 @@ function showResultModal(success, message, type = null, shouldRefresh = true) {
 
     if (!success) {
         type = type || 'warning';
+        shouldRefresh = false;
     }
 
     if (type === 'warning') {
@@ -341,28 +349,35 @@ function editCoverageDate(id) {
             modal.style.display = 'block';
             setTimeout(() => {
                 modal.classList.add('fade-in');
-                initializeAllDatePickers();
 
-                const initPicker = (selector, date) => {
-                    const picker = document.querySelector(selector);
-                    if (picker._flatpickr) {
-                        picker._flatpickr.setDate(date);
-                        picker.dataset.originalValue = date;
+                ['coverage_date_from', 'coverage_date_to', 'due_date'].forEach(field => {
+                    const element = document.getElementById(`edit_${field}`);
+                    if (element && !element._flatpickr) {
+                        flatpickr(element, flatpickrConfig);
+                    }
+                });
+
+                const setPickerDate = (fieldId, date) => {
+                    const element = document.getElementById(fieldId);
+                    if (element && element._flatpickr) {
+                        element._flatpickr.setDate(date);
+                        element.dataset.originalValue = date;
                     }
                 };
 
-                initPicker('#edit_coverage_date_from', data.coverage_date_from);
-                initPicker('#edit_coverage_date_to', data.coverage_date_to);
-                initPicker('#edit_reading_date', data.reading_date);
-                initPicker('#edit_due_date', data.due_date);
+                setPickerDate('edit_coverage_date_from', data.coverage_date_from);
+                setPickerDate('edit_coverage_date_to', data.coverage_date_to);
+                setPickerDate('edit_due_date', data.due_date);
 
                 const statusInput = document.getElementById('edit_status');
-                statusInput.value = data.status;
-                statusInput.dataset.originalValue = data.status;
+                if (statusInput) {
+                    statusInput.value = data.status;
+                    statusInput.dataset.originalValue = data.status;
+                }
             }, 10);
         })
         .catch(error => {
-            showResultModal(false, 'Error fetching coverage date data');
+            showResultModal(false, 'Error fetching coverage date data', 'warning', false);
         });
 }
 
@@ -374,17 +389,32 @@ function handleEditFormSubmit(event) {
     const id = document.getElementById('edit_covdate_id').value;
     const formData = new FormData(form);
 
-    const hasChanges = ['coverage_date_from', 'coverage_date_to', 'reading_date', 'due_date'].some(field => {
-        const input = document.querySelector(`#edit_${field}`);
+    const hasChanges = ['coverage_date_from', 'coverage_date_to', 'due_date'].some(field => {
+        const input = document.getElementById(`edit_${field}`);
+        if (!input || !input._flatpickr) return false;
         const currentValue = input._flatpickr.formatDate(input._flatpickr.selectedDates[0], "Y-m-d");
         return currentValue !== input.dataset.originalValue;
     });
 
     const statusInput = document.getElementById('edit_status');
-    const statusChanged = statusInput.value !== statusInput.dataset.originalValue;
+    const statusChanged = statusInput && statusInput.value !== statusInput.dataset.originalValue;
 
     if (!hasChanges && !statusChanged) {
-        showResultModal(false, 'No changes were made to update', 'warning');
+        showResultModal(false, 'No changes were made to update', 'warning', false);
+        return;
+    }
+
+    const coverageFrom = new Date(formData.get('coverage_date_from'));
+    const coverageTo = new Date(formData.get('coverage_date_to'));
+    const dueDate = new Date(formData.get('due_date'));
+
+    if (dueDate <= coverageTo) {
+        showResultModal(false, 'Due Date must be after Coverage Date To', 'warning', false);
+        return;
+    }
+
+    if (dueDate <= coverageFrom) {
+        showResultModal(false, 'Due Date must be after Coverage Date From', 'warning', false);
         return;
     }
 
@@ -419,7 +449,7 @@ function confirmStatusSwitch() {
     } else {
         validateCoverageDates(pendingFormData).then(validationResult => {
             if (!validationResult.success) {
-                showResultModal(false, validationResult.message, 'warning');
+                showResultModal(false, validationResult.message, 'warning', false);
                 return;
             }
             submitNewCoverageDate(pendingFormData);
@@ -432,7 +462,7 @@ function submitEditForm(id, formData) {
 
     validateCoverageDates(formData).then(validationResult => {
         if (!validationResult.success) {
-            showResultModal(false, validationResult.message, 'warning');
+            showResultModal(false, validationResult.message, 'warning', false);
             return;
         }
 

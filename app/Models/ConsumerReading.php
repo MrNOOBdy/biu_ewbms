@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Log;
 
 class ConsumerReading extends Model
 {
@@ -46,23 +47,29 @@ class ConsumerReading extends Model
 
     public function calculateBill()
     {
-        $consumption = $this->calculateConsumption();
-        $billRate = $this->getBillRate();
-        
-        if (!$billRate) {
+        try {
+            $consumption = $this->calculateConsumption();
+            $billRate = $this->getBillRate();
+            
+            if (!$billRate) {
+                Log::error('Bill rate not found for consumer type: ' . $this->consumer->consumer_type);
+                return 0;
+            }
+
+            $baseCharge = $billRate->value;
+
+            if ($consumption <= self::BASE_CUBIC_LIMIT) {
+                return (float)$baseCharge;
+            }
+
+            $excessCubic = $consumption - self::BASE_CUBIC_LIMIT;
+            $excessCharge = $excessCubic * (float)$billRate->excess_value_per_cubic;
+
+            return (float)$baseCharge + $excessCharge;
+        } catch (\Exception $e) {
+            Log::error('Error calculating bill: ' . $e->getMessage());
             return 0;
         }
-
-        $baseCharge = $billRate->value;
-
-        if ($consumption <= self::BASE_CUBIC_LIMIT) {
-            return $baseCharge;
-        }
-
-        $excessCubic = $consumption - self::BASE_CUBIC_LIMIT;
-        $excessCharge = $excessCubic * $billRate->excess_value_per_cubic;
-
-        return $baseCharge + $excessCharge;
     }
 
     public function billPayments()

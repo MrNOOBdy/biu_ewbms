@@ -24,7 +24,8 @@ class DatabaseSeeder extends Seeder
 
         $this->call([
             TabPermissionsSeeder::class,
-            MySeeder::class
+            MySeeder::class,
+            ReadingSeeder::class
         ]);
     }
 }

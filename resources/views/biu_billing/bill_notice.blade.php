@@ -4,6 +4,17 @@
 
 @section('tab-content')
 <link rel="stylesheet" href="{{ asset('css/modal.css') }}">
+<style>
+    .modal-content {
+        padding: 15px;
+        min-height: 85vh;
+        overflow-y: visible;
+        max-width: 800px;
+        width: 90%;
+        display: flex;
+        flex-direction: column;
+    }
+</style>
 
 <div class="table-header">
     <h3><i class="fas fa-file-invoice"></i> Bill Notice</h3>
@@ -14,7 +25,7 @@
     </div>
 </div>
 
-<div class="table-container" style="height: 82%;">
+<div class="table-container" style="height: 90%;">
     <div class="select-controls" style="margin-bottom: 15px;">
         <label class="checkbox-container">
             <input type="checkbox" id="selectAll" onclick="toggleAllCheckboxes()">
@@ -244,10 +255,10 @@
                     <p style="margin: 5px 0; display: flex; justify-content: space-between;"><strong style="color: var(--text-muted);">Due Date:</strong> <span id="detail_dueDate"></span></p>
                     <p style="margin: 5px 0; display: flex; justify-content: space-between;"><strong style="color: var(--text-muted);">Previous Reading:</strong> <span id="detail_previousReading"></span></p>
                     <p style="margin: 5px 0; display: flex; justify-content: space-between;"><strong style="color: var(--text-muted);">Present Reading:</strong> <span id="detail_presentReading"></span></p>
-                    <p style="margin: 5px 0; display: flex; justify-content: space-between;"><strong style="color: var(--text-muted);">Consumption:</strong> <span id="detail_consumption"></span> m³</p>
-                    <p style="margin: 5px 0; display: flex; justify-content: space-between;"><strong style="color: var(--text-muted);">Base Rate:</strong> ₱<span id="detail_baseRate"></span></p>
-                    <p style="margin: 5px 0; display: flex; justify-content: space-between;"><strong style="color: var(--text-muted);">Excess Charges:</strong> ₱<span id="detail_excessCharges"></span></p>
-                    <p style="margin: 5px 0; display: flex; justify-content: space-between;"><strong style="color: var(--text-muted);">Total Amount:</strong> ₱<span id="detail_billAmount"></span></p>
+                    <p style="margin: 5px 0; display: flex; justify-content: space-between;"><strong style="color: var(--text-muted);">Consumption:</strong> <span id="detail_consumption"></span>m³</p>
+                    <p style="margin: 5px 0; display: flex; justify-content: space-between;"><strong style="color: var(--text-muted);">Base Rate:</strong> <span id="detail_baseRate"></span></p>
+                    <p style="margin: 5px 0; display: flex; justify-content: space-between;"><strong style="color: var(--text-muted);">Excess Charges:</strong> <span id="detail_excessCharges"></span></p>
+                    <p style="margin: 5px 0; display: flex; justify-content: space-between;"><strong style="color: var(--text-muted);">Total Amount:</strong>₱<span id="detail_billAmount"></span></p>
                     <p style="margin: 5px 0; display: flex; justify-content: space-between;"><strong style="color: var(--text-muted);">Bill Status:</strong> <span id="detail_billStatus"></span></p>
                 </div>
             </div>

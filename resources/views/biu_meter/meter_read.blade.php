@@ -16,20 +16,17 @@
     <h3><i class="fas fa-tachometer-alt"></i> Meter Readings</h3>
     <div class="header-controls">
         <div class="filter-section">
-            <select id="blockFilter">
+            <select id="blockFilter" onchange="MeterReadings.filter()">
                 <option value="">All Blocks</option>
                 @foreach($blocks as $block)
                     <option value="{{ $block->block_id }}">Block {{ $block->block_id }}</option>
                 @endforeach
             </select>
-            <button class="btn-filter" onclick="MeterReadings.filter()">
-                <i class="fas fa-filter"></i> Filter
-            </button>
         </div>
         <div class="search-container">
-            <input type="text" id="searchInput" placeholder="Generate...">
+            <input type="text" id="searchInput" placeholder="Search...">
             <button class="btn-search" onclick="MeterReadings.filter()">
-                <i class="fas fa-file-alt"></i> Generate
+                <i class="fas fa-search"></i> Search
             </button>
         </div>
     </div>

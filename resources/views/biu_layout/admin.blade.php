@@ -109,6 +109,10 @@
                                 <span class="item-dot"></span>
                                 Balance Report
                             </a>
+                            <a href="{{ route('service_rep') }}" class="dropdown-item {{ request()->is('service_rep') ? 'active' : '' }}">
+                                <span class="item-dot"></span>
+                                Service Report
+                            </a>
                             <a href="{{ route('appli_income') }}" class="dropdown-item {{ request()->routeIs('appli_income') ? 'active' : '' }}">
                                 <span class="item-dot"></span>
                                 Application Income

@@ -20,7 +20,29 @@ class BillPayController extends Controller
             ->orderBy('reading_date', 'desc')
             ->paginate(20);
         
-        return view('biu_billing.bill_payment', compact('bills'));
+        $dates = ConsumerReading::whereHas('billPayments')
+            ->get()
+            ->map(function($reading) {
+                return [
+                    'month' => date('n', strtotime($reading->reading_date)),
+                    'month_name' => date('F', strtotime($reading->reading_date)),
+                    'year' => date('Y', strtotime($reading->reading_date))
+                ];
+            });
+
+        $availableMonths = $dates->unique('month')
+            ->sortBy('month')
+            ->values()
+            ->map(function($date) {
+                return [
+                    'number' => $date['month'],
+                    'name' => $date['month_name']
+                ];
+            });
+
+        $availableYears = $dates->pluck('year')->unique()->sort()->values();
+        
+        return view('biu_billing.bill_payment', compact('bills', 'availableMonths', 'availableYears'));
     }
 
     public function storeReadings(Request $request)
@@ -65,10 +87,22 @@ class BillPayController extends Controller
             $bill = ConsumerReading::with(['billPayments', 'consumer'])->findOrFail($billId);
             $totalAmount = $bill->calculateBill();
             
+            $lastUnpaidBill = ConsumerReading::with('billPayments')
+                ->where('customer_id', $bill->customer_id)
+                ->where('consread_id', '!=', $billId)
+                ->whereHas('billPayments', function($query) {
+                    $query->where('bill_status', 'unpaid');
+                })
+                ->orderBy('reading_date', 'desc')
+                ->first();
+
+            $lastUnpaidAmount = $lastUnpaidBill ? $lastUnpaidBill->calculateBill() : 0;
+            
             return response()->json([
                 'present_reading' => $bill->present_reading,
                 'consumption' => $bill->calculateConsumption(),
                 'total_amount' => $totalAmount,
+                'last_unpaid_amount' => $lastUnpaidAmount,
                 'success' => true
             ]);
         } catch (\Exception $e) {
@@ -82,7 +116,7 @@ class BillPayController extends Controller
     public function processPayment(Request $request)
     {
         try {
-            $bill = ConsumerReading::with('billPayments')->findOrFail($request->bill_id);
+            $bill = ConsumerReading::with(['billPayments', 'consumer'])->findOrFail($request->bill_id);
             
             if (!$bill->billPayments) {
                 return response()->json([
@@ -94,12 +128,26 @@ class BillPayController extends Controller
             $amountTendered = (float)$request->bill_tendered_amount;
             $penaltyAmount = (float)$request->penalty_amount;
             $billAmount = $bill->calculateBill();
-            $totalAmount = $billAmount + $penaltyAmount;
+            
+            $lastUnpaidBills = ConsumerReading::with('billPayments')
+                ->where('customer_id', $bill->customer_id)
+                ->where('consread_id', '!=', $bill->consread_id)
+                ->whereHas('billPayments', function($query) {
+                    $query->where('bill_status', 'unpaid');
+                })
+                ->orderBy('reading_date', 'desc')
+                ->get();
 
-            if ($amountTendered !== $totalAmount) {
+            $lastUnpaidAmount = $lastUnpaidBills->sum(function($bill) {
+                return $bill->calculateBill();
+            });
+
+            $totalAmount = $billAmount + $penaltyAmount + $lastUnpaidAmount;
+
+            if ($amountTendered < $totalAmount) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Amount tendered must match the total amount exactly'
+                    'message' => 'Amount tendered must be at least ' . number_format($totalAmount, 2)
                 ]);
             }
 
@@ -109,8 +157,16 @@ class BillPayController extends Controller
                     'bill_status' => 'paid',
                     'bill_tendered_amount' => $amountTendered,
                     'penalty_amount' => $penaltyAmount,
-                    'total_amount' => $totalAmount
+                    'total_amount' => $billAmount + $penaltyAmount
                 ]);
+
+                foreach ($lastUnpaidBills as $unpaidBill) {
+                    $unpaidBill->billPayments->update([
+                        'bill_status' => 'paid',
+                        'bill_tendered_amount' => $unpaidBill->calculateBill(),
+                        'total_amount' => $unpaidBill->calculateBill()
+                    ]);
+                }
                 
                 DB::commit();
                 return response()->json([
@@ -160,6 +216,14 @@ class BillPayController extends Controller
                       ->orWhere('firstname', 'LIKE', "%{$searchTerm}%")
                       ->orWhere('lastname', 'LIKE', "%{$searchTerm}%");
                 });
+            }
+
+            if ($request->has('month') && !empty($request->month)) {
+                $query->whereMonth('reading_date', $request->month);
+            }
+
+            if ($request->has('year') && !empty($request->year)) {
+                $query->whereYear('reading_date', $request->year);
             }
 
             if ($request->has('status')) {

@@ -48,6 +48,24 @@
     --border-radius-md: 8px;
     --border-radius-lg: 12px;
     --border-radius-xl: 16px;
+
+    /* Modal-specific variables */
+    --modal-backdrop-blur: 2px;
+    --modal-max-width-default: 360px;
+    --modal-max-width-large: 720px;
+    --modal-max-width-delete: 800px;
+    --modal-padding: var(--spacing-xl);
+    --modal-form-gap: var(--spacing-slg);
+    --form-input-height: 43px;
+    --form-select-height: 38px;
+
+    /* Dashboard-specific variables */
+    --stat-box-min-width: 160px;
+    --stat-number-size: clamp(1.2rem, 2vw + 1rem, 2rem);
+    --stat-box-accent-height: 4px;
+    --rate-section-max-height: 400px;
+    --chart-min-height: 50vh;
+    --chart-min-width: 300px;
     
     /* spacing */
     --spacing-xs: 4px;

@@ -216,14 +216,7 @@ async function filterBills() {
             tbody.innerHTML = '';
 
             if (data.bills.length === 0) {
-                tbody.innerHTML = `
-                    <tr>
-                        <td colspan="10" class="empty-state">
-                            <i class="fas fa-file-invoice"></i>
-                            <p>No bills found</p>
-                        </td>
-                    </tr>
-                `;
+                showEmptyState(tbody);
             } else {
                 data.bills.forEach(bill => {
                     const row = document.createElement('tr');
@@ -236,7 +229,7 @@ async function filterBills() {
                         <td>${bill.previous_reading}</td>
                         <td>${bill.present_reading}</td>
                         <td>${bill.consumption}</td>
-                        <td>₱${Number(bill.total_amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                        <td>₱${bill.total_amount}</td>
                         <td>
                             <span class="status-badge ${bill.bill_status === 'Pending' ? 'status-pending' :
                             (bill.bill_status === 'paid' ? 'status-active' : 'status-inactive')}">

@@ -22,6 +22,7 @@ use App\Http\Controllers\BillingController;
 use App\Http\Controllers\Bill_NoticeController;
 use App\Http\Controllers\MRController;
 use App\Http\Controllers\MRsBlockCont;
+use App\Http\Controllers\ServiceRepCont;
 use Illuminate\Support\Facades\Route;
 
 // Start page
@@ -170,6 +171,9 @@ Route::middleware(['web'])->group(function () {
         Route::get('/balance_rep', [ReportBillController::class, 'balance_index'])->name('balance_index');
         Route::get('/balance_rep/search', [ReportBillController::class, 'searchBalance'])->name('balance.search');
         Route::get('/balance_rep/print-report', [ReportBillController::class, 'printBalanceReport'])->name('balance_rep.print');
+        Route::get('/service_rep', [ServiceRepCont::class, 'index'])->name('service_rep');
+        Route::get('/service_rep/search', [ServiceRepCont::class, 'search'])->name('service_rep.search');
+        Route::get('/service_rep/print-report', [ServiceRepCont::class, 'printReport'])->name('service_rep.print');
 
         // Meter reader reading routes
         Route::get('/meter_read', [MRController::class, 'index'])->name('meter-readings');
@@ -188,13 +192,12 @@ Route::middleware(['web'])->group(function () {
 
         // Latest bill routes
         Route::get('/latest-bills', [BillingController::class, 'latestBills'])->name('latest-bills');
-        Route::get('/billing/get-reading-details/{consreadId}', [BillingController::class, 'getReadingDetails']);
+        Route::get('/billing/get-reading-details/{consreadId}', [BillingController::class, 'getReadingDetails'])->name('billing.reading-details');
         Route::get('/billing/get-bill-details/{consreadId}', [BillingController::class, 'getBillDetails']);
         Route::post('/billing/add-bill', [BillingController::class, 'addBill']);
         Route::post('/billing/send-bill-sms', [BillingController::class, 'sendBillSMS']);
         Route::get('/billing/search', [BillingController::class, 'search'])->name('billing.search');
-        Route::get('/billing/get-reading-details/{consreadId}', 'BillingController@getReadingDetails');
-        
+
         // Bill Notice routes
         Route::get('/notice-bill', [Bill_NoticeController::class, 'noticeBill'])->name('notice-bill');
         Route::get('/billing/notice/{id}/details', [Bill_NoticeController::class, 'getBillDetails']);
