@@ -25,18 +25,25 @@ class AuthController extends Controller
         }
 
         $token = $user->createToken($user->username);
-        return [
+        return response()->json([
             'user' => $user,
             'assigned_block' => $assigned_block->block_id,
             'token' => $token->plainTextToken
-        ];
+        ]);
+    }
+    
+    public function connect()
+    {
+        return response()->json(
+            'Connected to network'
+        );
     }
 
     public function logout(Request $request)
     {
         $request->user()->tokens()->delete();
-        return [
+        return response()->json([
             'message' => 'Logged out'
-        ];
+        ]);
     }
 }

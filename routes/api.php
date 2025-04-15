@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\v1\AuthController;
 use App\Http\Controllers\Api\v1\PreloadDataController;
+use App\Http\Controllers\Api\v1\SyncController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -21,7 +22,11 @@ use Illuminate\Support\Facades\Route;
 // });
 
 Route::post('/login', [AuthController::class, 'login']);
+Route::get('/connect', [AuthController::class, 'connect']);
 Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
 
 Route::get('/get_coverage_date', [PreloadDataController::class, 'get_coverage_date'])->middleware('auth:sanctum');
 Route::get('/get_consumer', [PreloadDataController::class, 'get_consumer'])->middleware('auth:sanctum');
+Route::get('/get_bill_rate', [PreloadDataController::class, 'get_bill_rate'])->middleware('auth:sanctum');
+
+Route::post('/sync', [SyncController::class, 'sync'])->middleware('auth:sanctum');
