@@ -52,7 +52,11 @@
     border-color: #ddd;
 }
 
-/* Add dark mode support */
+.dark-mode .pagination-wrapper {
+    background: var(--dark-secondary);
+    box-shadow: 0 -2px 8px rgba(0,0,0,0.18);
+}
+
 .dark-mode .pagination li a,
 .dark-mode .pagination li span {
     background-color: var(--dark-secondary);
@@ -75,7 +79,6 @@
     color: var(--text-color-muted);
 }
 
-/* Responsive pagination */
 @media (max-width: 576px) {
     .pagination-wrapper {
         justify-content: center;
