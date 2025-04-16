@@ -3,12 +3,6 @@
 @section('title', 'BI-U: Meter Readings')
 
 @section('tab-content')
-<style>
-    .sidebar-collapsed ~ .block-contents .table-container {
-        margin-left: 5%;
-        width: 75rem;
-    }
-</style>
 <link rel="stylesheet" href="{{ asset('css/modal.css') }}">
 <link rel="stylesheet" href="{{ asset('css/tbl_pagination.css') }}">
 
