@@ -140,8 +140,8 @@
 .permission-toggle {
     position: relative;
     display: inline-block;
-    width: 50px;
-    height: 26px;
+    width: 44px; /* Adjusted for better thumb fit */
+    height: 24px; /* Adjusted for better thumb fit */
 }
 
 .permission-toggle input {
@@ -159,7 +159,7 @@
     bottom: 0;
     background-color: var(--secondary-color);
     transition: var(--transition-fast);
-    border-radius: 34px;
+    border-radius: 24px; /* Match height for perfect roundness */
 }
 
 .toggle-slider:before {
@@ -167,11 +167,12 @@
     content: "";
     height: 18px;
     width: 18px;
-    left: 4px;
-    bottom: 4px;
+    left: 3px; /* Centered for new width */
+    top: 3px;  /* Centered for new height */
     background-color: white;
     transition: var(--transition-fast);
     border-radius: 50%;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
 }
 
 input:checked + .toggle-slider {
@@ -179,7 +180,7 @@ input:checked + .toggle-slider {
 }
 
 input:checked + .toggle-slider:before {
-    transform: translateX(24px);
+    transform: translateX(20px); /* 44px width - 18px thumb - 2*3px padding = 20px */
 }
 
 .dark-mode .permissions-header,

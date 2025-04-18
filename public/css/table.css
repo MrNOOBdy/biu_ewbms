@@ -21,8 +21,8 @@
 }
 
 .sidebar-collapsed ~ .block-contents .table-container {
-    width: calc(100% - 24px);
-    margin: -5px 12px 0 12px;
+    width: 90%;
+    margin-left: 5%;
 }
 
 .uni-table {

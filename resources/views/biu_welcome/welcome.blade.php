@@ -9,8 +9,8 @@
 <div class="welcome-container">
     <div class="hero-section">
         <div class="logo-container">
-            <img src="{{ asset('images/logo/bi-u_logo.png') }}" alt="BI-U Logo" class="main-logo">
             <img src="{{ asset('images/logo/logo2.png') }}" alt="Secondary Logo" class="secondary-logo">
+            <img src="{{ asset('images/logo/bi-u_logo.png') }}" alt="BI-U Logo" class="main-logo">
         </div>
         <h1 class="welcome-title">Bien Unido Electronic Water Billing System</h1>
         <div class="title-underline"></div>
@@ -19,9 +19,11 @@
     <div class="welcome-content">
         <div class="welcome-text-container">
             <p class="welcome-text">
-                BI-U: eWBS is a comprehensive electronic water billing system designed to streamline the water utility management process. Our system provides convenient and efficient way to manage water bills and consumer account tracking, making water utility management simpler and more effective for both administrators and consumers.
-
-     This system will be able to process bill payments, generate billing reports and issues official receipt. The system will also have a feature that notifies registered consumers about their monthly bills, upcoming payment due dates and overdue payments via SMS.
+                BI-U: eWBS is a comprehensive electronic water billing system designed to streamline the water utility management process. 
+                Our system provides a convenient and efficient way to manage water bills and consumer account tracking, 
+                making water utility management simpler and more effective for both administrators and consumers.
+                <br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;This system will be able to process bill payments, generate billing reports, and issue official receipts.
+                The system will also have a feature that notifies registered consumers about their monthly bills, upcoming payment due dates, and overdue payments via SMS.
             </p>
         </div>
     </div>

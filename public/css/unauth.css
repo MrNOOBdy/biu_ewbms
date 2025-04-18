@@ -150,8 +150,8 @@ form button:hover {
 }
 
 form button:hover .login-arrow {
-    opacity: 1;
-    transform: translateX(0);
+    opacity: 0;
+    transform: translateX(-10px);
 }
 
 form button:active {

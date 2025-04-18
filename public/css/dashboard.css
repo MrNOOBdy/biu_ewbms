@@ -4,7 +4,7 @@
   }
   
   .sidebar-collapsed ~ .block-contents .dashboard-container {
-    margin-left: 120px;
+    margin-left: 5%;
   }
   
   .stats-container {

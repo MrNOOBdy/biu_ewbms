@@ -18,7 +18,7 @@
 
 .hero-section {
     text-align: center;
-    margin-bottom: var(--spacing-xl);
+    margin-bottom: var(--spacing-lg);
     padding-bottom: var(--spacing-lg);
     border-bottom: 1px solid rgba(0, 0, 0, 0.08);
 }
@@ -46,7 +46,7 @@
 }
 
 .secondary-logo {
-    max-width: 110px;
+    max-width: 90px;
     height: auto;
     filter: drop-shadow(var(--shadow-sm));
     transition: transform 0.3s ease;
@@ -71,7 +71,6 @@
     height: 3px;
     background: var(--primary-color);
     margin: 0 auto;
-    margin-bottom: var(--spacing-lg);
     animation: widthGrow 1s ease-out;
 }
 
@@ -80,6 +79,7 @@
     flex-direction: column;
     gap: var(--spacing-xl);
     margin-bottom: var(--spacing-xl);
+
 }
 
 .welcome-text-container {
@@ -91,9 +91,10 @@
     color: var(--text-color-dark);
     font-size: 1.1em;
     line-height: 1.8;
-    text-align: center;
+    text-align: justify;
     max-width: 800px;
     margin: 0 auto;
+    text-indent: 2em;
 }
 
 .dark-mode .welcome-text {
@@ -205,14 +206,14 @@
     left: 100%;
 }
 
-/* Footer Section */
 .footer-info {
     text-align: center;
     font-size: 0.85em;
     color: #888;
-    margin-top: var(--spacing-xl);
     animation: fadeIn 1s ease-out 0.7s;
     animation-fill-mode: both;
+    padding: 0;
+    margin: 0;
 }
 
 .dark-mode .footer-info {

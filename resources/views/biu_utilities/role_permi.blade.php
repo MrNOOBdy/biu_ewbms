@@ -48,7 +48,7 @@
                         <i class="fas fa-{{ getSectionIcon($section) }}"></i>
                         {{ $section }}
                     </h3>
-                    <button class="btn_uni btn-activate" data-section="{{ Str::slug($section) }}">
+                    <button class="btn_uni toggle-all btn-activate" data-section="{{ Str::slug($section) }}">
                         Toggle All
                     </button>
                 </div>
