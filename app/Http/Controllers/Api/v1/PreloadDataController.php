@@ -30,15 +30,26 @@ class PreloadDataController extends Controller
                 ->where('covdate_id', $request->covdate_id)
                 ->orderBy("reading_date", "desc")
                 ->get()->first();
-            if ($reading && $reading->syncStatus == 0) {
-                $consumer->syncStatus = $reading->syncStatus;
-                $consumer->previous_reading = $reading->present_reading;
-            } else if ($reading && $reading->syncStatus == 1) {
-                $consumer->syncStatus = $reading->syncStatus;
-                $consumer->present_reading = $reading->present_reading;
-                $consumer->previous_reading = $reading->previous_reading;
+
+            if ($reading) {
+                if ($reading->syncStatus == 0) {
+                    $consumer->syncStatus = $reading->syncStatus;
+                    $consumer->previous_reading = $reading->present_reading;
+                } else if ($reading->syncStatus == 1) {
+                    $consumer->syncStatus = $reading->syncStatus;
+                    $consumer->present_reading = $reading->present_reading;
+                    $consumer->previous_reading = $reading->previous_reading;
+                }
             } else {
-                $consumer->previous_reading = 0;
+                $previousReading = ConsumerReading::where('customer_id', $consumer->customer_id)
+                    ->orderBy("reading_date", "desc")
+                    ->get()->first();
+
+                if ($previousReading) {
+                    $consumer->previous_reading = $previousReading->present_reading;
+                } else {
+                    $consumer->previous_reading = 0;
+                }
                 $consumer->syncStatus = 0;
             }
         }
