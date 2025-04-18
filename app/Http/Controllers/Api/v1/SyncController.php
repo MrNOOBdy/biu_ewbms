@@ -20,7 +20,8 @@ class SyncController extends Controller
                 'previous_reading' => $request->previous_reading,
                 'present_reading' => $request->present_reading,
                 'consumption' => $request->present_reading - $request->previous_reading,
-                'meter_reader' => $request->meter_reader
+                'meter_reader' => $request->meter_reader,
+                'syncStatus' => 1,
             ]);
             DB::commit();
             return json_encode([

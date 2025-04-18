@@ -27,12 +27,19 @@ class PreloadDataController extends Controller
             ->get();
         foreach ($consumers as $consumer) {
             $reading = ConsumerReading::where('customer_id', $consumer->customer_id)
+                ->where('covdate_id', $request->covdate_id)
                 ->orderBy("reading_date", "desc")
                 ->get()->first();
-            if ($reading) {
-                $consumer->prev_reading = $reading->present_reading;
+            if ($reading && $reading->syncStatus == 0) {
+                $consumer->syncStatus = $reading->syncStatus;
+                $consumer->previous_reading = $reading->present_reading;
+            } else if ($reading && $reading->syncStatus == 1) {
+                $consumer->syncStatus = $reading->syncStatus;
+                $consumer->present_reading = $reading->present_reading;
+                $consumer->previous_reading = $reading->previous_reading;
             } else {
-                $consumer->prev_reading = 0;
+                $consumer->previous_reading = 0;
+                $consumer->syncStatus = 0;
             }
         }
         return response()->json([

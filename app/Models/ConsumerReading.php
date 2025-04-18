@@ -18,7 +18,8 @@ class ConsumerReading extends Model
         'previous_reading',
         'present_reading',
         'consumption',
-        'meter_reader'
+        'meter_reader',
+        'syncStatus'
     ];
 
     public function consumer()
