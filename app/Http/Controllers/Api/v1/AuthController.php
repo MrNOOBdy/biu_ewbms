@@ -20,7 +20,7 @@ class AuthController extends Controller
         $assigned_block = MeterReaderBlock::where('user_id', $user->user_id)->first();
         if (!$user || !Hash::check($request->password, $user->password)) {
             return [
-                'message' => 'The provided credentials are incorrect.'
+                'message' => 'The password is incorrect.'
             ];
         }
 
