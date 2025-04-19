@@ -103,7 +103,19 @@ const BalanceReport = {
 function updateFooterTotal(total) {
     const tfoot = document.querySelector('.uni-table tfoot');
     if (tfoot) {
-        const totalCell = tfoot.querySelector('td[colspan="2"] strong');
-        totalCell.textContent = `₱${Number(total).toFixed(2)}`;
+        const filteredRow = tfoot.querySelector('.filtered-total-row');
+        const overallRow = tfoot.querySelector('.overall-total-row');
+        const filteredTotal = tfoot.querySelector('.filtered-total');
+
+        if (filteredRow && overallRow && filteredTotal) {
+            if (total === 0) {
+                filteredRow.style.display = 'none';
+                overallRow.style.display = 'table-row';
+            } else {
+                filteredRow.style.display = 'table-row';
+                overallRow.style.display = 'none';
+                filteredTotal.textContent = `₱${Number(total).toFixed(2)}`;
+            }
+        }
     }
 }

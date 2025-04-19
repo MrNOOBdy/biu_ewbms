@@ -357,7 +357,6 @@
 @push('scripts')
 <script src="{{ asset('js/covdate.js') }}"></script>
 <script>
-    // Initialize on page load
     document.addEventListener('DOMContentLoaded', function() {
         if (typeof flatpickr === 'function') {
             setTimeout(initializeAllDatePickers, 100);

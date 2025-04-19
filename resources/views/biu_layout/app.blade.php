@@ -44,19 +44,15 @@
             document.documentElement.classList.add(isDark ? 'dark-mode' : 'light-mode');
         })();
     </script>
-
-    @if (app()->environment('production'))
-        <link rel="stylesheet" href="{{ asset('css/main.min.css') }}">
-    @else
-        <link rel="stylesheet" href="{{ asset('css/variables.css') }}">
-        <link rel="stylesheet" href="{{ asset('css/general.css') }}">
-        <link rel="stylesheet" href="{{ asset('css/navi_bar.css') }}">
-        <link rel="stylesheet" href="{{ asset('css/tabs.css') }}">
-        <link rel="stylesheet" href="{{ asset('css/tbl_pagination.css') }}">
-        <link rel="stylesheet" href="{{ asset('css/tab_header.css') }}">
-        <link rel="stylesheet" href="{{ asset('css/table.css') }}">
-        <link rel="stylesheet" href="{{ asset('css/tab_toolkit.css') }}">
-    @endif
+    
+    <link rel="stylesheet" href="{{ asset('css/variables.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/general.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/navi_bar.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/tabs.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/tbl_pagination.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/tab_header.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/table.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/tab_toolkit.css') }}">
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <link rel="stylesheet" href="{{ asset('fonts/fontawesome/css/all.min.css') }}">

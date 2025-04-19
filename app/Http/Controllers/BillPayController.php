@@ -72,6 +72,7 @@ class BillPayController extends Controller
             $bill = ConsumerReading::with(['billPayments', 'consumer'])->findOrFail($billId);
             $totalAmount = $bill->calculateBill();
             $penaltyAmount = 0;
+            $lastUnpaidAmount = 0;
             
             $lastUnpaidBill = ConsumerReading::with('billPayments')
                 ->where('customer_id', $bill->customer_id)
@@ -82,14 +83,10 @@ class BillPayController extends Controller
                 ->orderBy('reading_date', 'desc')
                 ->first();
 
-            $lastUnpaidAmount = $lastUnpaidBill ? $lastUnpaidBill->calculateBill() : 0;
-            
-            $today = now();
-            $dueDate = \Carbon\Carbon::parse($bill->due_date);
-            $isPastDue = $today->gt($dueDate);
-
-            if ($lastUnpaidBill || $isPastDue) {
+            if ($lastUnpaidBill) {
+                $lastUnpaidAmount = $lastUnpaidBill->calculateBill();
                 $penaltyAmount = 20.00;
+                $lastUnpaidAmount += $penaltyAmount;
             }
 
             return response()->json([
@@ -98,7 +95,7 @@ class BillPayController extends Controller
                 'total_amount' => $totalAmount,
                 'last_unpaid_amount' => $lastUnpaidAmount,
                 'penalty_amount' => $penaltyAmount,
-                'is_past_due' => $isPastDue,
+                'has_unpaid_bills' => $lastUnpaidBill ? true : false,
                 'success' => true
             ]);
         } catch (\Exception $e) {
@@ -138,7 +135,7 @@ class BillPayController extends Controller
                 return $bill->calculateBill();
             });
 
-            $totalAmount = $billAmount + $penaltyAmount + $lastUnpaidAmount;
+            $totalAmount = $billAmount + $lastUnpaidAmount + $penaltyAmount;
 
             if ($amountTendered < $totalAmount) {
                 return response()->json([
@@ -149,18 +146,25 @@ class BillPayController extends Controller
 
             DB::beginTransaction();
             try {
+                // Process current bill payment without penalty
                 $bill->billPayments->update([
                     'bill_status' => 'paid',
                     'bill_tendered_amount' => $amountTendered,
-                    'penalty_amount' => $penaltyAmount,
-                    'total_amount' => $billAmount + $penaltyAmount
+                    'penalty_amount' => 0, // No penalty on current bill
+                    'total_amount' => $billAmount
                 ]);
 
+                // Process last unpaid bills, adding penalty to the oldest one
+                $oldestUnpaidBill = $lastUnpaidBills->last(); // Get the oldest unpaid bill
                 foreach ($lastUnpaidBills as $unpaidBill) {
+                    $unpaidBillAmount = $unpaidBill->calculateBill();
+                    $billPenalty = ($unpaidBill->consread_id === $oldestUnpaidBill->consread_id) ? $penaltyAmount : 0;
+                    
                     $unpaidBill->billPayments->update([
                         'bill_status' => 'paid',
-                        'bill_tendered_amount' => $unpaidBill->calculateBill(),
-                        'total_amount' => $unpaidBill->calculateBill()
+                        'bill_tendered_amount' => $unpaidBillAmount + $billPenalty,
+                        'penalty_amount' => $billPenalty,
+                        'total_amount' => $unpaidBillAmount + $billPenalty
                     ]);
                 }
                 

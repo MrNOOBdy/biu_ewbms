@@ -6,23 +6,11 @@ function handlePayment(consreadId) {
                 const billAmount = parseFloat(data.total_amount) || 0;
                 const lastUnpaidAmount = parseFloat(data.last_unpaid_amount) || 0;
                 const penaltyAmount = parseFloat(data.penalty_amount) || 0;
-                const totalWithUnpaid = billAmount + lastUnpaidAmount + penaltyAmount;
+                const totalAmount = billAmount + lastUnpaidAmount;
 
                 document.getElementById('billId').value = consreadId;
                 document.getElementById('present_reading').value = `₱${billAmount.toFixed(2)}`;
                 document.getElementById('penalty_amount').value = `₱${penaltyAmount.toFixed(2)}`;
-
-                const penaltyInfo = document.querySelector('.penalty-info');
-                if (penaltyAmount > 0) {
-                    penaltyInfo.style.display = 'block';
-                    if (data.is_past_due) {
-                        penaltyInfo.textContent = '₱20 penalty applied due to past due date';
-                    } else {
-                        penaltyInfo.textContent = '₱20 penalty applied due to previous unpaid bill';
-                    }
-                } else {
-                    penaltyInfo.style.display = 'none';
-                }
 
                 const existingLastUnpaid = document.getElementById('last_unpaid_amount');
                 if (existingLastUnpaid) {
@@ -33,13 +21,20 @@ function handlePayment(consreadId) {
                     const lastUnpaidElement = document.createElement('div');
                     lastUnpaidElement.className = 'form-group';
                     lastUnpaidElement.innerHTML = `
-                        <label>Last Month Unpaid Amount</label>
+                        <label>Last Month Unpaid Amount (Including ₱${penaltyAmount.toFixed(2)} Penalty)</label>
                         <input type="text" id="last_unpaid_amount" class="form-control" readonly value="₱${lastUnpaidAmount.toFixed(2)}">
+                        <small class="text-muted penalty-info">
+                            <i class="fas fa-info-circle"></i> Includes ₱${penaltyAmount.toFixed(2)} penalty for unpaid bill
+                        </small>
                     `;
                     document.getElementById('present_reading').parentElement.after(lastUnpaidElement);
+
+                    document.getElementById('penalty_amount').parentElement.style.display = 'none';
+                } else {
+                    document.getElementById('penalty_amount').parentElement.style.display = 'none';
                 }
 
-                document.getElementById('total_amount').value = `₱${totalWithUnpaid.toFixed(2)}`;
+                document.getElementById('total_amount').value = `₱${totalAmount.toFixed(2)}`;
                 document.getElementById('bill_tendered_amount').value = '';
 
                 const modal = document.getElementById('paymentModal');
@@ -79,6 +74,10 @@ function validateTendered() {
     if (tendered < totalAmount) {
         input.classList.add('is-invalid');
         feedback.textContent = `Amount tendered is insufficient. Required amount is ₱${totalAmount.toFixed(2)}`;
+        submitButton.disabled = true;
+    } else if (tendered > totalAmount) {
+        input.classList.add('is-invalid');
+        feedback.textContent = `Amount tendered exceeds the total amount. Please enter a valid amount.`;
         submitButton.disabled = true;
     } else {
         input.classList.remove('is-invalid');

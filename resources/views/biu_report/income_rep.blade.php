@@ -75,8 +75,12 @@
                 @endforelse
             </tbody>
             <tfoot>
-                <tr class="total-row">
-                    <td colspan="2" class="text-right"><strong>Total Income:</strong></td>
+                <tr class="filtered-total-row" style="display: none;">
+                    <td colspan="2" class="text-right"><strong>Filtered Total:</strong></td>
+                    <td colspan="2"><strong class="filtered-total">₱0.00</strong></td>
+                </tr>
+                <tr class="overall-total-row">
+                    <td colspan="2" class="text-right"><strong>Overall Total:</strong></td>
                     <td colspan="2"><strong>₱{{ number_format($totalIncome, 2) }}</strong></td>
                 </tr>
             </tfoot>

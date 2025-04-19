@@ -43,14 +43,13 @@ class DashController extends Controller
                 ]);
             })->count();
 
-        $waterBillIncome = ConsBillPay::join('consumer_reading', 'consumer_bill_pay.consread_id', '=', 'consumer_reading.consread_id')
-            ->where('consumer_bill_pay.bill_status', 'Paid')
+        $waterBillIncome = ConsBillPay::where('bill_status', 'Paid')
             ->when($activeCoverage, function($query) use ($activeCoverage) {
-                return $query->whereBetween('consumer_reading.reading_date', [
+                return $query->whereBetween('updated_at', [
                     $activeCoverage->coverage_date_from, 
                     $activeCoverage->coverage_date_to
                 ]);
-            })->sum('consumer_bill_pay.total_amount');
+            })->sum('total_amount');
 
         $applicationFees = ConnPayment::when($activeCoverage, function($query) use ($activeCoverage) {
             return $query->whereBetween('created_at', [
