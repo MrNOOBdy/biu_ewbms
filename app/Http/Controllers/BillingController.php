@@ -186,6 +186,13 @@ class BillingController extends Controller
                 throw new \Exception('Consumer not found');
             }
 
+            if ($reading->sms_sent) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'SMS notification has already been sent for this bill'
+                ], 400);
+            }
+
             $phoneNumber = $reading->consumer->contact_no;
             if (empty($phoneNumber)) {
                 throw new \Exception('Consumer has no contact number');
@@ -206,6 +213,10 @@ class BillingController extends Controller
             if (!$result) {
                 throw new \Exception('Failed to send SMS through Pushbullet');
             }
+
+            $reading->sms_sent = true;
+            $reading->sms_sent_at = now();
+            $reading->save();
 
             return response()->json([
                 'success' => true,
@@ -282,7 +293,8 @@ class BillingController extends Controller
                         'present_reading' => $bill->present_reading,
                         'consumption' => $consumption,
                         'total_amount' => number_format($totalAmount, 2, '.', ''),
-                        'bill_status' => !$billPayment ? 'Pending' : $billPayment->bill_status
+                        'bill_status' => !$billPayment ? 'Pending' : $billPayment->bill_status,
+                        'sms_sent' => $bill->sms_sent
                     ];
                 })
             ]);

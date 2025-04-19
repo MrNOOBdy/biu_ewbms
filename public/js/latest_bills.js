@@ -142,6 +142,11 @@ function sendBill(consreadId) {
                 return;
             }
 
+            if (data.sms_sent) {
+                showBillResultModal(false, 'SMS notification has already been sent for this bill');
+                return;
+            }
+
             document.getElementById('send_consread_id').value = consreadId;
             document.getElementById('sms_consumerName').textContent = `${data.consumer.firstname} ${data.consumer.lastname}`;
             document.getElementById('sms_contactNo').textContent = data.consumer.contact_no;
@@ -189,6 +194,7 @@ BI-U: eWBS`;
 function confirmSendBill() {
     const consreadId = document.getElementById('send_consread_id').value;
     const message = document.getElementById('sms_message').value;
+    const sendButton = document.querySelector(`button[onclick="sendBill(${consreadId})"]`);
 
     if (!consreadId || !message) {
         showBillResultModal(false, 'Missing required information');
@@ -210,6 +216,12 @@ function confirmSendBill() {
         .then(data => {
             closeModal('sendBillModal');
             showBillResultModal(data.success, data.message);
+
+            if (data.success && sendButton) {
+                sendButton.disabled = true;
+                sendButton.title = 'SMS already sent';
+                sendButton.innerHTML = '<i class="fas fa-paper-plane"></i> SMS Sent';
+            }
         })
         .catch(error => {
             console.error('Error:', error);
@@ -271,8 +283,10 @@ async function filterBills() {
                                         <i class="fas fa-plus-circle"></i> Add Bill
                                     </button>
                                 ` : `
-                                    <button class="btn_uni btn-billing" onclick="sendBill(${bill.consread_id})">
-                                        <i class="fas fa-paper-plane"></i> Send Bill SMS
+                                    <button class="btn_uni btn-billing ${bill.sms_sent ? 'disabled' : ''}" 
+                                            onclick="sendBill(${bill.consread_id})"
+                                            ${bill.sms_sent ? 'disabled title="SMS already sent"' : ''}>
+                                        <i class="fas fa-paper-plane"></i> ${bill.sms_sent ? 'SMS Sent' : 'Send Bill SMS'}
                                     </button>
                                 `}
                             </div>

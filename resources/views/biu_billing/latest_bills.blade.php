@@ -94,8 +94,11 @@
                                             <i class="fas fa-plus-circle"></i> Add Bill
                                         </button>
                                     @else
-                                        <button class="btn_uni btn-billing" onclick="sendBill({{ $bill->consread_id }})">
-                                            <i class="fas fa-paper-plane"></i> Send Bill SMS
+                                        <button class="btn_uni btn-billing {{ $bill->sms_sent ? 'disabled' : '' }}" 
+                                                onclick="sendBill({{ $bill->consread_id }})"
+                                                {{ $bill->sms_sent ? 'disabled title=SMS already sent' : '' }}
+                                                style="{{ $bill->sms_sent ? 'cursor: not-allowed; opacity: 0.6;' : '' }}">
+                                            <i class="fas fa-paper-plane"></i> {{ $bill->sms_sent ? 'SMS Sent' : 'Send Bill SMS' }}
                                         </button>
                                     @endif
                                 </div>
