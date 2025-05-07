@@ -133,8 +133,26 @@
                 <!-- Left Column -->
                 <div>
                     <div class="form-group">
+                        <label for="barangay">Barangay</label>
+                        <select id="barangay" name="barangay" class="form-control" required onchange="updateBlockForBarangay()">
+                            <option value="">Select Barangay</option>
+                            @php
+                                $allBarangays = collect();
+                                foreach($blocks as $block) {
+                                    $allBarangays = $allBarangays->concat($block->barangays);
+                                }
+                                $allBarangays = $allBarangays->unique()->sort();
+                            @endphp
+                            @foreach($allBarangays as $barangay)
+                                <option value="{{ $barangay }}">{{ $barangay }}</option>
+                            @endforeach
+                        </select>
+                        <div class="invalid-feedback"></div>
+                    </div>
+
+                    <div class="form-group">
                         <label for="block_id">Block Number</label>
-                        <select id="block_id" name="block_id" class="form-control" required onchange="updateBarangays()">
+                        <select id="block_id" name="block_id" class="form-control" required disabled>
                             <option value="">Select Block</option>
                             @foreach($blocks as $block)
                                 <option value="{{ $block->block_id }}" data-barangays='@json($block->barangays)'>Block {{ $block->block_id }}</option>
@@ -171,26 +189,17 @@
                 <!-- Right Column -->
                 <div>
                     <div class="form-group">
-                        <label for="barangay">Barangay</label>
-                        <select id="barangay" name="barangay" class="form-control" required>
-                            <option value="">Select Barangay</option>
-                        </select>
-                        <div class="invalid-feedback"></div>
-                    </div>
-
-                    <div class="form-group">
                         <label for="contact_no">Contact Number</label>
-                        <input type="text" id="contact_no" name="contact_no" class="form-control" required maxlength="11" pattern="[0-9]{11}">
+                        <input type="text" id="contact_no" name="contact_no" class="form-control" required pattern="[0-9]{11}" maxlength="11">
                         <div class="invalid-feedback"></div>
                     </div>
 
                     <div class="form-group">
                         <label for="consumer_type">Consumer Type</label>
                         <select id="consumer_type" name="consumer_type" class="form-control" required>
-                            <option value="">Select Type</option>
-                            @foreach($billRates as $rate)
-                                <option value="{{ $rate->consumer_type }}">{{ $rate->consumer_type }}</option>
-                            @endforeach
+                            <option value="">Select Consumer Type</option>
+                            <option value="Residential">Residential</option>
+                            <option value="Commercial">Commercial</option>
                         </select>
                         <div class="invalid-feedback"></div>
                     </div>
@@ -234,8 +243,26 @@
                 <!-- Left Column -->
                 <div>
                     <div class="form-group">
+                        <label for="edit_barangay">Barangay</label>
+                        <select id="edit_barangay" name="barangay" class="form-control" required onchange="updateBlockForEditBarangay()">
+                            <option value="">Select Barangay</option>
+                            @php
+                                $allBarangays = collect();
+                                foreach($blocks as $block) {
+                                    $allBarangays = $allBarangays->concat($block->barangays);
+                                }
+                                $allBarangays = $allBarangays->unique()->sort();
+                            @endphp
+                            @foreach($allBarangays as $barangay)
+                                <option value="{{ $barangay }}">{{ $barangay }}</option>
+                            @endforeach
+                        </select>
+                        <div class="invalid-feedback"></div>
+                    </div>
+
+                    <div class="form-group">
                         <label for="edit_block_id">Block Number</label>
-                        <select id="edit_block_id" name="block_id" class="form-control" required onchange="updateEditBarangays()">
+                        <select id="edit_block_id" name="block_id" class="form-control" required disabled>
                             <option value="">Select Block</option>
                             @foreach($blocks as $block)
                                 <option value="{{ $block->block_id }}" data-barangays='@json($block->barangays)'>Block {{ $block->block_id }}</option>
@@ -272,14 +299,6 @@
                 <!-- Right Column -->
                 <div>
                     <div class="form-group">
-                        <label for="edit_barangay">Barangay</label>
-                        <select id="edit_barangay" name="barangay" class="form-control" required>
-                            <option value="">Select Barangay</option>
-                        </select>
-                        <div class="invalid-feedback"></div>
-                    </div>
-
-                    <div class="form-group">
                         <label for="edit_contact_no">Contact Number</label>
                         <input type="text" id="edit_contact_no" name="contact_no" class="form-control" required maxlength="11" pattern="[0-9]{11}">
                         <div class="invalid-feedback"></div>
@@ -289,9 +308,8 @@
                         <label for="edit_consumer_type">Consumer Type</label>
                         <select id="edit_consumer_type" name="consumer_type" class="form-control" required>
                             <option value="">Select Type</option>
-                            @foreach($billRates as $rate)
-                                <option value="{{ $rate->consumer_type }}">{{ $rate->consumer_type }}</option>
-                            @endforeach
+                            <option value="Residential">Residential</option>
+                            <option value="Commercial">Commercial</option>
                         </select>
                         <div class="invalid-feedback"></div>
                     </div>

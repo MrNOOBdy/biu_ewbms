@@ -28,7 +28,7 @@
             @foreach(['Navigation Access', 'Role Management', 'User Management', 
                      'Notification Management', 'Bill Rate Management', 'Block Management',
                      'Coverage Date Management', 'Fee Management', 'Consumer Management',
-                     'Connection Payment Permissions'] as $section)
+                     'Meter Reading Management', 'Connection Payment Permissions'] as $section)
                 <button class="section-nav-item" data-section="{{ Str::slug($section) }}">
                     <i class="fas fa-{{ getSectionIcon($section) }}"></i>
                     <span>{{ $section }}</span>
@@ -41,7 +41,7 @@
         @foreach(['Navigation Access', 'Role Management', 'User Management', 
                  'Notification Management', 'Bill Rate Management', 'Block Management',
                  'Coverage Date Management', 'Fee Management', 'Consumer Management',
-                 'Connection Payment Permissions'] as $section)
+                 'Meter Reading Management', 'Connection Payment Permissions'] as $section)
             <div class="permission-section" id="{{ Str::slug($section) }}">
                 <div class="section-header">
                     <h3>
@@ -87,6 +87,7 @@ function getSectionIcon($section) {
         'Coverage Date Management' => 'calendar-alt',
         'Fee Management' => 'receipt',
         'Consumer Management' => 'user-friends',
+        'Meter Reading Management' => 'tachometer-alt',
         'Connection Payment Permissions' => 'credit-card'
     ];
     return $icons[$section] ?? 'circle';
@@ -117,6 +118,8 @@ function getPermissionSlugsForSection($section) {
         case 'Consumer Management':
             return ['add-new-consumer', 'edit-consumer', 'view-consumer-billings', 
                    'delete-consumer', 'reconnect-consumer'];
+        case 'Meter Reading Management':
+            return ['access-meter-reading', 'add-meter-reading'];
         case 'Connection Payment Permissions':
             return ['access-application-fee', 'process-application-payment', 'print-application',
                    'service-fee-access', 'service-pay', 'service-print'];

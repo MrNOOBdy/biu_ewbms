@@ -4,48 +4,43 @@ function showAddBillModal(consreadId) {
         .then(data => {
             document.getElementById('consread_id').value = consreadId;
 
-            document.getElementById('customerId').textContent = data.consumer.customer_id;
-            document.getElementById('consumerName').textContent = `${data.consumer.firstname} ${data.consumer.lastname}`;
-            document.getElementById('contactNo').textContent = data.consumer.contact_no;
-            document.getElementById('consumerType').textContent = data.consumer.consumer_type;
-            document.getElementById('prevBillStatus').textContent = data.consumer.previous_bill_status;
+            const customerId = data.consumer.customer_id;
+            document.getElementById('customerId').textContent = customerId;
+
+            const blockMatch = customerId.match(/B(\d+)/);
+            const blockNumber = blockMatch ? `Block ${parseInt(blockMatch[1], 10)}` : 'N/A';
+            document.getElementById('consumerBlock').textContent = blockNumber;
+
+            document.getElementById('consumerFirstName').textContent = data.consumer.firstname;
+            document.getElementById('consumerLastName').textContent = data.consumer.lastname;
 
             document.getElementById('coverageDateFrom').textContent = formatDate(data.coverage_date.coverage_date_from);
             document.getElementById('coverageDateTo').textContent = formatDate(data.coverage_date.coverage_date_to);
-
             document.getElementById('readingDate').textContent = formatDate(data.reading_date);
             document.getElementById('dueDate').textContent = formatDate(data.due_date);
+
+            const consumption = data.consumption;
+            const baseRate = 10;
+            const excess = consumption > baseRate ? consumption - baseRate : 0;
+
             document.getElementById('previousReading').textContent = data.previous_reading;
             document.getElementById('presentReading').textContent = data.present_reading;
-            document.getElementById('consumption').textContent = data.consumption;
-            document.getElementById('currentBillAmount').textContent = Number(data.current_bill_amount).toLocaleString('en-US', {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2
-            });
+            document.getElementById('consumption').textContent = consumption;
+            document.getElementById('baseRateValue').textContent = baseRate;
+            document.getElementById('excessValue').textContent = excess;
+
+            document.getElementById('currentBillAmount').textContent = formatAmount(data.current_bill_amount);
 
             const lastMonthSection = document.getElementById('lastMonthUnpaidSection');
             if (data.last_month_unpaid) {
-                document.getElementById('lastMonthReadingDate').textContent = formatDate(data.last_month_unpaid.reading_date);
-                document.getElementById('lastMonthDueDate').textContent = formatDate(data.last_month_unpaid.due_date);
-                document.getElementById('lastMonthConsumption').textContent = data.last_month_unpaid.consumption;
-                document.getElementById('lastMonthAmount').textContent = Number(data.last_month_unpaid.total_amount).toLocaleString('en-US', {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2
-                });
-                document.getElementById('lastMonthPenalty').textContent = Number(data.penalty_amount).toLocaleString('en-US', {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2
-                });
+                document.getElementById('lastMonthAmount').textContent = formatAmount(data.last_month_unpaid.total_amount);
+                document.getElementById('lastMonthPenalty').textContent = formatAmount(data.penalty_amount);
                 lastMonthSection.style.display = 'block';
             } else {
                 lastMonthSection.style.display = 'none';
             }
 
-            // Total Combined Amount
-            document.getElementById('totalAmount').textContent = Number(data.total_amount).toLocaleString('en-US', {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2
-            });
+            document.getElementById('totalAmount').textContent = formatAmount(data.total_amount);
 
             const modal = document.getElementById('addBillModal');
             modal.style.display = 'block';
@@ -55,6 +50,13 @@ function showAddBillModal(consreadId) {
             console.error('Error:', error);
             showBillResultModal(false, 'Error fetching reading details');
         });
+}
+
+function formatAmount(amount) {
+    return Number(amount).toLocaleString('en-US', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    });
 }
 
 function closeModal(modalId) {
@@ -318,6 +320,56 @@ function showEmptyState(tbody) {
             <p>No bills found for your search</p>
         </td>`;
     tbody.appendChild(emptyRow);
+}
+
+function editReading(readingId, presentReading) {
+    document.getElementById('editReadingId').value = readingId;
+    document.getElementById('editPresentReading').value = presentReading;
+    const modal = document.getElementById('editReadingModal');
+    modal.style.display = 'block';
+    setTimeout(() => modal.classList.add('fade-in'), 10);
+}
+
+async function updateReading(event) {
+    event.preventDefault();
+    const readingId = document.getElementById('editReadingId').value;
+    const presentReading = document.getElementById('editPresentReading').value;
+
+    try {
+        const response = await fetch(`/billing/update-reading/${readingId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            },
+            body: JSON.stringify({ present_reading: presentReading })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            const row = document.querySelector(`tr[data-reading-id="${readingId}"]`);
+            if (row) {
+                row.querySelector('.present-reading').textContent = data.reading.present_reading;
+                row.querySelector('.consumption').textContent = data.reading.consumption;
+                row.querySelector('.bill-amount').textContent = `₱${Number(data.reading.current_bill_amount).toFixed(2)}`;
+            }
+
+            closeModal('editReadingModal');
+            showBillResultModal(true, 'Reading updated successfully');
+        } else if (response.status === 422) {
+            const input = document.getElementById('editPresentReading');
+            input.classList.add('is-invalid');
+            const feedback = input.nextElementSibling;
+            feedback.textContent = data.errors.present_reading[0];
+            feedback.style.display = 'block';
+        } else {
+            throw new Error(data.message || 'Failed to update reading');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        showBillResultModal(false, error.message || 'Failed to update reading');
+    }
 }
 
 window.onclick = function (event) {

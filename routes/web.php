@@ -178,6 +178,9 @@ Route::middleware(['web'])->group(function () {
         // Meter reader reading routes
         Route::get('/meter_read', [MRController::class, 'index'])->name('meter-readings');
         Route::get('/meter-readings/search', [MRController::class, 'search'])->name('meter-readings.search');
+        Route::get('/meter-readings/consumers', [MRController::class, 'getConsumers'])->name('meter-readings.consumers');
+        Route::post('/meter-readings/store', [MRController::class, 'storeReadings'])->name('meter-readings.store');
+        Route::put('/meter-readings/{id}', [MRController::class, 'update'])->name('meter-readings.update');
 
         // Billing pay routes
         Route::prefix('billing')->group(function () {
@@ -190,13 +193,14 @@ Route::middleware(['web'])->group(function () {
             Route::get('/print-receipt/{billId}', [BillPayController::class, 'printReceipt'])->name('billing.print-receipt');
         });
 
-        // Latest bill routes
+        // Billing routes
         Route::get('/latest-bills', [BillingController::class, 'latestBills'])->name('latest-bills');
         Route::get('/billing/get-reading-details/{consreadId}', [BillingController::class, 'getReadingDetails'])->name('billing.reading-details');
         Route::get('/billing/get-bill-details/{consreadId}', [BillingController::class, 'getBillDetails']);
         Route::post('/billing/add-bill', [BillingController::class, 'addBill']);
         Route::post('/billing/send-bill-sms', [BillingController::class, 'sendBillSMS']);
         Route::get('/billing/search', [BillingController::class, 'search'])->name('billing.search');
+        Route::put('/billing/update-reading/{id}', [BillingController::class, 'updateReading'])->name('billing.update-reading');
 
         // Bill Notice routes
         Route::get('/notice-bill', [Bill_NoticeController::class, 'noticeBill'])->name('notice-bill');

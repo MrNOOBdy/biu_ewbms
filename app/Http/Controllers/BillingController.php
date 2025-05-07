@@ -306,4 +306,61 @@ class BillingController extends Controller
             ]);
         }
     }
+
+    public function updateReading($id, Request $request)
+    {
+        try {
+            $reading = ConsumerReading::findOrFail($id);
+            
+            $request->validate([
+                'present_reading' => 'required|numeric|min:' . $reading->previous_reading
+            ]);
+
+            $reading->present_reading = $request->present_reading;
+            $reading->consumption = $reading->calculateConsumption();
+            $reading->save();
+
+            // Calculate the updated bill amounts
+            $currentBillAmount = $reading->calculateBill();
+            $totalAmount = $currentBillAmount;
+
+            // Check for last month's unpaid bill
+            $lastMonthUnpaidBill = ConsumerReading::with(['billPayments'])
+                ->where('customer_id', $reading->customer_id)
+                ->where('consread_id', '<', $reading->consread_id)
+                ->whereHas('billPayments', function($q) {
+                    $q->where('bill_status', 'unpaid');
+                })
+                ->orderBy('reading_date', 'desc')
+                ->first();
+
+            if ($lastMonthUnpaidBill) {
+                $lastMonthAmount = $lastMonthUnpaidBill->calculateBill();
+                $penaltyAmount = $reading->calculatePenalty();
+                $totalAmount += $lastMonthAmount + $penaltyAmount;
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Reading updated successfully',
+                'reading' => [
+                    'present_reading' => $reading->present_reading,
+                    'consumption' => $reading->consumption,
+                    'current_bill_amount' => $currentBillAmount,
+                    'total_amount' => $totalAmount
+                ]
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            Log::error('Error updating reading: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update reading: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }

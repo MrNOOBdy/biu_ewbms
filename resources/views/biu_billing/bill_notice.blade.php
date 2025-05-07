@@ -4,17 +4,6 @@
 
 @section('tab-content')
 <link rel="stylesheet" href="{{ asset('css/modal.css') }}">
-<style>
-    .modal-content {
-        padding: 15px;
-        min-height: 85vh;
-        overflow-y: visible;
-        max-width: 800px;
-        width: 90%;
-        display: flex;
-        flex-direction: column;
-    }
-</style>
 
 <div class="table-header">
     <h3><i class="fas fa-file-invoice"></i> Bill Notice</h3>
@@ -195,11 +184,8 @@
 
 <!-- Notice Modal -->
 <div id="noticeModal" class="modal">
-    <div class="modal-content" style="max-width: 500px;">
-        <div class="modal-header">
-            <h3><i class="fas fa-bell"></i> Send Bill Notice</h3>
-        </div>
-        
+    <div class="modal-content large-modal">
+        <h3><i class="fas fa-bell"></i> Send Bill Notice</h3>
         <div class="modal-body">
             <div class="notice-selection">
                 <label for="noticeSelect">Select Notice Type</label>
@@ -211,13 +197,12 @@
                 </select>
             </div>
             
-            <div class="form-group" style="margin-top: 15px;">
+            <div class="form-group">
                 <label for="announcementText">Message</label>
                 <textarea 
-                    class="announcement-textarea" 
+                    class="form-control" 
                     id="announcementText" 
                     placeholder="Enter your announcement message here..."
-                    style="max-height: 200px;"
                 ></textarea>
             </div>
         </div>
@@ -231,56 +216,47 @@
 
 <!-- View Details Modal -->
 <div id="viewDetailsModal" class="modal">
-    <div class="modal-content" style="max-width: 500px; width: 90%; padding: 15px; background: var(--background-color); border-radius: var(--border-radius-md); box-shadow: var(--shadow-md);">
-        <div class="modal-header" style="margin-bottom: 15px;">
-            <h3 style="color: var(--primary-color); font-size: 1.2rem;"><i class="fas fa-info-circle" style="margin-right: 8px;"></i> Bill Details</h3>
-        </div>
-        
-        <div class="modal-body" style="font-size: 0.9rem;">
-            <div class="info-group" style="display: flex; flex-wrap: wrap; gap: 15px;">
+    <div class="modal-content large-modal">
+        <h3><i class="fas fa-info-circle"></i> Bill Details</h3>
+        <div class="modal-body">
+            <div class="info-group">
                 <!-- Consumer Information -->
-                <div class="consumer-info" style="flex: 1; min-width: 250px; background: var(--light-bg); padding: 10px; border-radius: var(--border-radius-sm);">
-                    <h4 style="font-size: 1rem; margin-bottom: 10px;">Consumer Details</h4>
-                    <p style="margin: 5px 0; display: flex; justify-content: space-between;"><strong style="color: var(--text-muted);">Customer ID:</strong> <span id="detail_customerId"></span></p>
-                    <p style="margin: 5px 0; display: flex; justify-content: space-between;"><strong style="color: var(--text-muted);">Name:</strong> <span id="detail_consumerName"></span></p>
-                    <p style="margin: 5px 0; display: flex; justify-content: space-between;"><strong style="color: var(--text-muted);">Contact No:</strong> <span id="detail_contactNo"></span></p>
-                    <p style="margin: 5px 0; display: flex; justify-content: space-between;"><strong style="color: var(--text-muted);">Address:</strong> <span id="detail_address"></span></p>
-                    <p style="margin: 5px 0; display: flex; justify-content: space-between;"><strong style="color: var(--text-muted);">Consumer Type:</strong> <span id="detail_consumerType"></span></p>
+                <div class="consumer-info">
+                    <h4>Consumer Details</h4>
+                    <p><strong>Customer ID:</strong> <span id="detail_customerId"></span></p>
+                    <p><strong>Name:</strong> <span id="detail_consumerName"></span></p>
+                    <p><strong>Contact No:</strong> <span id="detail_contactNo"></span></p>
+                    <p><strong>Address:</strong> <span id="detail_address"></span></p>
+                    <p><strong>Consumer Type:</strong> <span id="detail_consumerType"></span></p>
                 </div>
 
                 <!-- Bill Information -->
-                <div class="bill-details" style="flex: 1; min-width: 250px; background: var(--light-bg); padding: 10px; border-radius: var(--border-radius-sm);">
-                    <h4 style="font-size: 1rem; margin-bottom: 10px;">Reading Details</h4>
-                    <p style="margin: 5px 0; display: flex; justify-content: space-between;"><strong style="color: var(--text-muted);">Reading Date:</strong> <span id="detail_readingDate"></span></p>
-                    <p style="margin: 5px 0; display: flex; justify-content: space-between;"><strong style="color: var(--text-muted);">Due Date:</strong> <span id="detail_dueDate"></span></p>
-                    <p style="margin: 5px 0; display: flex; justify-content: space-between;"><strong style="color: var(--text-muted);">Previous Reading:</strong> <span id="detail_previousReading"></span></p>
-                    <p style="margin: 5px 0; display: flex; justify-content: space-between;"><strong style="color: var(--text-muted);">Present Reading:</strong> <span id="detail_presentReading"></span></p>
-                    <p style="margin: 5px 0; display: flex; justify-content: space-between;"><strong style="color: var(--text-muted);">Consumption:</strong> <span id="detail_consumption"></span>m³</p>
-                    <p style="margin: 5px 0; display: flex; justify-content: space-between;"><strong style="color: var(--text-muted);">Base Rate:</strong> <span id="detail_baseRate"></span></p>
-                    <p style="margin: 5px 0; display: flex; justify-content: space-between;"><strong style="color: var(--text-muted);">Excess Charges:</strong> <span id="detail_excessCharges"></span></p>
-                    <p style="margin: 5px 0; display: flex; justify-content: space-between;"><strong style="color: var(--text-muted);">Total Amount:</strong>₱<span id="detail_billAmount"></span></p>
-                    <p style="margin: 5px 0; display: flex; justify-content: space-between;"><strong style="color: var(--text-muted);">Bill Status:</strong> <span id="detail_billStatus"></span></p>
+                <div class="consumer-info">
+                    <h4>Reading Details</h4>
+                    <p><strong>Reading Date:</strong> <span id="detail_readingDate"></span></p>
+                    <p><strong>Due Date:</strong> <span id="detail_dueDate"></span></p>
+                    <p><strong>Previous Reading:</strong> <span id="detail_previousReading"></span></p>
+                    <p><strong>Present Reading:</strong> <span id="detail_presentReading"></span></p>
+                    <p><strong>Consumption:</strong> <span id="detail_consumption"></span>m³</p>
+                    <p><strong>Base Rate:</strong> <span id="detail_baseRate"></span></p>
+                    <p><strong>Excess Charges:</strong> <span id="detail_excessCharges"></span></p>
+                    <p><strong>Total Amount:</strong> ₱<span id="detail_billAmount"></span></p>
+                    <p><strong>Bill Status:</strong> <span id="detail_billStatus"></span></p>
                 </div>
             </div>
         </div>
         
-        <div class="modal-actions" style="margin-top: 15px; display: flex; justify-content: flex-end;">
-            <button class="btn_modal btn_cancel" onclick="closeViewDetailsModal()" style="padding: 6px 15px; background: var(--danger-color); color: white; border: none; border-radius: var(--border-radius-sm); cursor: pointer;">Close</button>
+        <div class="modal-actions">
+            <button class="btn_modal btn_cancel" onclick="closeViewDetailsModal()">Close</button>
         </div>
     </div>
 </div>
 
 <!-- Confirm Modal -->
 <div id="confirmModal" class="modal">
-    <div class="modal-content" style="max-width: 400px;">
-        <div class="modal-header">
-            <h3><i class="fas fa-question-circle"></i> Confirm Action</h3>
-        </div>
-        
-        <div class="modal-body">
-            <p id="confirmMessage" style="margin: 20px 0; text-align: center;"></p>
-        </div>
-        
+    <div class="modal-content result-modal">
+        <h3><i class="fas fa-question-circle"></i> Confirm Action</h3>
+        <p id="confirmMessage"></p>
         <div class="modal-actions">
             <button class="btn_modal btn_cancel" onclick="closeConfirmModal(false)">Cancel</button>
             <button class="btn_modal btn_verify" onclick="closeConfirmModal(true)">Confirm</button>

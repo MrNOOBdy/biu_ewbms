@@ -74,34 +74,6 @@ class ConsumerController extends Controller
         try {
             DB::beginTransaction();
 
-            $existingConsumer = Consumer::where(function($query) use ($request) {
-                $query->where('firstname', $request->firstname)
-                      ->where('lastname', $request->lastname);
-                
-                if ($request->middlename) {
-                    $query->where('middlename', $request->middlename);
-                } else {
-                    $query->whereNull('middlename');
-                }
-            })->first();
-
-            if ($existingConsumer) {
-                return response()->json([
-                    'errors' => [
-                        'firstname' => ['A consumer with this complete name already exists.']
-                    ]
-                ], 422);
-            }
-
-            $existingContact = Consumer::where('contact_no', $request->contact_no)->first();
-            if ($existingContact) {
-                return response()->json([
-                    'errors' => [
-                        'contact_no' => ['This contact number is already registered to another consumer.']
-                    ]
-                ], 422);
-            }
-
             $validator = Validator::make($request->all(), [
                 'block_id' => 'required|exists:blocks,block_id',
                 'firstname' => 'required|string|max:100',
@@ -280,48 +252,13 @@ class ConsumerController extends Controller
 
             $requestData = $request->except(['_token', '_method']);
 
-            $existingConsumer = Consumer::where(function($query) use ($request) {
-                $query->where('firstname', $request->firstname)
-                      ->where('lastname', $request->lastname);
-                
-                if ($request->middlename) {
-                    $query->where('middlename', $request->middlename);
-                } else {
-                    $query->whereNull('middlename');
-                }
-            })
-            ->where('customer_id', '!=', $id)
-            ->first();
-
-            if ($existingConsumer) {
-                return response()->json([
-                    'errors' => [
-                        'firstname' => ['A consumer with this complete name already exists.']
-                    ]
-                ], 422);
-            }
-
-            $existingContact = Consumer::where('contact_no', $request->contact_no)
-                ->where('customer_id', '!=', $id)
-                ->first();
-                
-            if ($existingContact) {
-                return response()->json([
-                    'errors' => [
-                        'contact_no' => ['This contact number is already registered to another consumer.']
-                    ]
-                ], 422);
-            }
-
             $validator = Validator::make($request->all(), [
                 'block_id' => 'required|exists:blocks,block_id',
                 'firstname' => 'required|string|max:100',
                 'middlename' => 'nullable|string|max:100',
                 'lastname' => 'required|string|max:100',
-                'contact_no' => 'required|string|size:11',
                 'consumer_type' => 'required|exists:bill_rate,consumer_type'
             ], [
-                'contact_no.size' => 'Contact number must be exactly 11 digits.',
                 'block_id.required' => 'Block number is required.',
                 'consumer_type.required' => 'Consumer type is required.',
             ]);

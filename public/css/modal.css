@@ -1,4 +1,3 @@
-
 @keyframes fadeIn {
     from { opacity: 0; }
     to { opacity: 1; }
@@ -126,9 +125,10 @@
   }
   
   .modal-body {
-    max-height: 70vh;
+    max-height: calc(85vh - 180px);
     overflow-y: auto;
     padding: 20px;
+    margin: -20px -20px 0;
   }
   
   .modal-actions {
@@ -671,4 +671,44 @@
  
   .modal-dialog {
     display: none;
+  }
+
+  /* Latest Bills Modal Specific Styles */
+  .info-group {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    margin-bottom: 20px;
+  }
+
+  .info-group .consumer-info {
+    margin: 0;
+  }
+
+  .info-group .warning-message {
+    margin: 0;
+    grid-column: 1 / -1;
+  }
+
+  .info-group .total-amount {
+    grid-column: 1 / -1;
+    border-top: 2px solid var(--border-color-light);
+    padding-top: 20px;
+    margin-top: 10px;
+  }
+
+  .info-group .total-amount h3 {
+    color: var(--text-color-dark);
+    margin-bottom: 10px;
+    text-align: left;
+  }
+
+  .info-group .total-amount .total-amount-value {
+    font-size: 1.2em;
+    margin-bottom: 5px;
+  }
+
+  .info-group .total-amount .text-muted {
+    font-size: 0.9em;
+    color: var(--text-color-muted);
   }
